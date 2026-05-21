@@ -1,0 +1,378 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUM ───────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+  STAFF
+}
+
+enum ClientStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum EventType {
+  AKAD
+  RESEPSI
+  AFTER_PARTY
+}
+
+enum GalleryType {
+  HERO
+  COVER
+  PREWEDDING
+  GALLERY
+}
+
+enum GuestSendStatus {
+  UNSENT
+  SENT
+}
+
+enum RsvpStatus {
+  PENDING
+  HADIR
+  TIDAK_HADIR
+}
+
+enum SectionKey {
+  HERO
+  COUPLE
+  EVENT
+  GALLERY
+  LOVE_STORY
+  RSVP
+  WISHES
+  GIFT
+  MAPS
+  CLOSING
+}
+
+// ─── USER ───────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clientUsers ClientUser[]
+  createdClients Client[] @relation("ClientCreatedBy")
+
+  @@map("users")
+}
+
+// ─── CLIENT ─────────────────────────────────────────────────────────────────
+
+model Client {
+  id           String       @id @default(cuid())
+  name         String
+  slug         String       @unique
+  status       ClientStatus @default(DRAFT)
+  customDomain String?      @unique
+  createdById  String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  createdBy      User            @relation("ClientCreatedBy", fields: [createdById], references: [id])
+  clientUsers    ClientUser[]
+  weddingProfile WeddingProfile?
+  events         Event[]
+  galleries      Gallery[]
+  theme          Theme?
+  musics         Music[]
+  sections       Section[]
+  guests         Guest[]
+  wishes         Wish[]
+  gifts          Gift[]
+  loveStories    LoveStory[]
+  analytics      Analytics[]
+  whatsappTemplate WhatsappTemplate?
+
+  @@map("clients")
+}
+
+model ClientUser {
+  id       String @id @default(cuid())
+  userId   String
+  clientId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clientId])
+  @@map("client_users")
+}
+
+// ─── WEDDING PROFILE ────────────────────────────────────────────────────────
+
+model WeddingProfile {
+  id              String  @id @default(cuid())
+  clientId        String  @unique
+  groomName       String  @default("")
+  brideName       String  @default("")
+  groomNickname   String  @default("")
+  brideNickname   String  @default("")
+  groomParents    String  @default("")
+  brideParents    String  @default("")
+  groomPhoto      String?
+  bridePhoto      String?
+  heroImage       String?
+  story           String? @db.Text
+  openingQuote    String? @db.Text
+  openingQuoteBy  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("wedding_profiles")
+}
+
+// ─── EVENT ──────────────────────────────────────────────────────────────────
+
+model Event {
+  id          String    @id @default(cuid())
+  clientId    String
+  type        EventType
+  label       String    @default("")
+  date        DateTime?
+  timeStart   String    @default("")
+  timeEnd     String    @default("")
+  venueName   String    @default("")
+  venueAddress String   @default("") @db.Text
+  mapsUrl     String    @default("")
+  mapsEmbed   String    @default("") @db.Text
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("events")
+}
+
+// ─── GALLERY ────────────────────────────────────────────────────────────────
+
+model Gallery {
+  id        String      @id @default(cuid())
+  clientId  String
+  url       String
+  type      GalleryType @default(GALLERY)
+  isCover   Boolean     @default(false)
+  sortOrder Int         @default(0)
+  createdAt DateTime    @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("galleries")
+}
+
+// ─── THEME ──────────────────────────────────────────────────────────────────
+
+model Theme {
+  id             String  @id @default(cuid())
+  clientId       String  @unique
+  templateSlug   String  @default("classic")
+  primaryColor   String  @default("#b8860b")
+  secondaryColor String  @default("#f5f0e8")
+  bgColor        String  @default("#fffdf7")
+  textColor      String  @default("#3d3d3d")
+  fontHeading    String  @default("Playfair Display")
+  fontBody       String  @default("Lato")
+  customCss      String? @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("themes")
+}
+
+// ─── MUSIC ──────────────────────────────────────────────────────────────────
+
+model Music {
+  id        String   @id @default(cuid())
+  clientId  String
+  title     String   @default("")
+  url       String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("musics")
+}
+
+// ─── SECTION ────────────────────────────────────────────────────────────────
+
+model Section {
+  id         String     @id @default(cuid())
+  clientId   String
+  sectionKey SectionKey
+  isActive   Boolean    @default(true)
+  sortOrder  Int        @default(0)
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, sectionKey])
+  @@map("sections")
+}
+
+// ─── GUEST ──────────────────────────────────────────────────────────────────
+
+model Guest {
+  id            String          @id @default(cuid())
+  clientId      String
+  name          String
+  phone         String?
+  email         String?
+  guestToken    String          @unique @default("")
+  invitationUrl String          @default("")
+  maxPax        Int             @default(2)
+  isOpened      Boolean         @default(false)
+  openedAt      DateTime?
+  rsvpStatus    RsvpStatus      @default(PENDING)
+  sendStatus    GuestSendStatus @default(UNSENT)
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  client     Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  rsvp       Rsvp?
+  visits     GuestVisit[]
+  wishes     Wish[]
+
+  @@map("guests")
+}
+
+model GuestVisit {
+  id        String   @id @default(cuid())
+  guestId   String
+  clientId  String
+  ipAddress String?
+  userAgent String?
+  device    String?
+  openedAt  DateTime @default(now())
+
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@map("guest_visits")
+}
+
+// ─── RSVP ───────────────────────────────────────────────────────────────────
+
+model Rsvp {
+  id        String     @id @default(cuid())
+  guestId   String     @unique
+  clientId  String
+  name      String
+  paxCount  Int        @default(1)
+  status    RsvpStatus @default(HADIR)
+  message   String?    @db.Text
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@map("rsvps")
+}
+
+// ─── WISH ───────────────────────────────────────────────────────────────────
+
+model Wish {
+  id         String   @id @default(cuid())
+  clientId   String
+  guestId    String?
+  name       String
+  message    String   @db.Text
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  client Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  guest  Guest?  @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@map("wishes")
+}
+
+// ─── GIFT ───────────────────────────────────────────────────────────────────
+
+model Gift {
+  id            String   @id @default(cuid())
+  clientId      String
+  bankName      String?
+  accountNumber String?
+  accountName   String?
+  ewalletType   String?
+  ewalletNumber String?
+  qrisImage     String?
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("gifts")
+}
+
+// ─── LOVE STORY ─────────────────────────────────────────────────────────────
+
+model LoveStory {
+  id          String    @id @default(cuid())
+  clientId    String
+  title       String
+  date        DateTime?
+  description String    @db.Text
+  imageUrl    String?
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("love_stories")
+}
+
+// ─── ANALYTICS ──────────────────────────────────────────────────────────────
+
+model Analytics {
+  id        String   @id @default(cuid())
+  clientId  String
+  eventType String
+  guestId   String?
+  ipAddress String?
+  device    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("analytics")
+}
+
+// ─── WHATSAPP TEMPLATE ──────────────────────────────────────────────────────
+
+model WhatsappTemplate {
+  id           String   @id @default(cuid())
+  clientId     String   @unique
+  bodyTemplate String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@map("whatsapp_templates")
+}

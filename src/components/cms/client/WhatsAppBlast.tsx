@@ -1,0 +1,370 @@
+"use client";
+
+import { useState } from "react";
+import { Send, CheckCircle, MessageSquare, Users, Clock } from "lucide-react";
+import {
+  renderWhatsappMessage,
+  buildWhatsappLink,
+  DEFAULT_TEMPLATE,
+} from "@/lib/whatsapp";
+import { formatDate } from "@/lib/utils";
+
+type SendStatus = "UNSENT" | "SENT";
+type RsvpStatus = "PENDING" | "HADIR" | "TIDAK_HADIR";
+type Filter = "all" | "unsent" | "sent";
+
+interface Guest {
+  id: string;
+  name: string;
+  phone: string | null;
+  maxPax: number;
+  sendStatus: SendStatus;
+  rsvpStatus: RsvpStatus;
+  invitationUrl: string;
+}
+
+interface Profile {
+  groomName: string;
+  brideName: string;
+}
+
+interface Props {
+  clientId: string;
+  clientName: string;
+  initialGuests: Guest[];
+  initialTemplate: string;
+  profile: Profile | null;
+  firstEventDate: Date | null;
+}
+
+const TEMPLATE_VARS = [
+  { key: "{guest_name}", desc: "Nama tamu" },
+  { key: "{groom_name}", desc: "Nama mempelai pria" },
+  { key: "{bride_name}", desc: "Nama mempelai wanita" },
+  { key: "{invitation_url}", desc: "Link undangan personal" },
+  { key: "{event_date}", desc: "Tanggal acara pertama" },
+  { key: "{max_pax}", desc: "Kuota undangan tamu" },
+  { key: "{client_name}", desc: "Nama client" },
+];
+
+const RSVP_LABEL: Record<RsvpStatus, string> = {
+  PENDING: "Belum",
+  HADIR: "Hadir",
+  TIDAK_HADIR: "Tidak Hadir",
+};
+
+export function WhatsAppBlast({
+  clientId,
+  clientName,
+  initialGuests,
+  initialTemplate,
+  profile,
+  firstEventDate,
+}: Props) {
+  const [guests, setGuests] = useState<Guest[]>(initialGuests);
+  const [template, setTemplate] = useState(
+    initialTemplate || DEFAULT_TEMPLATE
+  );
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateSaved, setTemplateSaved] = useState(false);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [sending, setSending] = useState<string | null>(null);
+  const [previewGuestId, setPreviewGuestId] = useState<string>(
+    initialGuests[0]?.id ?? ""
+  );
+
+  const previewGuest = guests.find((g) => g.id === previewGuestId);
+
+  const templateVars = {
+    guest_name: previewGuest?.name ?? "Nama Tamu",
+    groom_name: profile?.groomName || "Mempelai Pria",
+    bride_name: profile?.brideName || "Mempelai Wanita",
+    client_name: clientName,
+    event_date: formatDate(firstEventDate),
+    invitation_url: previewGuest?.invitationUrl ?? "https://...",
+    max_pax: previewGuest?.maxPax ?? 2,
+  };
+
+  async function handleSaveTemplate() {
+    setSavingTemplate(true);
+    setTemplateSaved(false);
+    try {
+      await fetch(`/api/clients/${clientId}/whatsapp-template`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bodyTemplate: template }),
+      });
+      setTemplateSaved(true);
+    } finally {
+      setSavingTemplate(false);
+    }
+  }
+
+  async function handleSend(guest: Guest) {
+    if (!guest.phone) return;
+    setSending(guest.id);
+    try {
+      const message = renderWhatsappMessage(template, {
+        ...templateVars,
+        guest_name: guest.name,
+        invitation_url: guest.invitationUrl,
+        max_pax: guest.maxPax,
+      });
+      const link = buildWhatsappLink(guest.phone, message);
+      window.open(link, "_blank");
+
+      await fetch(`/api/clients/${clientId}/guests/${guest.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sendStatus: "SENT" }),
+      });
+      setGuests((prev) =>
+        prev.map((g) =>
+          g.id === guest.id ? { ...g, sendStatus: "SENT" } : g
+        )
+      );
+    } finally {
+      setSending(null);
+    }
+  }
+
+  async function handleMarkAllSent() {
+    const unsent = guests.filter(
+      (g) => g.sendStatus === "UNSENT" && g.phone
+    );
+    if (!unsent.length) return;
+    if (!confirm(`Tandai ${unsent.length} tamu sebagai terkirim?`)) return;
+
+    await Promise.all(
+      unsent.map((g) =>
+        fetch(`/api/clients/${clientId}/guests/${g.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sendStatus: "SENT" }),
+        })
+      )
+    );
+    setGuests((prev) =>
+      prev.map((g) =>
+        g.sendStatus === "UNSENT" && g.phone
+          ? { ...g, sendStatus: "SENT" }
+          : g
+      )
+    );
+  }
+
+  const sentCount = guests.filter((g) => g.sendStatus === "SENT").length;
+  const unsentWithPhone = guests.filter(
+    (g) => g.sendStatus === "UNSENT" && g.phone
+  ).length;
+
+  const filtered = guests.filter((g) => {
+    if (filter === "unsent") return g.sendStatus === "UNSENT";
+    if (filter === "sent") return g.sendStatus === "SENT";
+    return true;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-3 gap-4">
+        <StatCard
+          icon={Users}
+          label="Total Tamu"
+          value={guests.length}
+          color="text-stone-600"
+        />
+        <StatCard
+          icon={CheckCircle}
+          label="Terkirim"
+          value={sentCount}
+          color="text-green-600"
+        />
+        <StatCard
+          icon={Clock}
+          label="Belum Terkirim"
+          value={guests.length - sentCount}
+          color="text-amber-600"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl border border-stone-200 p-6">
+          <h2 className="font-semibold text-stone-800 mb-1">Template Pesan</h2>
+          <p className="text-xs text-stone-400 mb-4">
+            Gunakan variabel di bawah untuk personalisasi pesan.
+          </p>
+
+          <textarea
+            value={template}
+            onChange={(e) => {
+              setTemplate(e.target.value);
+              setTemplateSaved(false);
+            }}
+            rows={10}
+            className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-300 font-mono resize-none"
+          />
+
+          <div className="flex flex-wrap gap-1.5 mt-3 mb-4">
+            {TEMPLATE_VARS.map(({ key, desc }) => (
+              <button
+                key={key}
+                title={desc}
+                onClick={() => setTemplate((prev) => prev + key)}
+                className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 px-2 py-1 rounded font-mono transition-colors"
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={handleSaveTemplate}
+            disabled={savingTemplate}
+            className="flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors"
+          >
+            <MessageSquare size={14} />
+            {savingTemplate
+              ? "Menyimpan..."
+              : templateSaved
+              ? "Tersimpan!"
+              : "Simpan Template"}
+          </button>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-stone-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-stone-800">Preview Pesan</h2>
+            {guests.length > 0 && (
+              <select
+                value={previewGuestId}
+                onChange={(e) => setPreviewGuestId(e.target.value)}
+                className="text-xs border border-stone-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-stone-300 max-w-[160px] truncate"
+              >
+                {guests.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+          <div className="bg-[#ECE5DD] rounded-xl p-4 min-h-[200px]">
+            <div className="bg-white rounded-lg p-3 max-w-[85%] shadow-sm">
+              <p className="text-xs text-stone-700 whitespace-pre-wrap leading-relaxed">
+                {renderWhatsappMessage(template, templateVars)}
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-stone-400 mt-2">
+            Preview menggunakan data tamu yang dipilih di atas.
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex gap-2">
+            {(["all", "unsent", "sent"] as Filter[]).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  filter === f
+                    ? "bg-stone-800 text-white"
+                    : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+                }`}
+              >
+                {f === "all" ? "Semua" : f === "unsent" ? "Belum Terkirim" : "Terkirim"}
+              </button>
+            ))}
+          </div>
+          {unsentWithPhone > 0 && (
+            <button
+              onClick={handleMarkAllSent}
+              className="text-xs text-stone-500 hover:text-stone-700 border border-stone-200 px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
+            >
+              Tandai Semua Terkirim
+            </button>
+          )}
+        </div>
+
+        <div className="divide-y divide-stone-100">
+          {filtered.length === 0 && (
+            <div className="py-10 text-center text-stone-400 text-sm">
+              Tidak ada tamu di kategori ini.
+            </div>
+          )}
+          {filtered.map((guest) => (
+            <div
+              key={guest.id}
+              className="flex items-center gap-4 px-6 py-3"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-stone-800 truncate">
+                  {guest.name}
+                </p>
+                <p className="text-xs text-stone-400">
+                  {guest.phone || (
+                    <span className="text-amber-500">Tidak ada nomor HP</span>
+                  )}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${
+                    guest.rsvpStatus === "HADIR"
+                      ? "bg-green-50 text-green-600"
+                      : guest.rsvpStatus === "TIDAK_HADIR"
+                      ? "bg-red-50 text-red-500"
+                      : "bg-stone-100 text-stone-500"
+                  }`}
+                >
+                  {RSVP_LABEL[guest.rsvpStatus]}
+                </span>
+                {guest.sendStatus === "SENT" ? (
+                  <span className="flex items-center gap-1 text-xs text-green-600">
+                    <CheckCircle size={13} />
+                    Terkirim
+                  </span>
+                ) : guest.phone ? (
+                  <button
+                    onClick={() => handleSend(guest)}
+                    disabled={sending === guest.id}
+                    className="flex items-center gap-1.5 bg-[#25D366] text-white text-xs px-3 py-1.5 rounded-lg hover:bg-[#1ebe5a] disabled:opacity-50 transition-colors"
+                  >
+                    <Send size={12} />
+                    {sending === guest.id ? "..." : "Kirim WA"}
+                  </button>
+                ) : (
+                  <span className="text-xs text-stone-300">—</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  color,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: number;
+  color: string;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-stone-200 p-5">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs text-stone-500">{label}</p>
+        <Icon size={15} className={color} />
+      </div>
+      <p className="text-3xl font-bold text-stone-800">{value}</p>
+    </div>
+  );
+}

@@ -1,0 +1,39 @@
+import { prisma } from "@/lib/database/prisma";
+import { notFound } from "next/navigation";
+import { canAccessClient } from "@/lib/auth/permissions";
+import { ThemeEditor } from "@/components/cms/client/ThemeEditor";
+
+interface Props {
+  params: Promise<{ clientId: string }>;
+}
+
+const DEFAULT_THEME = {
+  primaryColor: "#b8860b",
+  secondaryColor: "#f5f0e8",
+  bgColor: "#fffdf7",
+  textColor: "#3d3d3d",
+  fontHeading: "Playfair Display",
+  fontBody: "Lato",
+};
+
+export default async function ThemePage({ params }: Props) {
+  const { clientId } = await params;
+
+  const hasAccess = await canAccessClient(clientId);
+  if (!hasAccess) notFound();
+
+  const theme = await prisma.theme.findUnique({ where: { clientId } });
+
+  const initialTheme = theme
+    ? {
+        primaryColor: theme.primaryColor,
+        secondaryColor: theme.secondaryColor,
+        bgColor: theme.bgColor,
+        textColor: theme.textColor,
+        fontHeading: theme.fontHeading,
+        fontBody: theme.fontBody,
+      }
+    : DEFAULT_THEME;
+
+  return <ThemeEditor clientId={clientId} initialTheme={initialTheme} />;
+}
