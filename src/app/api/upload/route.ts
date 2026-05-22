@@ -6,14 +6,27 @@ import { apiError, apiSuccess } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
-const ALLOWED_TYPES = [
+const ALLOWED_IMAGE_TYPES = [
   "image/jpeg",
   "image/jpg",
   "image/png",
   "image/webp",
   "image/gif",
 ];
-const MAX_SIZE = 15 * 1024 * 1024; // 15 MB
+
+const ALLOWED_AUDIO_TYPES = [
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/ogg",
+  "audio/wav",
+  "audio/webm",
+  "audio/aac",
+  "audio/x-m4a",
+  "audio/mp4",
+];
+
+const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_AUDIO_TYPES];
+const MAX_SIZE = 30 * 1024 * 1024; // 30 MB
 
 export async function POST(req: Request) {
   try {
@@ -30,11 +43,11 @@ export async function POST(req: Request) {
     if (!hasAccess) return apiError("Akses ditolak", 403);
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return apiError("Format tidak didukung. Gunakan JPG, PNG, WebP, atau GIF.");
+      return apiError("Format tidak didukung. Gunakan JPG, PNG, WebP, GIF, atau MP3/OGG/WAV.");
     }
 
     if (file.size > MAX_SIZE) {
-      return apiError("Ukuran file terlalu besar. Maksimal 15MB.");
+      return apiError("Ukuran file terlalu besar. Maksimal 30MB.");
     }
 
     const ext = (file.name.split(".").pop() || "jpg").toLowerCase();

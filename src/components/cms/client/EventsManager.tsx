@@ -10,20 +10,45 @@ import type { Event } from "@/types/prisma.types";
 
 const EVENT_LABELS: Record<string, string> = {
   AKAD: "Akad Nikah",
+  PEMBERKATAN: "Pemberkatan Perkawinan",
   RESEPSI: "Resepsi",
   AFTER_PARTY: "After Party",
+  SANGJIT: "Sangjit",
+  LAMARAN: "Lamaran",
+};
+
+const EVENT_OPTIONS_BY_TYPE: Record<string, { value: string; label: string }[]> = {
+  WEDDING: [
+    { value: "AKAD", label: "Akad Nikah" },
+    { value: "PEMBERKATAN", label: "Pemberkatan Perkawinan" },
+    { value: "RESEPSI", label: "Resepsi" },
+    { value: "AFTER_PARTY", label: "After Party" },
+  ],
+  SANGJIT: [
+    { value: "SANGJIT", label: "Sangjit" },
+    { value: "RESEPSI", label: "Resepsi" },
+    { value: "AFTER_PARTY", label: "After Party" },
+  ],
+  LAMARAN: [
+    { value: "LAMARAN", label: "Lamaran" },
+    { value: "RESEPSI", label: "Resepsi" },
+  ],
 };
 
 interface Props {
   clientId: string;
+  clientType: string;
   initialEvents: Event[];
 }
 
-export function EventsManager({ clientId, initialEvents }: Props) {
+export function EventsManager({ clientId, clientType, initialEvents }: Props) {
   const [events, setEvents] = useState<Event[]>(initialEvents);
   const [openForm, setOpenForm] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const eventOptions = EVENT_OPTIONS_BY_TYPE[clientType] ?? EVENT_OPTIONS_BY_TYPE.WEDDING;
+  const defaultEventType = eventOptions[0]?.value ?? "AKAD";
 
   async function saveEvent(data: EventInput, eventId?: string) {
     setLoading(true);
@@ -79,13 +104,11 @@ export function EventsManager({ clientId, initialEvents }: Props) {
         >
           <div
             className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-stone-50"
-            onClick={() =>
-              setOpenForm(openForm === event.id ? null : event.id)
-            }
+            onClick={() => setOpenForm(openForm === event.id ? null : event.id)}
           >
             <div>
               <p className="font-medium text-stone-800 text-sm">
-                {EVENT_LABELS[event.type] || event.type}
+                {event.label || EVENT_LABELS[event.type] || event.type}
               </p>
               <p className="text-xs text-stone-400 mt-0.5">
                 {event.date ? formatDate(event.date) : "Tanggal belum diatur"}{" "}
@@ -110,10 +133,8 @@ export function EventsManager({ clientId, initialEvents }: Props) {
           {openForm === event.id && (
             <div className="border-t border-stone-100 px-5 py-4">
               <EventForm
-                defaultValues={{
-                  ...event,
-                  date: formatDateInput(event.date),
-                }}
+                defaultValues={{ ...event, date: formatDateInput(event.date) }}
+                eventOptions={eventOptions}
                 onSubmit={(data) => saveEvent(data, event.id)}
                 loading={loading}
               />
@@ -124,10 +145,10 @@ export function EventsManager({ clientId, initialEvents }: Props) {
 
       {openForm === "new" ? (
         <div className="bg-white rounded-2xl border border-stone-200 p-5">
-          <h3 className="font-medium text-stone-800 text-sm mb-4">
-            Tambah Acara Baru
-          </h3>
+          <h3 className="font-medium text-stone-800 text-sm mb-4">Tambah Acara Baru</h3>
           <EventForm
+            defaultValues={{ type: defaultEventType as EventInput["type"], sortOrder: 0 }}
+            eventOptions={eventOptions}
             onSubmit={(data) => saveEvent(data)}
             onCancel={() => setOpenForm(null)}
             loading={loading}
@@ -148,18 +169,20 @@ export function EventsManager({ clientId, initialEvents }: Props) {
 
 function EventForm({
   defaultValues,
+  eventOptions,
   onSubmit,
   onCancel,
   loading,
 }: {
   defaultValues?: Partial<EventInput>;
+  eventOptions: { value: string; label: string }[];
   onSubmit: (data: EventInput) => void;
   onCancel?: () => void;
   loading?: boolean;
 }) {
   const { register, handleSubmit, formState: { errors } } = useForm<EventInput>({
     resolver: zodResolver(eventSchema) as any,
-    defaultValues: defaultValues ?? { type: "AKAD", sortOrder: 0 },
+    defaultValues: defaultValues ?? { type: (eventOptions[0]?.value ?? "AKAD") as EventInput["type"], sortOrder: 0 },
   });
 
   return (
@@ -168,14 +191,15 @@ function EventForm({
         <div>
           <label className={labelClass}>Jenis Acara</label>
           <select {...register("type")} className={inputClass}>
-            <option value="AKAD">Akad Nikah</option>
-            <option value="RESEPSI">Resepsi</option>
-            <option value="AFTER_PARTY">After Party</option>
+            {eventOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
           </select>
+          {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type.message}</p>}
         </div>
         <div>
           <label className={labelClass}>Label Kustom</label>
-          <input {...register("label")} placeholder="Akad Nikah" className={inputClass} />
+          <input {...register("label")} placeholder="Opsional — timpa nama acara" className={inputClass} />
         </div>
         <div>
           <label className={labelClass}>Tanggal</label>

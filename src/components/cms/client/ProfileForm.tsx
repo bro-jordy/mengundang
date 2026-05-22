@@ -125,16 +125,6 @@ export function ProfileForm({ clientId, initialData }: Props) {
         />
       </div>
 
-      <div className="bg-white rounded-2xl border border-stone-200 p-5">
-        <h3 className="font-medium text-stone-700 text-sm mb-4">Foto Cover / Hero</h3>
-        <PhotoField
-          label="Foto halaman pembuka undangan"
-          clientId={clientId}
-          value={watch("heroImage") ?? ""}
-          onChange={(v) => setValue("heroImage", v, { shouldDirty: true })}
-        />
-      </div>
-
       <div className="bg-white rounded-2xl border border-stone-200 p-5 space-y-4">
         <h3 className="font-medium text-stone-700 text-sm">Konten Undangan</h3>
         <Field label="Kata Pembuka / Quote" error={errors.openingQuote?.message}>

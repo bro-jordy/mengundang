@@ -1,9 +1,11 @@
 import { canAccessClient, requireAuth } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/database/prisma";
 import { apiError, apiSuccess } from "@/lib/utils";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const themeSchema = z.object({
+  templateSlug: z.string().min(1).optional(),
   primaryColor: z.string().min(1),
   secondaryColor: z.string().min(1),
   bgColor: z.string().min(1),
@@ -47,6 +49,17 @@ export async function PUT(req: Request, { params }: Params) {
       update: parsed.data,
       create: { clientId, ...parsed.data },
     });
+
+    // Bust invitation page cache after theme update
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      select: { slug: true },
+    });
+    if (client?.slug) {
+      revalidatePath(`/invite/${client.slug}`);
+      revalidatePath(`/invite/${client.slug}/g/[token]`);
+    }
+
     return apiSuccess(theme);
   } catch {
     return apiError("Terjadi kesalahan server", 500);

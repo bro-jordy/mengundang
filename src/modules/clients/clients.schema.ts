@@ -7,6 +7,7 @@ export const createClientSchema = z.object({
     .min(2, "Slug minimal 2 karakter")
     .regex(/^[a-z0-9-]+$/, "Slug hanya boleh huruf kecil, angka, dan tanda -"),
   status: z.enum(["DRAFT", "ACTIVE", "ARCHIVED"]).default("DRAFT"),
+  clientType: z.enum(["WEDDING", "SANGJIT", "LAMARAN"]).default("WEDDING"),
 });
 
 export const updateClientSchema = createClientSchema.partial();

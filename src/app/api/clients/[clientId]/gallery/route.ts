@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const gallerySchema = z.object({
   url: z.string().min(1, "URL gambar diperlukan"),
-  type: z.enum(["HERO", "COVER", "PREWEDDING", "GALLERY"]).default("GALLERY"),
+  type: z.enum(["HERO", "COVER", "BACKGROUND", "PREWEDDING", "GALLERY"]).default("GALLERY"),
   sortOrder: z.number().int().default(0),
 });
 

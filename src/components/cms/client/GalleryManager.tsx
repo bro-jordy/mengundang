@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Trash2, Plus, Image, Upload, Link } from "lucide-react";
 import { useImageUpload } from "@/hooks/useImageUpload";
 
-type GalleryType = "HERO" | "COVER" | "PREWEDDING" | "GALLERY";
+type GalleryType = "HERO" | "COVER" | "BACKGROUND" | "PREWEDDING" | "GALLERY";
 type InputMode = "upload" | "url";
 
 interface GalleryItem {
@@ -20,8 +20,9 @@ interface Props {
 }
 
 const TYPE_LABELS: Record<GalleryType, string> = {
-  HERO: "Hero",
-  COVER: "Cover",
+  HERO: "Hero (dalam undangan)",
+  COVER: "Cover (halaman pembuka)",
+  BACKGROUND: "Background (latar dalam undangan)",
   PREWEDDING: "Prewedding",
   GALLERY: "Galeri",
 };
@@ -136,7 +137,7 @@ export function GalleryManager({ clientId, initialGalleries }: Props) {
             )}
           </select>
           <p className="text-xs text-stone-400 mt-1">
-            Hero/Cover: halaman pembuka. Prewedding/Galeri: section galeri.
+            Cover: halaman pembuka. Background: latar isi undangan. Hero: gambar besar dalam undangan. Prewedding/Galeri: carousel galeri.
           </p>
         </div>
 

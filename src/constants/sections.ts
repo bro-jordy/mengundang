@@ -21,7 +21,7 @@ export const DEFAULT_SECTIONS: { sectionKey: SectionKey; sortOrder: number; isAc
   { sectionKey: "LOVE_STORY", sortOrder: 5, isActive: false },
   { sectionKey: "RSVP", sortOrder: 6, isActive: true },
   { sectionKey: "WISHES", sortOrder: 7, isActive: true },
-  { sectionKey: "GIFT", sortOrder: 8, isActive: false },
+  { sectionKey: "GIFT", sortOrder: 8, isActive: true },
   { sectionKey: "MAPS", sortOrder: 9, isActive: true },
   { sectionKey: "CLOSING", sortOrder: 10, isActive: true },
 ];

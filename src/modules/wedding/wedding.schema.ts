@@ -16,7 +16,7 @@ export const weddingProfileSchema = z.object({
 });
 
 export const eventSchema = z.object({
-  type: z.enum(["AKAD", "RESEPSI", "AFTER_PARTY"]),
+  type: z.enum(["AKAD", "PEMBERKATAN", "RESEPSI", "AFTER_PARTY", "SANGJIT", "LAMARAN"]),
   label: z.string().default(""),
   date: z.string().optional().nullable(),
   timeStart: z.string().default(""),

@@ -22,6 +22,7 @@ const tabs = [
   { label: "RSVP", path: "/rsvp" },
   { label: "Ucapan", path: "/wishes" },
   { label: "Galeri", path: "/gallery" },
+  { label: "Musik", path: "/music" },
   { label: "Tema", path: "/theme" },
   { label: "Gift", path: "/gifts" },
   { label: "WhatsApp", path: "/whatsapp" },

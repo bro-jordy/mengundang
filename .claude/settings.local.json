@@ -18,7 +18,20 @@
       "Bash(npx prisma *)",
       "Bash(psql postgresql://dieudonnejordy:password@localhost:5432/udangan_kami -c \"SELECT 1\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/login)",
-      "Bash(curl -sI \"https://drive.google.com/uc?export=view&id=1LBPx6vtPp95Avyp50915E-6Znb7xTBCf\")"
+      "Bash(curl -sI \"https://drive.google.com/uc?export=view&id=1LBPx6vtPp95Avyp50915E-6Znb7xTBCf\")",
+      "Bash(xargs ls -la)",
+      "Bash(npx tsc *)",
+      "Bash(node -e \"const { PrismaClient } = require\\('@prisma/client'\\); const p = new PrismaClient\\(\\); console.log\\('clientType in Client fields:', Object.keys\\(p.client.fields || {}\\).includes\\('clientType'\\) || 'checking via DMMF...'\\); const { Prisma } = require\\('@prisma/client'\\); const fields = Prisma.dmmf.datamodel.models.find\\(m => m.name === 'Client'\\)?.fields.map\\(f => f.name\\); console.log\\('Client fields:', fields\\);\")",
+      "Bash(mkdir -p /Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/\\\\[clientId\\\\]/music)",
+      "WebFetch(domain:undangan.sinarxrey.com)",
+      "Bash(curl -s \"https://undangan.sinarxrey.com/?to=dieudonne-jordy\")",
+      "Bash(curl -s \"https://undangan.sinarxrey.com/assets/index-DlJUN1ki.css\")",
+      "Bash(curl -s \"https://undangan.sinarxrey.com/assets/index-BS-_dkvk.js\")",
+      "Bash(grep -oE '\"isOpen[^\"]{0,200}|dvh[^\"]{0,100}|squeeze[^\"]{0,100}|coverHeight[^\"]{0,100}|transition.*620[^\"]{0,200}')",
+      "Bash(node -e ' *)"
+    ],
+    "additionalDirectories": [
+      "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]"
     ]
   }
 }

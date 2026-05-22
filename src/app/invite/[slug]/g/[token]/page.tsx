@@ -2,7 +2,9 @@ import { getGuestByToken, markGuestOpened } from "@/modules/guests/guests.servic
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { getDeviceType } from "@/lib/utils";
-import { ClassicTemplate } from "@/components/invitation/templates/classic";
+import { TemplateRenderer } from "@/components/invitation/TemplateRenderer";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string; token: string }>;
@@ -15,16 +17,15 @@ export default async function GuestInvitationPage({ params }: Props) {
   if (!guest || !guest.isActive) notFound();
   if (guest.client.status !== "ACTIVE") notFound();
 
-  // Track visit
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for")?.split(",")[0] || "";
   const ua = headersList.get("user-agent") || "";
   markGuestOpened(guest.id, ip, ua, getDeviceType(ua)).catch(() => {});
 
   return (
-    <ClassicTemplate
+    <TemplateRenderer
       guest={{ id: guest.id, name: guest.name, maxPax: guest.maxPax, rsvp: guest.rsvp }}
-      client={guest.client}
+      client={guest.client as any}
       token={token}
     />
   );

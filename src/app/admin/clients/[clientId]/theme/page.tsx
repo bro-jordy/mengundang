@@ -8,12 +8,13 @@ interface Props {
 }
 
 const DEFAULT_THEME = {
-  primaryColor: "#b8860b",
-  secondaryColor: "#f5f0e8",
-  bgColor: "#fffdf7",
-  textColor: "#3d3d3d",
-  fontHeading: "Playfair Display",
-  fontBody: "Lato",
+  templateSlug: "dark",
+  primaryColor: "#c4a07a",
+  secondaryColor: "#242424",
+  bgColor: "#1a1a1a",
+  textColor: "#f0ece6",
+  fontHeading: "Cormorant",
+  fontBody: "IBM Plex Sans",
 };
 
 export default async function ThemePage({ params }: Props) {
@@ -26,6 +27,7 @@ export default async function ThemePage({ params }: Props) {
 
   const initialTheme = theme
     ? {
+        templateSlug: theme.templateSlug || "classic",
         primaryColor: theme.primaryColor,
         secondaryColor: theme.secondaryColor,
         bgColor: theme.bgColor,

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Trash2, Plus, Eye, EyeOff, CreditCard, Wallet } from "lucide-react";
+import { useState, useRef } from "react";
+import { Trash2, Plus, Eye, EyeOff, CreditCard, Wallet, QrCode, Upload, X } from "lucide-react";
 
-type GiftMode = "bank" | "ewallet";
+type GiftMode = "bank" | "ewallet" | "qris";
 
 interface Gift {
   id: string;
@@ -12,6 +12,7 @@ interface Gift {
   accountName: string | null;
   ewalletType: string | null;
   ewalletNumber: string | null;
+  qrisImage: string | null;
   isActive: boolean;
   sortOrder: number;
 }
@@ -36,29 +37,72 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
     accountName: "",
     ewalletType: "GoPay",
     ewalletNumber: "",
+    qrisLabel: "",
   });
+  const [qrisImageUrl, setQrisImageUrl] = useState<string | null>(null);
+  const [qrisPreview, setQrisPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function updateForm(key: keyof typeof form, value: string) {
     setForm((prev) => ({ ...prev, [key]: value }));
+  }
+
+  async function handleQrisFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    setUploading(true);
+    setError("");
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("clientId", clientId);
+
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Upload gagal");
+        return;
+      }
+      setQrisImageUrl(data.url);
+      setQrisPreview(data.url);
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleAdd() {
     setSaving(true);
     setError("");
     try {
-      const payload =
-        mode === "bank"
-          ? {
-              bankName: form.bankName,
-              accountNumber: form.accountNumber,
-              accountName: form.accountName,
-            }
-          : {
-              ewalletType: form.ewalletType,
-              ewalletNumber: form.ewalletNumber,
-            };
+      let payload: Record<string, string | undefined>;
+
+      if (mode === "bank") {
+        payload = {
+          bankName: form.bankName,
+          accountNumber: form.accountNumber,
+          accountName: form.accountName,
+        };
+      } else if (mode === "ewallet") {
+        payload = {
+          ewalletType: form.ewalletType,
+          ewalletNumber: form.ewalletNumber,
+        };
+      } else {
+        if (!qrisImageUrl) {
+          setError("Upload gambar QRIS terlebih dahulu");
+          setSaving(false);
+          return;
+        }
+        payload = {
+          ewalletType: form.qrisLabel || "QRIS",
+          qrisImage: qrisImageUrl,
+        };
+      }
 
       const res = await fetch(`/api/clients/${clientId}/gifts`, {
         method: "POST",
@@ -71,13 +115,9 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
         return;
       }
       setGifts((prev) => [...prev, data]);
-      setForm({
-        bankName: "",
-        accountNumber: "",
-        accountName: "",
-        ewalletType: "GoPay",
-        ewalletNumber: "",
-      });
+      setForm({ bankName: "", accountNumber: "", accountName: "", ewalletType: "GoPay", ewalletNumber: "", qrisLabel: "" });
+      setQrisImageUrl(null);
+      setQrisPreview(null);
     } finally {
       setSaving(false);
     }
@@ -90,9 +130,7 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
       body: JSON.stringify({ id, isActive }),
     });
     if (res.ok) {
-      setGifts((prev) =>
-        prev.map((g) => (g.id === id ? { ...g, isActive } : g))
-      );
+      setGifts((prev) => prev.map((g) => (g.id === id ? { ...g, isActive } : g)));
     }
   }
 
@@ -106,39 +144,42 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
     if (res.ok) setGifts((prev) => prev.filter((g) => g.id !== id));
   }
 
-  const isBank = (g: Gift) => !!g.bankName;
+  const isBank = (g: Gift) => !!g.bankName && !g.qrisImage;
+  const isQris = (g: Gift) => !!g.qrisImage;
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-2xl border border-stone-200 p-6">
-        <h2 className="font-semibold text-stone-800 mb-4">Tambah Rekening / E-Wallet</h2>
+        <h2 className="font-semibold text-stone-800 mb-4">Tambah Rekening / E-Wallet / QRIS</h2>
 
-        <div className="flex gap-2 mb-5">
+        <div className="flex gap-2 mb-5 flex-wrap">
           <button
             onClick={() => setMode("bank")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              mode === "bank"
-                ? "bg-stone-800 text-white"
-                : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+              mode === "bank" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}
           >
-            <CreditCard size={14} />
-            Transfer Bank
+            <CreditCard size={14} /> Transfer Bank
           </button>
           <button
             onClick={() => setMode("ewallet")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              mode === "ewallet"
-                ? "bg-stone-800 text-white"
-                : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+              mode === "ewallet" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}
           >
-            <Wallet size={14} />
-            E-Wallet
+            <Wallet size={14} /> E-Wallet
+          </button>
+          <button
+            onClick={() => setMode("qris")}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              mode === "qris" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+            }`}
+          >
+            <QrCode size={14} /> QRIS
           </button>
         </div>
 
-        {mode === "bank" ? (
+        {mode === "bank" && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div>
               <label className={labelClass}>Nama Bank</label>
@@ -171,7 +212,9 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
               />
             </div>
           </div>
-        ) : (
+        )}
+
+        {mode === "ewallet" && (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className={labelClass}>Platform</label>
@@ -181,9 +224,7 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
                 className={inputClass}
               >
                 {EWALLET_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
+                  <option key={opt} value={opt}>{opt}</option>
                 ))}
               </select>
             </div>
@@ -200,11 +241,61 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
           </div>
         )}
 
+        {mode === "qris" && (
+          <div className="space-y-3">
+            <div>
+              <label className={labelClass}>Label (opsional)</label>
+              <input
+                type="text"
+                placeholder="Contoh: GoPay QRIS, BCA QRIS..."
+                value={form.qrisLabel}
+                onChange={(e) => updateForm("qrisLabel", e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Gambar QRIS</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleQrisFileChange}
+                className="hidden"
+              />
+              {qrisPreview ? (
+                <div className="relative inline-block">
+                  <img
+                    src={qrisPreview}
+                    alt="QRIS preview"
+                    className="w-40 h-40 object-contain rounded-xl border border-stone-200"
+                  />
+                  <button
+                    onClick={() => { setQrisImageUrl(null); setQrisPreview(null); }}
+                    className="absolute -top-2 -right-2 bg-white border border-stone-200 rounded-full p-0.5 text-stone-500 hover:text-red-500"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="flex items-center gap-2 border-2 border-dashed border-stone-300 rounded-xl px-4 py-3 text-sm text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors disabled:opacity-50"
+                >
+                  <Upload size={16} />
+                  {uploading ? "Mengupload..." : "Upload gambar QRIS"}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
 
         <button
           onClick={handleAdd}
-          disabled={saving}
+          disabled={saving || uploading}
           className="mt-4 flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors"
         >
           <Plus size={14} />
@@ -229,12 +320,10 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
           <div className="divide-y divide-stone-100">
             {gifts.map((gift) => (
               <div key={gift.id} className="flex items-center gap-4 px-6 py-4">
-                <div
-                  className={`p-2 rounded-lg ${
-                    isBank(gift) ? "bg-blue-50" : "bg-green-50"
-                  }`}
-                >
-                  {isBank(gift) ? (
+                <div className={`p-2 rounded-lg ${isQris(gift) ? "bg-purple-50" : isBank(gift) ? "bg-blue-50" : "bg-green-50"}`}>
+                  {isQris(gift) ? (
+                    <QrCode size={16} className="text-purple-500" />
+                  ) : isBank(gift) ? (
                     <CreditCard size={16} className="text-blue-500" />
                   ) : (
                     <Wallet size={16} className="text-green-500" />
@@ -243,22 +332,19 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
                 <div className="flex-1 min-w-0">
                   {isBank(gift) ? (
                     <>
-                      <p className="text-sm font-medium text-stone-800">
-                        {gift.bankName}
-                      </p>
-                      <p className="text-xs text-stone-500 font-mono">
-                        {gift.accountNumber}
-                      </p>
+                      <p className="text-sm font-medium text-stone-800">{gift.bankName}</p>
+                      <p className="text-xs text-stone-500 font-mono">{gift.accountNumber}</p>
                       <p className="text-xs text-stone-400">{gift.accountName}</p>
+                    </>
+                  ) : isQris(gift) ? (
+                    <>
+                      <p className="text-sm font-medium text-stone-800">{gift.ewalletType || "QRIS"}</p>
+                      <p className="text-xs text-stone-400">QRIS Image</p>
                     </>
                   ) : (
                     <>
-                      <p className="text-sm font-medium text-stone-800">
-                        {gift.ewalletType}
-                      </p>
-                      <p className="text-xs text-stone-500 font-mono">
-                        {gift.ewalletNumber}
-                      </p>
+                      <p className="text-sm font-medium text-stone-800">{gift.ewalletType}</p>
+                      <p className="text-xs text-stone-500 font-mono">{gift.ewalletNumber}</p>
                     </>
                   )}
                 </div>
@@ -267,9 +353,7 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
                     onClick={() => handleToggle(gift.id, !gift.isActive)}
                     title={gift.isActive ? "Nonaktifkan" : "Aktifkan"}
                     className={`p-1.5 rounded-lg transition-colors ${
-                      gift.isActive
-                        ? "text-stone-600 hover:bg-stone-100"
-                        : "text-stone-300 hover:bg-stone-100"
+                      gift.isActive ? "text-stone-600 hover:bg-stone-100" : "text-stone-300 hover:bg-stone-100"
                     }`}
                   >
                     {gift.isActive ? <Eye size={16} /> : <EyeOff size={16} />}

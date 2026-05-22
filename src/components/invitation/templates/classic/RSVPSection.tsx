@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, LockKeyhole } from "lucide-react";
 import type { Rsvp } from "@/types/prisma.types";
 
 const schema = z.object({
@@ -151,6 +151,37 @@ export function RSVPSection({ clientId, guest, token }: Props) {
             {loading ? "Mengirim..." : "Kirim Konfirmasi"}
           </button>
         </form>
+      </div>
+    </section>
+  );
+}
+
+export function RSVPPlaceholder() {
+  return (
+    <section className="py-20 px-6 bg-stone-50">
+      <div className="max-w-md mx-auto">
+        <div className="text-center mb-8">
+          <p className="text-xs tracking-widest uppercase text-stone-400 mb-2">Konfirmasi</p>
+          <h2 className="font-heading text-3xl text-stone-800">RSVP</h2>
+          <p className="text-stone-500 text-sm mt-2">Mohon konfirmasikan kehadiran Anda</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-stone-200 p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center mx-auto mb-4">
+            <LockKeyhole size={20} className="text-stone-400" />
+          </div>
+          <p className="font-medium text-stone-700 mb-1">Konfirmasi Kehadiran</p>
+          <p className="text-sm text-stone-400 leading-relaxed">
+            RSVP tersedia melalui link undangan personal yang dikirimkan ke tamu.
+          </p>
+          <div className="mt-5 grid grid-cols-2 gap-3 opacity-40 pointer-events-none">
+            <div className="flex items-center gap-3 border border-stone-300 rounded-lg px-4 py-3">
+              <span className="text-sm">Hadir 🎉</span>
+            </div>
+            <div className="flex items-center gap-3 border border-stone-300 rounded-lg px-4 py-3">
+              <span className="text-sm">Tidak Hadir</span>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

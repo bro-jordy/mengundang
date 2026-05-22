@@ -22,6 +22,7 @@ export type {
 
 export {
   ClientStatus,
+  ClientType,
   EventType,
   GalleryType,
   GuestSendStatus,

@@ -1,7 +1,9 @@
 import { getClientBySlug } from "@/modules/clients/clients.service";
 import { notFound } from "next/navigation";
-import { ClassicTemplate } from "@/components/invitation/templates/classic";
+import { TemplateRenderer } from "@/components/invitation/TemplateRenderer";
 import { getSession } from "@/lib/auth/permissions";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -15,7 +17,6 @@ export default async function PublicInvitationPage({ params, searchParams }: Pro
   const client = await getClientBySlug(slug);
   if (!client) notFound();
 
-  // Allow preview for authenticated admins even when DRAFT/ARCHIVED
   if (client.status !== "ACTIVE") {
     if (preview === "1") {
       const session = await getSession();
@@ -25,11 +26,5 @@ export default async function PublicInvitationPage({ params, searchParams }: Pro
     }
   }
 
-  return (
-    <ClassicTemplate
-      guest={null}
-      client={client}
-      token={null}
-    />
-  );
+  return <TemplateRenderer guest={null} client={client as any} token={null} />;
 }

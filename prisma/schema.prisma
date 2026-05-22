@@ -21,15 +21,25 @@ enum ClientStatus {
   ARCHIVED
 }
 
+enum ClientType {
+  WEDDING
+  SANGJIT
+  LAMARAN
+}
+
 enum EventType {
   AKAD
+  PEMBERKATAN
   RESEPSI
   AFTER_PARTY
+  SANGJIT
+  LAMARAN
 }
 
 enum GalleryType {
   HERO
   COVER
+  BACKGROUND
   PREWEDDING
   GALLERY
 }
@@ -82,6 +92,7 @@ model Client {
   name         String
   slug         String       @unique
   status       ClientStatus @default(DRAFT)
+  clientType   ClientType   @default(WEDDING)
   customDomain String?      @unique
   createdById  String
   createdAt    DateTime     @default(now())
