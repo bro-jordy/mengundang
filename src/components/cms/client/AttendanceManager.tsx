@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Camera, CameraOff, Users, UserCheck, QrCode, RefreshCw } from "lucide-react";
+import { Camera, CameraOff, Users, UserCheck, QrCode, RefreshCw, Clock } from "lucide-react";
 
 interface Guest {
   id: string;
@@ -58,7 +58,8 @@ function formatArrivalTime(iso: string): string {
 
 type ScanResult =
   | { type: "success"; guestName: string; barcodeType: string }
-  | { type: "already"; guestName: string; arrivedAt: string }
+  | { type: "already"; guestName: string; arrivedAt: string; barcodeType: string }
+  | { type: "outsideWindow"; message: string }
   | { type: "error"; message: string };
 
 export function AttendanceManager({ clientId, initialAttendances, initialStats }: Props) {
@@ -94,11 +95,14 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
 
     if (res.status === 404) {
       setScanResult({ type: "error", message: data.error || "Barcode tidak ditemukan" });
+    } else if (data.outsideWindow) {
+      setScanResult({ type: "outsideWindow", message: data.error });
     } else if (data.alreadyCheckedIn) {
       setScanResult({
         type: "already",
         guestName: data.guest?.name || "Tamu",
         arrivedAt: formatArrivalTime(data.arrivedAt),
+        barcodeType: BARCODE_TYPE_LABEL[data.barcodeType] || data.barcodeType,
       });
     } else if (data.success) {
       setScanResult({
@@ -236,6 +240,8 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
               ? "bg-green-50 border border-green-200"
               : scanResult.type === "already"
               ? "bg-yellow-50 border border-yellow-200"
+              : scanResult.type === "outsideWindow"
+              ? "bg-orange-50 border border-orange-200"
               : "bg-red-50 border border-red-200"
           }`}>
             {scanResult.type === "success" && (
@@ -253,10 +259,19 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
               <>
                 <QrCode className="text-yellow-600 mt-0.5 shrink-0" size={20} />
                 <div>
-                  <p className="font-medium text-yellow-800">Sudah Check-in</p>
+                  <p className="font-medium text-yellow-800">Sudah Check-in {scanResult.barcodeType}</p>
                   <p className="text-sm text-yellow-700 mt-0.5">
-                    <strong>{scanResult.guestName}</strong> sudah melakukan check-in pada {scanResult.arrivedAt}.
+                    <strong>{scanResult.guestName}</strong> sudah check-in <strong>{scanResult.barcodeType}</strong> pada {scanResult.arrivedAt}.
                   </p>
+                </div>
+              </>
+            )}
+            {scanResult.type === "outsideWindow" && (
+              <>
+                <Clock className="text-orange-600 mt-0.5 shrink-0" size={20} />
+                <div>
+                  <p className="font-medium text-orange-800">Di Luar Jadwal Scan</p>
+                  <p className="text-sm text-orange-700 mt-0.5">{scanResult.message}</p>
                 </div>
               </>
             )}
@@ -293,11 +308,11 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
                 <tr className="border-b border-stone-100 text-left bg-stone-50">
                   <th className="px-4 py-3 text-stone-500 font-medium">No</th>
                   <th className="px-4 py-3 text-stone-500 font-medium">Nama Tamu</th>
+                  <th className="px-4 py-3 text-stone-500 font-medium">Jenis Scan</th>
                   <th className="px-4 py-3 text-stone-500 font-medium">WhatsApp</th>
                   <th className="px-4 py-3 text-stone-500 font-medium">Waktu Kedatangan</th>
-                  <th className="px-4 py-3 text-stone-500 font-medium">Pax Undangan</th>
+                  <th className="px-4 py-3 text-stone-500 font-medium">Pax</th>
                   <th className="px-4 py-3 text-stone-500 font-medium">Actual Pax</th>
-                  <th className="px-4 py-3 text-stone-500 font-medium">Kategori</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-50">
@@ -306,7 +321,16 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
                     <td className="px-4 py-3 text-stone-400">{i + 1}</td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-stone-800">{att.guest.name}</p>
-                      <p className="text-xs text-stone-400">{BARCODE_TYPE_LABEL[att.barcodeType]}</p>
+                      <p className="text-xs text-stone-400">{CATEGORY_LABEL[att.guest.invitationCategory]}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        att.barcodeType === "CHURCH"
+                          ? "bg-blue-50 text-blue-700"
+                          : "bg-green-50 text-green-700"
+                      }`}>
+                        {BARCODE_TYPE_LABEL[att.barcodeType]}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-stone-600 text-xs">{att.guest.phone || "—"}</td>
                     <td className="px-4 py-3 text-stone-600 text-xs font-mono whitespace-nowrap">
@@ -324,11 +348,6 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
                           <option key={n} value={n}>{n}</option>
                         ))}
                       </select>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-50 text-purple-700">
-                        {CATEGORY_LABEL[att.guest.invitationCategory]}
-                      </span>
                     </td>
                   </tr>
                 ))}

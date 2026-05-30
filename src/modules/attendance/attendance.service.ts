@@ -1,6 +1,28 @@
 import { prisma } from "@/lib/database/prisma";
 import type { AttendanceType } from "@prisma/client";
 
+const SCAN_WINDOW_MS = 60 * 60 * 1000; // 1 jam
+const WIB_OFFSET_MINUTES = 7 * 60; // UTC+7
+
+function getEventStartUTC(date: Date | null, timeStart: string): Date | null {
+  if (!date) return null;
+  const match = timeStart.match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  if (isNaN(hours) || isNaN(minutes)) return null;
+  const dateOnlyUTC = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const minutesFromMidnightUTC = hours * 60 + minutes - WIB_OFFSET_MINUTES;
+  return new Date(dateOnlyUTC + minutesFromMidnightUTC * 60 * 1000);
+}
+
+function formatWIBTime(dt: Date): string {
+  const wib = new Date(dt.getTime() + WIB_OFFSET_MINUTES * 60 * 1000);
+  const hh = String(wib.getUTCHours()).padStart(2, "0");
+  const mm = String(wib.getUTCMinutes()).padStart(2, "0");
+  return `${hh}:${mm} WIB`;
+}
+
 export async function getAttendances(clientId: string) {
   return prisma.attendance.findMany({
     where: { clientId },
@@ -58,6 +80,32 @@ export async function scanBarcode(clientId: string, barcode: string) {
   const barcodeType: AttendanceType =
     guest.barcodeChurch === barcode ? "CHURCH" : "RECEPTION";
 
+  // Validasi jendela waktu scan
+  const eventType = barcodeType === "CHURCH" ? "PEMBERKATAN" : "RESEPSI";
+  const event = await prisma.event.findFirst({
+    where: { clientId, type: eventType },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  if (event && event.date) {
+    const eventStart = getEventStartUTC(event.date, event.timeStart);
+    if (eventStart) {
+      const now = new Date();
+      const windowStart = new Date(eventStart.getTime() - SCAN_WINDOW_MS);
+      const windowEnd = new Date(eventStart.getTime() + SCAN_WINDOW_MS);
+
+      if (now < windowStart || now > windowEnd) {
+        const label = barcodeType === "CHURCH" ? "Gereja" : "Resepsi";
+        return {
+          success: false,
+          outsideWindow: true,
+          barcodeType,
+          error: `Scan ${label} hanya tersedia ${formatWIBTime(windowStart)} – ${formatWIBTime(windowEnd)}`,
+        } as const;
+      }
+    }
+  }
+
   const existing = await prisma.attendance.findUnique({
     where: { guestId_barcodeType: { guestId: guest.id, barcodeType } },
   });
@@ -68,6 +116,7 @@ export async function scanBarcode(clientId: string, barcode: string) {
       alreadyCheckedIn: true,
       arrivedAt: existing.arrivedAt,
       guest,
+      barcodeType,
     } as const;
   }
 

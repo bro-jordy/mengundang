@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth/auth";
 import { redirect } from "next/navigation";
-import { AdminSidebar } from "@/components/cms/layout/AdminSidebar";
-import { AdminTopBar } from "@/components/cms/layout/AdminTopBar";
+import { AdminShell } from "@/components/cms/layout/AdminShell";
 
 export default async function AdminLayout({
   children,
@@ -14,12 +13,8 @@ export default async function AdminLayout({
   const user = session.user as { role?: string };
 
   return (
-    <div className="flex h-screen bg-stone-50 overflow-hidden">
-      <AdminSidebar role={user.role} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminTopBar user={session.user} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+    <AdminShell role={user.role} user={session.user}>
+      {children}
+    </AdminShell>
   );
 }

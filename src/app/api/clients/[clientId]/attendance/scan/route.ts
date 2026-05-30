@@ -24,6 +24,10 @@ export async function POST(req: Request, { params }: Params) {
       return apiSuccess(result, 200);
     }
 
+    if (!result.success && "outsideWindow" in result && result.outsideWindow) {
+      return apiSuccess(result, 200);
+    }
+
     if (!result.success) {
       return apiError(result.error, 404);
     }

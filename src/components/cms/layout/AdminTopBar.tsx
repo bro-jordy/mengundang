@@ -1,7 +1,7 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { LogOut, ChevronDown } from "lucide-react";
+import { LogOut, ChevronDown, Menu } from "lucide-react";
 import { useState } from "react";
 
 interface Props {
@@ -9,13 +9,24 @@ interface Props {
     name?: string | null;
     email?: string | null;
   };
+  onMenuToggle?: () => void;
 }
 
-export function AdminTopBar({ user }: Props) {
+export function AdminTopBar({ user, onMenuToggle }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="h-14 bg-white border-b border-stone-200 flex items-center justify-end px-6 shrink-0">
+    <header className="h-14 bg-white border-b border-stone-200 flex items-center justify-between px-4 md:px-6 shrink-0">
+      <button
+        onClick={onMenuToggle}
+        className="lg:hidden p-2 rounded text-stone-500 hover:text-stone-800 hover:bg-stone-100"
+        aria-label="Toggle menu"
+      >
+        <Menu size={20} />
+      </button>
+
+      <div className="hidden lg:block" />
+
       <div className="relative">
         <button
           onClick={() => setOpen(!open)}
@@ -24,7 +35,7 @@ export function AdminTopBar({ user }: Props) {
           <div className="w-7 h-7 rounded-full bg-stone-800 text-white flex items-center justify-center text-xs font-bold">
             {user.name?.[0]?.toUpperCase() ?? "A"}
           </div>
-          <span>{user.name}</span>
+          <span className="hidden sm:inline">{user.name}</span>
           <ChevronDown size={14} />
         </button>
 

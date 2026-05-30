@@ -42,17 +42,17 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <Link href="/admin/clients" className="text-stone-400 hover:text-stone-600">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link href="/admin/clients" className="text-stone-400 hover:text-stone-600 shrink-0">
             <ArrowLeft size={16} />
           </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-stone-800">{client.name}</h1>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-base md:text-lg font-bold text-stone-800 truncate">{client.name}</h1>
               <ClientStatusBadge status={client.status} />
             </div>
-            <p className="text-stone-400 text-xs font-mono">/invite/{client.slug}</p>
+            <p className="text-stone-400 text-xs font-mono truncate">/invite/{client.slug}</p>
           </div>
         </div>
 
@@ -60,10 +60,10 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
           href={`/invite/${client.slug}?preview=1`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 border border-stone-300 text-stone-600 text-xs px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
+          className="shrink-0 flex items-center gap-1.5 border border-stone-300 text-stone-600 text-xs px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
         >
           <ExternalLink size={12} />
-          Preview
+          <span className="hidden sm:inline">Preview</span>
         </a>
       </div>
 

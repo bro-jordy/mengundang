@@ -23,9 +23,9 @@ export default async function ClientLayout({ children, params }: Props) {
   const user = session.user as { role?: string };
 
   return (
-    <div className="max-w-5xl">
+    <div className="w-full max-w-5xl">
       <ClientNav client={client} role={user.role} />
-      <div className="mt-6">{children}</div>
+      <div className="mt-4 md:mt-6">{children}</div>
     </div>
   );
 }
