@@ -20,9 +20,11 @@ export default async function ClientLayout({ children, params }: Props) {
   const client = await getClientById(clientId);
   if (!client) notFound();
 
+  const user = session.user as { role?: string };
+
   return (
     <div className="max-w-5xl">
-      <ClientNav client={client} />
+      <ClientNav client={client} role={user.role} />
       <div className="mt-6">{children}</div>
     </div>
   );

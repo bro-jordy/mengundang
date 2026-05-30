@@ -49,7 +49,7 @@ export async function POST(req: Request, { params }: Params) {
     if (Array.isArray(body)) {
       const parsed = importGuestsSchema.safeParse(body);
       if (!parsed.success) return apiError(parsed.error.issues[0]?.message || "Validasi gagal");
-      const result = await importGuests(clientId, parsed.data, client.slug);
+      const result = await importGuests(clientId, parsed.data as any, client.slug);
       return apiSuccess({ count: result.count }, 201);
     }
 

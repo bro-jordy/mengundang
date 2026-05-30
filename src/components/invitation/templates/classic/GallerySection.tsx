@@ -12,7 +12,6 @@ const STEP = CARD_W + CARD_GAP;
 
 export function GallerySection({ galleries }: Props) {
   const photos = galleries.filter((g) => g.type === "GALLERY" || g.type === "PREWEDDING");
-  if (photos.length === 0) return null;
 
   const count = photos.length;
   const extended = count > 1 ? [photos[count - 1], ...photos, photos[0]] : photos;
@@ -29,6 +28,8 @@ export function GallerySection({ galleries }: Props) {
       return () => cancelAnimationFrame(raf);
     }
   }, [animated]);
+
+  if (photos.length === 0) return null;
 
   function onTransitionEnd(e: React.TransitionEvent) {
     // Only handle the track's own transform transition, not bubbled child transitions

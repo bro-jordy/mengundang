@@ -6,13 +6,14 @@ import { z } from "zod";
 
 const themeSchema = z.object({
   templateSlug: z.string().min(1).optional(),
-  primaryColor: z.string().min(1),
-  secondaryColor: z.string().min(1),
-  bgColor: z.string().min(1),
-  textColor: z.string().min(1),
-  fontHeading: z.string().min(1),
-  fontBody: z.string().min(1),
+  primaryColor: z.string().min(1).optional(),
+  secondaryColor: z.string().min(1).optional(),
+  bgColor: z.string().min(1).optional(),
+  textColor: z.string().min(1).optional(),
+  fontHeading: z.string().min(1).optional(),
+  fontBody: z.string().min(1).optional(),
   customCss: z.string().optional(),
+  showCountdown: z.boolean().optional(),
 });
 
 interface Params {

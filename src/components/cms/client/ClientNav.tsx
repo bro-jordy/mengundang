@@ -14,7 +14,7 @@ interface Client {
   status: ClientStatus;
 }
 
-const tabs = [
+const BASE_TABS = [
   { label: "Overview", path: "" },
   { label: "Profil", path: "/profile" },
   { label: "Acara", path: "/events" },
@@ -24,11 +24,19 @@ const tabs = [
   { label: "Galeri", path: "/gallery" },
   { label: "Musik", path: "/music" },
   { label: "Tema", path: "/theme" },
+  { label: "Tampilan", path: "/sections" },
   { label: "Gift", path: "/gifts" },
   { label: "WhatsApp", path: "/whatsapp" },
+  { label: "Kehadiran", path: "/attendance" },
 ];
 
-export function ClientNav({ client }: { client: Client }) {
+const SUPERADMIN_TABS = [
+  ...BASE_TABS,
+  { label: "Pengguna", path: "/users" },
+];
+
+export function ClientNav({ client, role }: { client: Client; role?: string }) {
+  const tabs = role === "SUPERADMIN" ? SUPERADMIN_TABS : BASE_TABS;
   const pathname = usePathname();
   const base = `/admin/clients/${client.id}`;
 

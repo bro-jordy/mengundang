@@ -1,4 +1,4 @@
-import { getWishes, toggleWishApproval } from "@/modules/rsvp/rsvp.service";
+import { getWishes } from "@/modules/rsvp/rsvp.service";
 import { formatDate } from "@/lib/utils";
 import { WishesAdmin } from "@/components/cms/client/WishesAdmin";
 

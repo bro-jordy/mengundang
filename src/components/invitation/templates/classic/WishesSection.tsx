@@ -8,6 +8,7 @@ interface Wish {
   id: string;
   name: string;
   message: string;
+  reply: string | null;
   createdAt: Date;
 }
 
@@ -107,6 +108,12 @@ export function WishesSection({ clientId, initialWishes, guestName, guestId }: P
                 <p className="text-stone-600 text-sm leading-relaxed">
                   {wish.message}
                 </p>
+                {wish.reply && (
+                  <div className="mt-3 pt-3 border-t border-stone-100 pl-3 border-l-2 border-l-stone-300">
+                    <p className="text-xs text-stone-400 font-medium mb-0.5">Balasan</p>
+                    <p className="text-stone-500 text-sm leading-relaxed italic">{wish.reply}</p>
+                  </div>
+                )}
               </div>
             ))}
           </div>

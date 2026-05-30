@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { RichTextEditor } from "./RichTextEditor";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Upload, X } from "lucide-react";
 import {
@@ -33,33 +34,49 @@ export function ProfileForm({ clientId, initialData }: Props) {
         brideParents: initialData?.brideParents ?? "",
         groomPhoto: initialData?.groomPhoto ?? "",
         bridePhoto: initialData?.bridePhoto ?? "",
+        showGroomPhoto: (initialData as any)?.showGroomPhoto ?? true,
+        showBridePhoto: (initialData as any)?.showBridePhoto ?? true,
         heroImage: initialData?.heroImage ?? "",
         story: initialData?.story ?? "",
+        storyTitle: (initialData as any)?.storyTitle ?? "",
+        showStoryTitle: (initialData as any)?.showStoryTitle ?? true,
         openingQuote: initialData?.openingQuote ?? "",
         openingQuoteBy: initialData?.openingQuoteBy ?? "",
       },
     });
 
-  async function onSubmit(data: WeddingProfileInput) {
-    setSaving(true);
-    setError("");
-    setSaved(false);
-
+  async function saveData(data: WeddingProfileInput) {
     const res = await fetch(`/api/clients/${clientId}/profile`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-
     if (!res.ok) {
       const json = await res.json();
       setError(json.error || "Gagal menyimpan");
-    } else {
+      return false;
+    }
+    return true;
+  }
+
+  async function onSubmit(data: WeddingProfileInput) {
+    setSaving(true);
+    setError("");
+    setSaved(false);
+    const ok = await saveData(data);
+    if (ok) {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     }
-
     setSaving(false);
+  }
+
+  async function autoSaveToggle(field: string, value: boolean) {
+    setValue(field as any, value, { shouldDirty: true });
+    const current = watch();
+    await saveData({ ...current, [field]: value } as WeddingProfileInput);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   }
 
   return (
@@ -98,6 +115,11 @@ export function ProfileForm({ clientId, initialData }: Props) {
           value={watch("groomPhoto") ?? ""}
           onChange={(v) => setValue("groomPhoto", v, { shouldDirty: true })}
         />
+        <Toggle
+          label="Tampilkan foto mempelai pria di undangan"
+          value={watch("showGroomPhoto") ?? true}
+          onChange={(v) => autoSaveToggle("showGroomPhoto", v)}
+        />
       </div>
 
       <div className="bg-white rounded-2xl border border-stone-200 p-5 space-y-4">
@@ -123,6 +145,11 @@ export function ProfileForm({ clientId, initialData }: Props) {
           value={watch("bridePhoto") ?? ""}
           onChange={(v) => setValue("bridePhoto", v, { shouldDirty: true })}
         />
+        <Toggle
+          label="Tampilkan foto mempelai wanita di undangan"
+          value={watch("showBridePhoto") ?? true}
+          onChange={(v) => autoSaveToggle("showBridePhoto", v)}
+        />
       </div>
 
       <div className="bg-white rounded-2xl border border-stone-200 p-5 space-y-4">
@@ -138,14 +165,32 @@ export function ProfileForm({ clientId, initialData }: Props) {
         <Field label="Sumber Quote" error={errors.openingQuoteBy?.message}>
           <input {...register("openingQuoteBy")} placeholder="QS. Ar-Rum: 21" className={inputClass} />
         </Field>
-        <Field label="Cerita Singkat Pasangan" error={errors.story?.message}>
-          <textarea
-            {...register("story")}
-            rows={4}
+        <Field label="Isi Cerita / Pesan" error={errors.story?.message}>
+          <RichTextEditor
+            value={watch("story") ?? ""}
+            onChange={(html) => setValue("story" as any, html, { shouldDirty: true })}
             placeholder="Kisah pertemuan kami dimulai dari..."
-            className={inputClass}
+            rows={5}
           />
+          <p className="text-xs text-stone-400 mt-1">Gunakan toolbar untuk teks tebal, miring, atau daftar poin.</p>
         </Field>
+        <div className="space-y-3 pt-1">
+          <Toggle
+            label="Tampilkan judul di atas cerita"
+            value={watch("showStoryTitle") ?? true}
+            onChange={(v) => autoSaveToggle("showStoryTitle", v)}
+          />
+          {(watch("showStoryTitle") ?? true) && (
+            <Field label="Judul bagian cerita" error={undefined}>
+              <input
+                {...register("storyTitle")}
+                placeholder="Cerita Singkat Pasangan"
+                className={inputClass}
+              />
+              <p className="text-xs text-stone-400 mt-1">Kosongkan untuk menggunakan judul default</p>
+            </Field>
+          )}
+        </div>
       </div>
 
       <div className="flex justify-end">
@@ -158,6 +203,38 @@ export function ProfileForm({ clientId, initialData }: Props) {
         </button>
       </div>
     </form>
+  );
+}
+
+function Toggle({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center gap-3 cursor-pointer select-none">
+      <div className="relative shrink-0">
+        <input
+          type="checkbox"
+          className="sr-only"
+          checked={value}
+          onChange={(e) => onChange(e.target.checked)}
+        />
+        <div
+          className="w-9 h-5 rounded-full transition-colors"
+          style={{ backgroundColor: value ? "#292524" : "#d6d3d1" }}
+        />
+        <div
+          className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform"
+          style={{ transform: value ? "translateX(16px)" : "translateX(0)" }}
+        />
+      </div>
+      <span className="text-sm text-stone-700">{label}</span>
+    </label>
   );
 }
 

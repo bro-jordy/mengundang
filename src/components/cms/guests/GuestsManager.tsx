@@ -15,10 +15,11 @@ import {
   Upload,
   Download,
   Check,
+  QrCode,
 } from "lucide-react";
-import type { Guest, Rsvp } from "@/types/prisma.types";
+import type { Guest, Rsvp, Attendance } from "@/types/prisma.types";
 
-type GuestWithRsvp = Guest & { rsvp: Rsvp | null };
+type GuestWithRsvp = Guest & { rsvp: Rsvp | null; attendances: Attendance[] };
 
 interface ClientData {
   name: string;
@@ -46,6 +47,16 @@ const STATUS_COLOR: Record<string, string> = {
   TIDAK_HADIR: "bg-red-50 text-red-700",
 };
 
+const CATEGORY_LABEL: Record<string, string> = {
+  GEREJA_SAJA: "Gereja Saja",
+  GEREJA_RESEPSI: "Gereja + Resepsi",
+};
+
+const CATEGORY_COLOR: Record<string, string> = {
+  GEREJA_SAJA: "bg-blue-50 text-blue-700",
+  GEREJA_RESEPSI: "bg-purple-50 text-purple-700",
+};
+
 export function GuestsManager({ clientId, initialGuests, client }: Props) {
   const [guests, setGuests] = useState<GuestWithRsvp[]>(initialGuests);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -60,7 +71,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateGuestInput>({
     resolver: zodResolver(createGuestSchema) as any,
-    defaultValues: { maxPax: 2 },
+    defaultValues: { maxPax: 2, invitationCategory: "GEREJA_RESEPSI" },
   });
 
   function buildMessage(guest: GuestWithRsvp): string {
@@ -93,7 +104,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
     if (res.ok) {
       const guest = await res.json();
-      setGuests((prev) => [{ ...guest, rsvp: null }, ...prev]);
+      setGuests((prev) => [{ ...guest, rsvp: null, attendances: [] }, ...prev]);
       reset();
       setShowAddForm(false);
     }
@@ -124,6 +135,20 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
     }
   }
 
+  async function regenerateBarcodes(guestId: string) {
+    if (!confirm("Generate ulang barcode tamu ini? Barcode lama tidak akan berlaku.")) return;
+    const res = await fetch(
+      `/api/clients/${clientId}/guests/${guestId}/regenerate-barcodes`,
+      { method: "POST" }
+    );
+    if (res.ok) {
+      const updated = await res.json();
+      setGuests((prev) =>
+        prev.map((g) => (g.id === guestId ? { ...g, ...updated } : g))
+      );
+    }
+  }
+
   async function handleCSVImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -131,8 +156,13 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
     const text = await file.text();
     const lines = text.trim().split("\n").slice(1);
     const parsed = lines.map((line) => {
-      const [name, phone, email, maxPax] = line.split(",").map((s) => s.trim());
-      return { name, phone, email, maxPax: Number(maxPax) || 2 };
+      const [name, phone, category, maxPax] = line.split(",").map((s) => s.trim());
+      return {
+        name,
+        phone,
+        invitationCategory: (category === "GEREJA_SAJA" ? "GEREJA_SAJA" : "GEREJA_RESEPSI") as "GEREJA_SAJA" | "GEREJA_RESEPSI",
+        maxPax: Number(maxPax) || 2,
+      };
     }).filter((g) => g.name);
 
     const res = await fetch(`/api/clients/${clientId}/guests`, {
@@ -150,11 +180,11 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
   function exportCSV() {
     const rows = [
-      ["Nama", "Telepon", "Email", "Maks Tamu", "Link Undangan", "Status RSVP", "Sudah Dibuka"],
+      ["Nama", "Telepon", "Kategori", "Maks Tamu", "Link Undangan", "Status RSVP", "Sudah Dibuka"],
       ...guests.map((g) => [
         g.name,
         g.phone || "",
-        g.email || "",
+        g.invitationCategory,
         g.maxPax,
         g.invitationUrl,
         g.rsvpStatus,
@@ -210,7 +240,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
       {/* Format CSV info */}
       <p className="text-xs text-stone-400">
-        Format CSV: <span className="font-mono">Nama,Telepon,Email,MaksTamu</span>
+        Format CSV: <span className="font-mono">Nama,Telepon,Kategori(GEREJA_SAJA/GEREJA_RESEPSI),MaksTamu</span>
       </p>
 
       {/* Add form */}
@@ -231,8 +261,14 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
               <input {...register("phone")} placeholder="08123456789" className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Email (opsional)</label>
-              <input {...register("email")} type="email" placeholder="tamu@email.com" className={inputClass} />
+              <label className={labelClass}>Kategori Undangan *</label>
+              <select {...register("invitationCategory")} className={inputClass}>
+                <option value="GEREJA_RESEPSI">Gereja + Syukuran Makan / Resepsi</option>
+                <option value="GEREJA_SAJA">Gereja Saja</option>
+              </select>
+              {errors.invitationCategory && (
+                <p className="text-red-500 text-xs mt-1">{errors.invitationCategory.message}</p>
+              )}
             </div>
             <div>
               <label className={labelClass}>Maks Tamu</label>
@@ -240,7 +276,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                 {...register("maxPax", { valueAsNumber: true })}
                 type="number"
                 min={1}
-                max={10}
+                max={20}
                 className={inputClass}
               />
             </div>
@@ -269,6 +305,8 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
         <span>{guests.length} tamu</span>
         <span>{guests.filter((g) => g.isOpened).length} sudah buka</span>
         <span>{guests.filter((g) => g.rsvpStatus === "HADIR").length} konfirmasi hadir</span>
+        <span>{guests.filter((g) => g.invitationCategory === "GEREJA_SAJA").length} gereja saja</span>
+        <span>{guests.filter((g) => g.invitationCategory === "GEREJA_RESEPSI").length} gereja+resepsi</span>
       </div>
 
       {/* Guest table */}
@@ -284,9 +322,10 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
             <thead>
               <tr className="border-b border-stone-100 text-left">
                 <th className="px-4 py-3 text-stone-500 font-medium">Nama</th>
+                <th className="px-4 py-3 text-stone-500 font-medium">Kategori</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">RSVP</th>
-                <th className="px-4 py-3 text-stone-500 font-medium">Dibuka</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">Pax</th>
+                <th className="px-4 py-3 text-stone-500 font-medium">Barcode</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">Aksi</th>
               </tr>
             </thead>
@@ -306,18 +345,32 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                       )}
                     </td>
                     <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLOR[guest.invitationCategory]}`}>
+                        {CATEGORY_LABEL[guest.invitationCategory]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[guest.rsvpStatus]}`}>
                         {STATUS_LABEL[guest.rsvpStatus]}
                       </span>
                     </td>
+                    <td className="px-4 py-3 text-stone-600">{guest.maxPax}</td>
                     <td className="px-4 py-3">
-                      {guest.isOpened ? (
-                        <span className="text-green-600 text-xs">Ya</span>
+                      {guest.barcodeChurch ? (
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-xs text-stone-500">
+                            G: <span className="font-mono text-stone-700">{guest.barcodeChurch.slice(0, 6)}…</span>
+                          </span>
+                          {guest.barcodeReception && (
+                            <span className="text-xs text-stone-500">
+                              R: <span className="font-mono text-stone-700">{guest.barcodeReception.slice(0, 6)}…</span>
+                            </span>
+                          )}
+                        </div>
                       ) : (
-                        <span className="text-stone-400 text-xs">Belum</span>
+                        <span className="text-xs text-stone-400">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-stone-600">{guest.maxPax}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <button
@@ -359,11 +412,19 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                         )}
 
                         <button
-                          title="Reset token"
+                          title="Reset token undangan"
                           onClick={() => regenerateToken(guest.id)}
                           className="text-stone-400 hover:text-stone-700"
                         >
                           <RefreshCw size={14} />
+                        </button>
+
+                        <button
+                          title="Generate ulang barcode"
+                          onClick={() => regenerateBarcodes(guest.id)}
+                          className="text-stone-400 hover:text-indigo-600"
+                        >
+                          <QrCode size={14} />
                         </button>
 
                         <button

@@ -29,8 +29,11 @@ export function MusicManager({ clientId, initialMusics }: Props) {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [previewId, setPreviewId] = useState<string | null>(null);
-  const audioRefs = useRef<Record<string, HTMLAudioElement>>({});
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [playError, setPlayError] = useState("");
+
+  // Single audio element — src switched on demand
+  const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function uploadAndAdd(file: File) {
@@ -61,7 +64,6 @@ export function MusicManager({ clientId, initialMusics }: Props) {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Gagal menambahkan"); return; }
-      // Adding a new music deactivates all others server-side
       setMusics((prev) => [...prev.map((m) => ({ ...m, isActive: false })), data]);
       setTitle("");
       setUrl("");
@@ -78,10 +80,7 @@ export function MusicManager({ clientId, initialMusics }: Props) {
   }
 
   function handleAddUrl() {
-    if (!title.trim() || !url.trim()) {
-      setError("Judul dan URL harus diisi");
-      return;
-    }
+    if (!title.trim() || !url.trim()) { setError("Judul dan URL harus diisi"); return; }
     addMusic(title.trim(), url.trim());
   }
 
@@ -102,10 +101,9 @@ export function MusicManager({ clientId, initialMusics }: Props) {
 
   async function handleDelete(id: string) {
     if (!confirm("Hapus lagu ini?")) return;
-    // Stop preview if playing
-    if (previewId === id) {
-      audioRefs.current[id]?.pause();
-      setPreviewId(null);
+    if (playingId === id) {
+      audioRef.current?.pause();
+      setPlayingId(null);
     }
     const res = await fetch(`/api/clients/${clientId}/music`, {
       method: "DELETE",
@@ -115,26 +113,43 @@ export function MusicManager({ clientId, initialMusics }: Props) {
     if (res.ok) setMusics((prev) => prev.filter((m) => m.id !== id));
   }
 
-  function handlePreview(music: MusicItem) {
-    // Pause any other playing audio
-    Object.entries(audioRefs.current).forEach(([pid, audio]) => {
-      if (pid !== music.id) { audio.pause(); audio.currentTime = 0; }
-    });
-
-    const audio = audioRefs.current[music.id];
+  async function handlePreview(music: MusicItem) {
+    const audio = audioRef.current;
     if (!audio) return;
+    setPlayError("");
 
-    if (previewId === music.id) {
+    if (playingId === music.id) {
+      // Pause current
       audio.pause();
-      setPreviewId(null);
+      setPlayingId(null);
     } else {
-      audio.play().catch(() => {});
-      setPreviewId(music.id);
+      // Switch source and play
+      audio.pause();
+      audio.src = music.url;
+      audio.load();
+      try {
+        await audio.play();
+        setPlayingId(music.id);
+      } catch (e: any) {
+        setPlayError(`Gagal memutar: ${e?.message || "format tidak didukung atau file tidak ditemukan"}`);
+        setPlayingId(null);
+      }
     }
   }
 
   return (
     <div className="space-y-6">
+      {/* Single shared audio element */}
+      <audio
+        ref={audioRef}
+        preload="auto"
+        onEnded={() => setPlayingId(null)}
+        onError={() => {
+          setPlayError("File audio tidak bisa diputar. Pastikan format MP3/OGG/WAV dan URL dapat diakses.");
+          setPlayingId(null);
+        }}
+      />
+
       {/* Add form */}
       <div className="bg-white rounded-2xl border border-stone-200 p-6">
         <h2 className="font-semibold text-stone-800 mb-1">Tambah Lagu</h2>
@@ -143,20 +158,16 @@ export function MusicManager({ clientId, initialMusics }: Props) {
         </p>
 
         <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => setMode("upload")}
+          <button onClick={() => setMode("upload")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               mode === "upload" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
-            }`}
-          >
+            }`}>
             <Upload size={12} /> Upload File
           </button>
-          <button
-            onClick={() => setMode("url")}
+          <button onClick={() => setMode("url")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               mode === "url" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
-            }`}
-          >
+            }`}>
             <Link size={12} /> Dari URL
           </button>
         </div>
@@ -164,30 +175,18 @@ export function MusicManager({ clientId, initialMusics }: Props) {
         <div className="space-y-3">
           <div>
             <label className={labelClass}>Judul Lagu</label>
-            <input
-              type="text"
-              placeholder="Cinta Luar Biasa - Andmesh"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className={inputClass}
-            />
+            <input type="text" placeholder="Cinta Luar Biasa - Andmesh"
+              value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
           </div>
 
           {mode === "upload" ? (
             <>
-              <input
-                ref={fileInputRef}
-                type="file"
+              <input ref={fileInputRef} type="file"
                 accept="audio/mpeg,audio/mp3,audio/ogg,audio/wav,audio/webm,audio/aac,audio/mp4"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onChange={handleFileChange} className="hidden" />
+              <button type="button" onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || saving}
-                className="w-full border-2 border-dashed border-stone-200 rounded-xl p-5 text-center hover:border-stone-400 hover:bg-stone-50 transition-colors disabled:opacity-50"
-              >
+                className="w-full border-2 border-dashed border-stone-200 rounded-xl p-5 text-center hover:border-stone-400 hover:bg-stone-50 transition-colors disabled:opacity-50">
                 <Upload size={20} className="text-stone-300 mx-auto mb-1.5" />
                 <p className="text-sm text-stone-500 font-medium">
                   {uploading ? "Mengupload..." : "Klik untuk pilih file audio"}
@@ -198,16 +197,9 @@ export function MusicManager({ clientId, initialMusics }: Props) {
           ) : (
             <div>
               <label className={labelClass}>URL Lagu</label>
-              <input
-                type="url"
-                placeholder="https://example.com/song.mp3"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className={inputClass}
-              />
-              <p className="text-xs text-stone-400 mt-1">
-                Gunakan URL langsung ke file audio (MP3, OGG, WAV)
-              </p>
+              <input type="url" placeholder="https://example.com/song.mp3"
+                value={url} onChange={(e) => setUrl(e.target.value)} className={inputClass} />
+              <p className="text-xs text-stone-400 mt-1">Gunakan URL langsung ke file audio (MP3, OGG, WAV)</p>
             </div>
           )}
         </div>
@@ -215,11 +207,8 @@ export function MusicManager({ clientId, initialMusics }: Props) {
         {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
 
         {mode === "url" && (
-          <button
-            onClick={handleAddUrl}
-            disabled={saving}
-            className="mt-4 flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors"
-          >
+          <button onClick={handleAddUrl} disabled={saving}
+            className="mt-4 flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors">
             <Plus size={14} />
             {saving ? "Menyimpan..." : "Tambah Lagu"}
           </button>
@@ -235,6 +224,12 @@ export function MusicManager({ clientId, initialMusics }: Props) {
           </h2>
         </div>
 
+        {playError && (
+          <div className="mx-4 mt-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg px-4 py-2">
+            {playError}
+          </div>
+        )}
+
         {musics.length === 0 ? (
           <div className="p-10 text-center">
             <Music size={32} className="text-stone-300 mx-auto mb-3" />
@@ -244,20 +239,16 @@ export function MusicManager({ clientId, initialMusics }: Props) {
           <div className="divide-y divide-stone-100">
             {musics.map((music) => (
               <div key={music.id} className="flex items-center gap-3 px-6 py-4">
-                {/* Hidden audio for preview */}
-                <audio
-                  ref={(el) => { if (el) audioRefs.current[music.id] = el; }}
-                  src={music.url}
-                  preload="none"
-                  onEnded={() => setPreviewId(null)}
-                />
-
-                {/* Preview button */}
+                {/* Play/pause preview button */}
                 <button
                   onClick={() => handlePreview(music)}
-                  className="w-9 h-9 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-600 shrink-0 transition-colors"
+                  className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                    playingId === music.id
+                      ? "bg-stone-800 text-white"
+                      : "bg-stone-100 hover:bg-stone-200 text-stone-600"
+                  }`}
                 >
-                  {previewId === music.id ? <Pause size={14} /> : <Play size={14} />}
+                  {playingId === music.id ? <Pause size={14} /> : <Play size={14} />}
                 </button>
 
                 <div className="flex-1 min-w-0">
@@ -266,7 +257,6 @@ export function MusicManager({ clientId, initialMusics }: Props) {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                  {/* Active toggle */}
                   <button
                     onClick={() => handleToggle(music.id, !music.isActive)}
                     title={music.isActive ? "Nonaktifkan" : "Aktifkan"}
@@ -280,10 +270,8 @@ export function MusicManager({ clientId, initialMusics }: Props) {
                     {music.isActive ? "Aktif" : "Nonaktif"}
                   </button>
 
-                  <button
-                    onClick={() => handleDelete(music.id)}
-                    className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                  >
+                  <button onClick={() => handleDelete(music.id)}
+                    className="p-1.5 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors">
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -296,7 +284,6 @@ export function MusicManager({ clientId, initialMusics }: Props) {
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
         <p className="text-xs text-amber-700">
           <strong>Catatan:</strong> Lagu akan otomatis diputar saat tamu membuka undangan (setelah klik "Buka Undangan").
-          Browser mungkin memblokir autoplay jika tidak ada interaksi pengguna terlebih dahulu.
         </p>
       </div>
     </div>

@@ -6,12 +6,14 @@ import {
   renderWhatsappMessage,
   buildWhatsappLink,
   DEFAULT_TEMPLATE,
+  DEFAULT_TEMPLATE_EN,
 } from "@/lib/whatsapp";
 import { formatDate } from "@/lib/utils";
 
 type SendStatus = "UNSENT" | "SENT";
 type RsvpStatus = "PENDING" | "HADIR" | "TIDAK_HADIR";
 type Filter = "all" | "unsent" | "sent";
+type Lang = "id" | "en";
 
 interface Guest {
   id: string;
@@ -33,12 +35,13 @@ interface Props {
   clientName: string;
   initialGuests: Guest[];
   initialTemplate: string;
+  initialTemplateEn?: string;
   profile: Profile | null;
   firstEventDate: Date | null;
 }
 
 const TEMPLATE_VARS = [
-  { key: "{guest_name}", desc: "Nama tamu" },
+  { key: "{guest_name}", desc: "Nama tamu / Guest name" },
   { key: "{groom_name}", desc: "Nama mempelai pria" },
   { key: "{bride_name}", desc: "Nama mempelai wanita" },
   { key: "{invitation_url}", desc: "Link undangan personal" },
@@ -58,17 +61,19 @@ export function WhatsAppBlast({
   clientName,
   initialGuests,
   initialTemplate,
+  initialTemplateEn = "",
   profile,
   firstEventDate,
 }: Props) {
   const [guests, setGuests] = useState<Guest[]>(initialGuests);
-  const [template, setTemplate] = useState(
-    initialTemplate || DEFAULT_TEMPLATE
-  );
+  const [templateId, setTemplateId] = useState(initialTemplate || DEFAULT_TEMPLATE);
+  const [templateEn, setTemplateEn] = useState(initialTemplateEn || DEFAULT_TEMPLATE_EN);
+  const [activeLang, setActiveLang] = useState<Lang>("id");
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [templateSaved, setTemplateSaved] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [sending, setSending] = useState<string | null>(null);
+  const [sendLang, setSendLang] = useState<Lang>("id");
   const [previewGuestId, setPreviewGuestId] = useState<string>(
     initialGuests[0]?.id ?? ""
   );
@@ -76,7 +81,7 @@ export function WhatsAppBlast({
   const previewGuest = guests.find((g) => g.id === previewGuestId);
 
   const templateVars = {
-    guest_name: previewGuest?.name ?? "Nama Tamu",
+    guest_name: previewGuest?.name ?? "—",
     groom_name: profile?.groomName || "Mempelai Pria",
     bride_name: profile?.brideName || "Mempelai Wanita",
     client_name: clientName,
@@ -85,6 +90,9 @@ export function WhatsAppBlast({
     max_pax: previewGuest?.maxPax ?? 2,
   };
 
+  const activeTemplate = activeLang === "id" ? templateId : templateEn;
+  const setActiveTemplate = activeLang === "id" ? setTemplateId : setTemplateEn;
+
   async function handleSaveTemplate() {
     setSavingTemplate(true);
     setTemplateSaved(false);
@@ -92,7 +100,7 @@ export function WhatsAppBlast({
       await fetch(`/api/clients/${clientId}/whatsapp-template`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bodyTemplate: template }),
+        body: JSON.stringify({ bodyTemplate: templateId, bodyTemplateEn: templateEn }),
       });
       setTemplateSaved(true);
     } finally {
@@ -104,7 +112,8 @@ export function WhatsAppBlast({
     if (!guest.phone) return;
     setSending(guest.id);
     try {
-      const message = renderWhatsappMessage(template, {
+      const tpl = sendLang === "id" ? templateId : templateEn;
+      const message = renderWhatsappMessage(tpl, {
         ...templateVars,
         guest_name: guest.name,
         invitation_url: guest.invitationUrl,
@@ -119,9 +128,7 @@ export function WhatsAppBlast({
         body: JSON.stringify({ sendStatus: "SENT" }),
       });
       setGuests((prev) =>
-        prev.map((g) =>
-          g.id === guest.id ? { ...g, sendStatus: "SENT" } : g
-        )
+        prev.map((g) => (g.id === guest.id ? { ...g, sendStatus: "SENT" } : g))
       );
     } finally {
       setSending(null);
@@ -129,9 +136,7 @@ export function WhatsAppBlast({
   }
 
   async function handleMarkAllSent() {
-    const unsent = guests.filter(
-      (g) => g.sendStatus === "UNSENT" && g.phone
-    );
+    const unsent = guests.filter((g) => g.sendStatus === "UNSENT" && g.phone);
     if (!unsent.length) return;
     if (!confirm(`Tandai ${unsent.length} tamu sebagai terkirim?`)) return;
 
@@ -146,17 +151,13 @@ export function WhatsAppBlast({
     );
     setGuests((prev) =>
       prev.map((g) =>
-        g.sendStatus === "UNSENT" && g.phone
-          ? { ...g, sendStatus: "SENT" }
-          : g
+        g.sendStatus === "UNSENT" && g.phone ? { ...g, sendStatus: "SENT" } : g
       )
     );
   }
 
   const sentCount = guests.filter((g) => g.sendStatus === "SENT").length;
-  const unsentWithPhone = guests.filter(
-    (g) => g.sendStatus === "UNSENT" && g.phone
-  ).length;
+  const unsentWithPhone = guests.filter((g) => g.sendStatus === "UNSENT" && g.phone).length;
 
   const filtered = guests.filter((g) => {
     if (filter === "unsent") return g.sendStatus === "UNSENT";
@@ -166,38 +167,43 @@ export function WhatsAppBlast({
 
   return (
     <div className="space-y-6">
+      {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <StatCard
-          icon={Users}
-          label="Total Tamu"
-          value={guests.length}
-          color="text-stone-600"
-        />
-        <StatCard
-          icon={CheckCircle}
-          label="Terkirim"
-          value={sentCount}
-          color="text-green-600"
-        />
-        <StatCard
-          icon={Clock}
-          label="Belum Terkirim"
-          value={guests.length - sentCount}
-          color="text-amber-600"
-        />
+        <StatCard icon={Users} label="Total Tamu" value={guests.length} color="text-stone-600" />
+        <StatCard icon={CheckCircle} label="Terkirim" value={sentCount} color="text-green-600" />
+        <StatCard icon={Clock} label="Belum Terkirim" value={guests.length - sentCount} color="text-amber-600" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Template Editor */}
         <div className="bg-white rounded-2xl border border-stone-200 p-6">
           <h2 className="font-semibold text-stone-800 mb-1">Template Pesan</h2>
           <p className="text-xs text-stone-400 mb-4">
-            Gunakan variabel di bawah untuk personalisasi pesan.
+            Buat template untuk masing-masing bahasa. Kedua template disimpan bersama.
           </p>
 
+          {/* Language tabs */}
+          <div className="flex mb-3 border border-stone-200 rounded-lg overflow-hidden w-fit">
+            {(["id", "en"] as Lang[]).map((l) => (
+              <button
+                key={l}
+                onClick={() => setActiveLang(l)}
+                className={`px-4 py-1.5 text-xs font-medium transition-colors ${
+                  activeLang === l
+                    ? "bg-stone-800 text-white"
+                    : "text-stone-500 hover:bg-stone-50"
+                }`}
+              >
+                {l === "id" ? "🇮🇩 Indonesia" : "🇬🇧 English"}
+              </button>
+            ))}
+          </div>
+
           <textarea
-            value={template}
+            key={activeLang}
+            value={activeTemplate}
             onChange={(e) => {
-              setTemplate(e.target.value);
+              setActiveTemplate(e.target.value);
               setTemplateSaved(false);
             }}
             rows={10}
@@ -209,7 +215,7 @@ export function WhatsAppBlast({
               <button
                 key={key}
                 title={desc}
-                onClick={() => setTemplate((prev) => prev + key)}
+                onClick={() => setActiveTemplate((prev) => prev + key)}
                 className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-700 px-2 py-1 rounded font-mono transition-colors"
               >
                 {key}
@@ -223,14 +229,11 @@ export function WhatsAppBlast({
             className="flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors"
           >
             <MessageSquare size={14} />
-            {savingTemplate
-              ? "Menyimpan..."
-              : templateSaved
-              ? "Tersimpan!"
-              : "Simpan Template"}
+            {savingTemplate ? "Menyimpan..." : templateSaved ? "✓ Tersimpan!" : "Simpan Kedua Template"}
           </button>
         </div>
 
+        {/* Preview */}
         <div className="bg-white rounded-2xl border border-stone-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-stone-800">Preview Pesan</h2>
@@ -241,17 +244,33 @@ export function WhatsAppBlast({
                 className="text-xs border border-stone-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-stone-300 max-w-[160px] truncate"
               >
                 {guests.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.name}
-                  </option>
+                  <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
               </select>
             )}
           </div>
+
+          {/* Preview lang toggle */}
+          <div className="flex mb-3 border border-stone-200 rounded-lg overflow-hidden w-fit">
+            {(["id", "en"] as Lang[]).map((l) => (
+              <button
+                key={l}
+                onClick={() => setActiveLang(l)}
+                className={`px-3 py-1 text-xs font-medium transition-colors ${
+                  activeLang === l
+                    ? "bg-stone-800 text-white"
+                    : "text-stone-500 hover:bg-stone-50"
+                }`}
+              >
+                {l === "id" ? "🇮🇩 ID" : "🇬🇧 EN"}
+              </button>
+            ))}
+          </div>
+
           <div className="bg-[#ECE5DD] rounded-xl p-4 min-h-[200px]">
             <div className="bg-white rounded-lg p-3 max-w-[85%] shadow-sm">
               <p className="text-xs text-stone-700 whitespace-pre-wrap leading-relaxed">
-                {renderWhatsappMessage(template, templateVars)}
+                {renderWhatsappMessage(activeTemplate, templateVars)}
               </p>
             </div>
           </div>
@@ -261,9 +280,10 @@ export function WhatsAppBlast({
         </div>
       </div>
 
+      {/* Guest list */}
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between flex-wrap gap-3">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {(["all", "unsent", "sent"] as Filter[]).map((f) => (
               <button
                 key={f}
@@ -278,14 +298,36 @@ export function WhatsAppBlast({
               </button>
             ))}
           </div>
-          {unsentWithPhone > 0 && (
-            <button
-              onClick={handleMarkAllSent}
-              className="text-xs text-stone-500 hover:text-stone-700 border border-stone-200 px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
-            >
-              Tandai Semua Terkirim
-            </button>
-          )}
+
+          <div className="flex items-center gap-2">
+            {/* Language selector for send */}
+            <div className="flex border border-stone-200 rounded-lg overflow-hidden">
+              {(["id", "en"] as Lang[]).map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setSendLang(l)}
+                  title={`Kirim dalam ${l === "id" ? "Bahasa Indonesia" : "English"}`}
+                  className={`px-2.5 py-1 text-xs font-medium transition-colors ${
+                    sendLang === l
+                      ? "bg-stone-800 text-white"
+                      : "text-stone-500 hover:bg-stone-50"
+                  }`}
+                >
+                  {l === "id" ? "🇮🇩" : "🇬🇧"}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-stone-400">Bahasa kirim</p>
+
+            {unsentWithPhone > 0 && (
+              <button
+                onClick={handleMarkAllSent}
+                className="text-xs text-stone-500 hover:text-stone-700 border border-stone-200 px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
+              >
+                Tandai Semua Terkirim
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="divide-y divide-stone-100">
@@ -295,18 +337,11 @@ export function WhatsAppBlast({
             </div>
           )}
           {filtered.map((guest) => (
-            <div
-              key={guest.id}
-              className="flex items-center gap-4 px-6 py-3"
-            >
+            <div key={guest.id} className="flex items-center gap-4 px-6 py-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-stone-800 truncate">
-                  {guest.name}
-                </p>
+                <p className="text-sm font-medium text-stone-800 truncate">{guest.name}</p>
                 <p className="text-xs text-stone-400">
-                  {guest.phone || (
-                    <span className="text-amber-500">Tidak ada nomor HP</span>
-                  )}
+                  {guest.phone || <span className="text-amber-500">Tidak ada nomor HP</span>}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -323,8 +358,7 @@ export function WhatsAppBlast({
                 </span>
                 {guest.sendStatus === "SENT" ? (
                   <span className="flex items-center gap-1 text-xs text-green-600">
-                    <CheckCircle size={13} />
-                    Terkirim
+                    <CheckCircle size={13} /> Terkirim
                   </span>
                 ) : guest.phone ? (
                   <button
@@ -333,7 +367,7 @@ export function WhatsAppBlast({
                     className="flex items-center gap-1.5 bg-[#25D366] text-white text-xs px-3 py-1.5 rounded-lg hover:bg-[#1ebe5a] disabled:opacity-50 transition-colors"
                   >
                     <Send size={12} />
-                    {sending === guest.id ? "..." : "Kirim WA"}
+                    {sending === guest.id ? "..." : `Kirim ${sendLang === "id" ? "🇮🇩" : "🇬🇧"}`}
                   </button>
                 ) : (
                   <span className="text-xs text-stone-300">—</span>

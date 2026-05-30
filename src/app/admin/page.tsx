@@ -1,11 +1,20 @@
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/database/prisma";
+import { redirect } from "next/navigation";
+import { getAllClients } from "@/modules/clients/clients.service";
 import Link from "next/link";
 import { Heart, Users, CheckCircle } from "lucide-react";
 
 export default async function AdminDashboard() {
   const session = await auth();
   const user = session!.user as { id: string; role: string; name: string };
+
+  // Non-SUPERADMIN → redirect to their first client
+  if (user.role !== "SUPERADMIN") {
+    const clients = await getAllClients(user.id, user.role);
+    if (clients.length > 0) redirect(`/admin/clients/${clients[0].id}`);
+    else redirect("/admin/clients");
+  }
 
   const [totalClients, totalGuests, totalRsvp] = await Promise.all([
     prisma.client.count(),

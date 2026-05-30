@@ -18,6 +18,7 @@ export type {
   WhatsappTemplate,
   User,
   ClientUser,
+  Attendance,
 } from "@prisma/client";
 
 export {
@@ -29,4 +30,6 @@ export {
   RsvpStatus,
   SectionKey,
   UserRole,
+  InvitationCategory,
+  AttendanceType,
 } from "@prisma/client";

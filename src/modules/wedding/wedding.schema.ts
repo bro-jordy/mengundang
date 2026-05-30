@@ -9,8 +9,12 @@ export const weddingProfileSchema = z.object({
   brideParents: z.string().default(""),
   groomPhoto: z.string().optional().nullable(),
   bridePhoto: z.string().optional().nullable(),
+  showGroomPhoto: z.boolean().default(true),
+  showBridePhoto: z.boolean().default(true),
   heroImage: z.string().optional().nullable(),
   story: z.string().optional().nullable(),
+  storyTitle: z.string().optional().nullable(),
+  showStoryTitle: z.boolean().default(true),
   openingQuote: z.string().optional().nullable(),
   openingQuoteBy: z.string().optional().nullable(),
 });

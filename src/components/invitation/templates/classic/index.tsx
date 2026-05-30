@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { HeroSection } from "./HeroSection";
 import { CoupleSection } from "./CoupleSection";
 import { EventSection } from "./EventSection";
@@ -9,13 +9,34 @@ import { WishesSection } from "./WishesSection";
 import { GallerySection } from "./GallerySection";
 import { GiftSection } from "./GiftSection";
 import { MusicPlayer } from "../../sections/MusicPlayer";
+import { BarcodeSection } from "../../sections/BarcodeSection";
 import type { Rsvp } from "@/types/prisma.types";
+
+function useCountdown(target: Date | null) {
+  const targetMs = target?.getTime() ?? null;
+  const [t, setT] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+  useEffect(() => {
+    if (targetMs === null) return;
+    function calc() {
+      const diff = targetMs! - Date.now();
+      if (diff <= 0) { setT(null); return; }
+      setT({ days: Math.floor(diff / 86400000), hours: Math.floor((diff / 3600000) % 24), minutes: Math.floor((diff / 60000) % 60), seconds: Math.floor((diff / 1000) % 60) });
+    }
+    calc();
+    const id = setInterval(calc, 1000);
+    return () => clearInterval(id);
+  }, [targetMs]);
+  return targetMs !== null ? t : null;
+}
 
 interface Guest {
   id: string;
   name: string;
   maxPax: number;
   rsvp: Rsvp | null;
+  invitationCategory?: "GEREJA_SAJA" | "GEREJA_RESEPSI";
+  barcodeChurch?: string | null;
+  barcodeReception?: string | null;
 }
 
 interface Props {
@@ -35,9 +56,13 @@ interface Props {
       openingQuote: string | null;
       openingQuoteBy: string | null;
       story: string | null;
+      storyTitle: string | null;
+      showStoryTitle: boolean;
       heroImage: string | null;
       groomPhoto: string | null;
       bridePhoto: string | null;
+      showGroomPhoto: boolean;
+      showBridePhoto: boolean;
     } | null;
     events: {
       id: string;
@@ -72,6 +97,7 @@ interface Props {
       id: string;
       name: string;
       message: string;
+      reply: string | null;
       createdAt: Date;
     }[];
     theme: {
@@ -81,19 +107,23 @@ interface Props {
       textColor: string;
       fontHeading: string;
       fontBody: string;
+      showCountdown?: boolean | null;
     } | null;
   };
   token: string | null;
 }
 
 const INVITATION_LABEL: Record<string, string> = {
-  WEDDING: "Undangan Pernikahan",
-  SANGJIT: "Undangan Sangjit",
-  LAMARAN: "Undangan Lamaran",
+  WEDDING: "The Wedding Of",
+  SANGJIT: "Sangjit Ceremony Of",
+  LAMARAN: "Lamaran",
 };
 
 export function ClassicTemplate({ guest, client, token }: Props) {
   const [opened, setOpened] = useState(false);
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   const profile = client.weddingProfile;
   const theme = client.theme;
 
@@ -102,16 +132,28 @@ export function ClassicTemplate({ guest, client, token }: Props) {
   const sectionKeys = client.sections.map((s) => s.sectionKey);
 
   const primaryColor = theme?.primaryColor || "#b8860b";
+  const secondaryColor = theme?.secondaryColor || "#faf6ee";
   const bgColor = theme?.bgColor || "#fffdf7";
+  const textColor = theme?.textColor || "#3d3d3d";
+  const fontHeading = theme?.fontHeading || "Playfair Display";
+
+  const showCountdown = !!client.theme?.showCountdown;
+  const countdownTarget = showCountdown
+    ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
+    : null;
+  const countdownTimeLeft = useCountdown(countdownTarget);
 
   const coverImage = client.galleries.find((g) => g.type === "COVER");
   const bgImage = client.galleries.find((g) => g.type === "BACKGROUND");
-  const invitationLabel = INVITATION_LABEL[client.clientType] || "Undangan Pernikahan";
-  const activeGifts = client.gifts.filter((g) => g.isActive);
+  const invitationLabel = INVITATION_LABEL[client.clientType] || "The Wedding Of";
+
+
+  const playMusicRef = useRef<(() => void) | null>(null);
 
   function handleOpen() {
     setOpened(true);
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    playMusicRef.current?.();
   }
 
   return (
@@ -120,16 +162,22 @@ export function ClassicTemplate({ guest, client, token }: Props) {
         :root {
           --primary: ${primaryColor};
           --bg: ${bgColor};
-          --text: ${theme?.textColor || "#3d3d3d"};
+          --text: ${textColor};
         }
         body { background-color: var(--bg); color: var(--text); }
-        .font-heading { font-family: '${theme?.fontHeading || "Playfair Display"}', Georgia, serif; }
+        .font-heading { font-family: '${fontHeading}', Georgia, serif; }
         .text-primary { color: var(--primary); }
         .bg-primary { background-color: var(--primary); }
         .border-primary { border-color: var(--primary); }
       `}</style>
 
-      {music && <MusicPlayer url={music.url} title={music.title} opened={opened} />}
+      {music && (
+        <MusicPlayer
+          url={music.url}
+          title={music.title}
+          registerPlay={(fn) => { playMusicRef.current = fn; }}
+        />
+      )}
 
       {/* Cover / Pembuka */}
       {!opened && (
@@ -197,6 +245,26 @@ export function ClassicTemplate({ guest, client, token }: Props) {
 
         <div className="relative z-10">
           {sectionKeys.includes("HERO") && <HeroSection profile={profile} />}
+
+          {/* ── Countdown ── */}
+          {showCountdown && countdownTimeLeft && (
+            <section className="py-12 text-center" style={{ background: secondaryColor }}>
+              <p className="text-xs tracking-[0.28em] uppercase mb-4" style={{ color: primaryColor }}>
+                Menuju Hari Bahagia
+              </p>
+              <div className="flex justify-center gap-6">
+                {[{ v: countdownTimeLeft.days, l: "Hari" }, { v: countdownTimeLeft.hours, l: "Jam" }, { v: countdownTimeLeft.minutes, l: "Menit" }, { v: countdownTimeLeft.seconds, l: "Detik" }].map(({ v, l }) => (
+                  <div key={l} className="text-center min-w-12">
+                    <div className="font-light" style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "2.4rem", color: primaryColor, lineHeight: 1 }}>
+                      {String(v).padStart(2, "0")}
+                    </div>
+                    <div className="text-xs tracking-[0.16em] uppercase mt-1" style={{ color: textColor, opacity: 0.45 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {sectionKeys.includes("COUPLE") && <CoupleSection profile={profile} />}
           {sectionKeys.includes("EVENT") && <EventSection events={client.events} />}
           {sectionKeys.includes("GALLERY") && <GallerySection galleries={client.galleries} />}
@@ -205,6 +273,19 @@ export function ClassicTemplate({ guest, client, token }: Props) {
             token && guest
               ? <RSVPSection clientId={client.id} guest={guest} token={token} />
               : <RSVPPlaceholder />
+          )}
+
+          {guest?.barcodeChurch && (
+            <BarcodeSection
+              barcodeChurch={guest.barcodeChurch}
+              barcodeReception={guest.barcodeReception ?? null}
+              invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
+              churchVenueName={client.events.find((e) => e.type === "PEMBERKATAN")?.venueName || client.events[0]?.venueName || "Gereja"}
+              receptionVenueName={client.events.find((e) => e.type === "RESEPSI")?.venueName || "Resepsi"}
+              primaryColor={primaryColor}
+              bgColor={bgColor}
+              fontHeading={fontHeading}
+            />
           )}
 
           {sectionKeys.includes("WISHES") && (
@@ -216,7 +297,7 @@ export function ClassicTemplate({ guest, client, token }: Props) {
             />
           )}
 
-          {(sectionKeys.includes("GIFT") || activeGifts.length > 0) && (
+          {sectionKeys.includes("GIFT") && (
             <GiftSection gifts={client.gifts} />
           )}
 
@@ -225,7 +306,7 @@ export function ClassicTemplate({ guest, client, token }: Props) {
               {profile?.groomNickname} & {profile?.brideNickname}
             </p>
             <p>Terima kasih atas doa dan kehadirannya</p>
-            <p className="mt-4 opacity-50">Made with UdanganKami</p>
+            <p className="mt-4 opacity-50">Made with Mengundang</p>
           </footer>
         </div>
       </div>

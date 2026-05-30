@@ -26,12 +26,11 @@ const EVENT_OPTIONS_BY_TYPE: Record<string, { value: string; label: string }[]> 
   ],
   SANGJIT: [
     { value: "SANGJIT", label: "Sangjit" },
-    { value: "RESEPSI", label: "Resepsi" },
     { value: "AFTER_PARTY", label: "After Party" },
   ],
   LAMARAN: [
     { value: "LAMARAN", label: "Lamaran" },
-    { value: "RESEPSI", label: "Resepsi" },
+    { value: "AFTER_PARTY", label: "After Party" },
   ],
 };
 

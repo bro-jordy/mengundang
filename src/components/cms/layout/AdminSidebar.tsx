@@ -2,42 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Users,
-  LayoutDashboard,
-  Heart,
-} from "lucide-react";
+import { Users, LayoutDashboard, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/clients", label: "Client", icon: Heart },
-  { href: "/admin/users", label: "Pengguna", icon: Users },
+const ALL_NAV = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true, superAdminOnly: false },
+  { href: "/admin/clients", label: "Client", icon: Heart, superAdminOnly: false },
+  { href: "/admin/users", label: "Pengguna", icon: Users, superAdminOnly: true },
 ];
 
-export function AdminSidebar() {
+interface Props { role?: string }
+
+export function AdminSidebar({ role }: Props) {
   const pathname = usePathname();
+  const navItems = ALL_NAV.filter((item) => !item.superAdminOnly || role === "SUPERADMIN");
 
   return (
     <aside className="w-56 bg-white border-r border-stone-200 flex flex-col shrink-0">
       <div className="h-14 flex items-center px-4 border-b border-stone-200">
-        <span className="font-bold text-stone-800 text-sm">UdanganKami</span>
+        <span className="font-bold text-stone-800 text-sm">Mengundang</span>
       </div>
 
       <nav className="flex-1 p-3 space-y-1">
         {navItems.map(({ href, label, icon: Icon, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (
-            <Link
-              key={href}
-              href={href}
+            <Link key={href} href={href}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
-                active
-                  ? "bg-stone-800 text-white"
-                  : "text-stone-600 hover:bg-stone-100"
-              )}
-            >
+                active ? "bg-stone-800 text-white" : "text-stone-600 hover:bg-stone-100"
+              )}>
               <Icon size={16} />
               {label}
             </Link>

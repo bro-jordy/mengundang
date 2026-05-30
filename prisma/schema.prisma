@@ -55,6 +55,16 @@ enum RsvpStatus {
   TIDAK_HADIR
 }
 
+enum InvitationCategory {
+  GEREJA_SAJA
+  GEREJA_RESEPSI
+}
+
+enum AttendanceType {
+  CHURCH
+  RECEPTION
+}
+
 enum SectionKey {
   HERO
   COUPLE
@@ -141,8 +151,12 @@ model WeddingProfile {
   brideParents    String  @default("")
   groomPhoto      String?
   bridePhoto      String?
+  showGroomPhoto  Boolean @default(true)
+  showBridePhoto  Boolean @default(true)
   heroImage       String?
   story           String? @db.Text
+  storyTitle      String?
+  showStoryTitle  Boolean @default(true)
   openingQuote    String? @db.Text
   openingQuoteBy  String?
 
@@ -206,6 +220,7 @@ model Theme {
   fontHeading    String  @default("Playfair Display")
   fontBody       String  @default("Lato")
   customCss      String? @db.Text
+  showCountdown  Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -247,26 +262,30 @@ model Section {
 // ─── GUEST ──────────────────────────────────────────────────────────────────
 
 model Guest {
-  id            String          @id @default(cuid())
-  clientId      String
-  name          String
-  phone         String?
-  email         String?
-  guestToken    String          @unique @default("")
-  invitationUrl String          @default("")
-  maxPax        Int             @default(2)
-  isOpened      Boolean         @default(false)
-  openedAt      DateTime?
-  rsvpStatus    RsvpStatus      @default(PENDING)
-  sendStatus    GuestSendStatus @default(UNSENT)
-  isActive      Boolean         @default(true)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id                 String             @id @default(cuid())
+  clientId           String
+  name               String
+  phone              String?
+  email              String?
+  invitationCategory InvitationCategory @default(GEREJA_RESEPSI)
+  barcodeChurch      String?            @unique
+  barcodeReception   String?            @unique
+  guestToken         String             @unique @default("")
+  invitationUrl      String             @default("")
+  maxPax             Int                @default(2)
+  isOpened           Boolean            @default(false)
+  openedAt           DateTime?
+  rsvpStatus         RsvpStatus         @default(PENDING)
+  sendStatus         GuestSendStatus    @default(UNSENT)
+  isActive           Boolean            @default(true)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 
-  client     Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  rsvp       Rsvp?
-  visits     GuestVisit[]
-  wishes     Wish[]
+  client      Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  rsvp        Rsvp?
+  visits      GuestVisit[]
+  wishes      Wish[]
+  attendances Attendance[]
 
   @@map("guests")
 }
@@ -311,6 +330,7 @@ model Wish {
   guestId    String?
   name       String
   message    String   @db.Text
+  reply      String?  @db.Text
   isApproved Boolean  @default(true)
   createdAt  DateTime @default(now())
 
@@ -377,13 +397,30 @@ model Analytics {
 // ─── WHATSAPP TEMPLATE ──────────────────────────────────────────────────────
 
 model WhatsappTemplate {
-  id           String   @id @default(cuid())
-  clientId     String   @unique
-  bodyTemplate String   @db.Text
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default(cuid())
+  clientId       String   @unique
+  bodyTemplate   String   @db.Text
+  bodyTemplateEn String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@map("whatsapp_templates")
+}
+
+// ─── ATTENDANCE ──────────────────────────────────────────────────────────────
+
+model Attendance {
+  id          String         @id @default(cuid())
+  guestId     String
+  clientId    String
+  barcodeType AttendanceType
+  arrivedAt   DateTime       @default(now())
+  actualPax   Int            @default(1)
+
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+
+  @@unique([guestId, barcodeType])
+  @@map("attendances")
 }

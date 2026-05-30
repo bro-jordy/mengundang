@@ -1,3 +1,16 @@
+export const DEFAULT_TEMPLATE_EN = `Dear {guest_name},
+
+We would like to invite you to celebrate our special day:
+
+✨ {groom_name} & {bride_name} ✨
+
+Please open your personal invitation via the link below:
+{invitation_url}
+
+It would be our greatest joy to have you with us on this day.
+
+Thank you. 🙏`;
+
 const DEFAULT_TEMPLATE = `Halo {guest_name},
 
 Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara pernikahan kami:

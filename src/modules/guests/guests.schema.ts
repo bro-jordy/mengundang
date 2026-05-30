@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createGuestSchema = z.object({
   name: z.string().min(1, "Nama wajib diisi"),
   phone: z.string().optional().nullable(),
-  email: z.string().email().optional().nullable().or(z.literal("")),
+  invitationCategory: z.enum(["GEREJA_SAJA", "GEREJA_RESEPSI"]),
   maxPax: z.number().int().min(1).default(2),
 });
 
@@ -13,7 +13,7 @@ export const importGuestsSchema = z.array(
   z.object({
     name: z.string().min(1),
     phone: z.string().optional(),
-    email: z.string().optional(),
+    invitationCategory: z.enum(["GEREJA_SAJA", "GEREJA_RESEPSI"]).optional().default("GEREJA_RESEPSI"),
     maxPax: z.number().optional().default(2),
   })
 );

@@ -51,6 +51,7 @@ export default async function WhatsAppPage({ params }: Props) {
       clientName={client.name}
       initialGuests={guestList}
       initialTemplate={client.whatsappTemplate?.bodyTemplate ?? DEFAULT_TEMPLATE}
+      initialTemplateEn={client.whatsappTemplate?.bodyTemplateEn ?? ""}
       profile={
         client.weddingProfile
           ? {

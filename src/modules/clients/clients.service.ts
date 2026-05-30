@@ -69,9 +69,9 @@ export async function createClient(data: CreateClientInput, userId: string) {
         create: {
           templateSlug: "dark",
           primaryColor: "#c4a07a",
-          secondaryColor: "#242424",
-          bgColor: "#1a1a1a",
-          textColor: "#f0ece6",
+          secondaryColor: "#f5f5f5",
+          bgColor: "#ffffff",
+          textColor: "#1a1a1a",
           fontHeading: "Cormorant",
           fontBody: "IBM Plex Sans",
         },

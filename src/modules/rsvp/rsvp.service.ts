@@ -64,6 +64,6 @@ export async function getWishes(clientId: string) {
   });
 }
 
-export async function toggleWishApproval(id: string, isApproved: boolean) {
-  return prisma.wish.update({ where: { id }, data: { isApproved } });
+export async function updateWish(id: string, data: { isApproved?: boolean; reply?: string | null }) {
+  return prisma.wish.update({ where: { id }, data });
 }

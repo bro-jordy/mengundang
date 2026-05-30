@@ -81,6 +81,7 @@ export function GiftSection({ gifts }: Props) {
   const [qrisOpen, setQrisOpen] = useState<string | null>(null);
 
   const active = gifts.filter((g) => g.isActive);
+
   if (active.length === 0) return null;
 
   const banks   = active.filter((g) => g.bankName && !g.qrisImage);

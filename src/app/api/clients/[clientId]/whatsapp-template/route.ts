@@ -5,6 +5,7 @@ import { z } from "zod";
 
 const templateSchema = z.object({
   bodyTemplate: z.string().min(1, "Template tidak boleh kosong"),
+  bodyTemplateEn: z.string().optional(),
 });
 
 interface Params {
@@ -36,10 +37,15 @@ export async function PUT(req: Request, { params }: Params) {
     const parsed = templateSchema.safeParse(body);
     if (!parsed.success) return apiError(parsed.error.issues[0]?.message || "Validasi gagal");
 
+    const data = {
+      bodyTemplate: parsed.data.bodyTemplate,
+      ...(parsed.data.bodyTemplateEn !== undefined && { bodyTemplateEn: parsed.data.bodyTemplateEn }),
+    };
+
     const template = await prisma.whatsappTemplate.upsert({
       where: { clientId },
-      update: { bodyTemplate: parsed.data.bodyTemplate },
-      create: { clientId, bodyTemplate: parsed.data.bodyTemplate },
+      update: data,
+      create: { clientId, ...data },
     });
     return apiSuccess(template);
   } catch {

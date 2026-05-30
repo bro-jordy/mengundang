@@ -3,20 +3,52 @@
 import { useState, useRef, useEffect } from "react";
 import { MapPin, Clock, Calendar, Copy, Check, Wallet, QrCode, Gift, Send, Heart, LockKeyhole } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
+import { BarcodeSection } from "../../sections/BarcodeSection";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
 
+// Convert plain-text story (legacy) to HTML; HTML content passes through unchanged
+function storyToHtml(s: string | null | undefined): string {
+  if (!s) return "";
+  if (s.includes("<")) return s;
+  return s.replace(/&/g, "&amp;").replace(/\n/g, "<br>");
+}
+
+function useCountdown(target: Date | null) {
+  const targetMs = target?.getTime() ?? null;
+  const [t, setT] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+  useEffect(() => {
+    if (targetMs === null) return;
+    function calc() {
+      const diff = targetMs! - Date.now();
+      if (diff <= 0) { setT(null); return; }
+      setT({ days: Math.floor(diff / 86400000), hours: Math.floor((diff / 3600000) % 24), minutes: Math.floor((diff / 60000) % 60), seconds: Math.floor((diff / 1000) % 60) });
+    }
+    calc();
+    const id = setInterval(calc, 1000);
+    return () => clearInterval(id);
+  }, [targetMs]);
+  return targetMs !== null ? t : null;
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface Guest { id: string; name: string; maxPax: number; rsvp: Rsvp | null }
+interface Guest {
+  id: string; name: string; maxPax: number; rsvp: Rsvp | null;
+  invitationCategory?: "GEREJA_SAJA" | "GEREJA_RESEPSI";
+  barcodeChurch?: string | null;
+  barcodeReception?: string | null;
+}
 
 type Profile = {
   groomName: string; brideName: string;
   groomNickname: string; brideNickname: string;
   groomParents: string; brideParents: string;
   openingQuote: string | null; openingQuoteBy: string | null;
-  story: string | null; heroImage: string | null;
+  story: string | null; storyTitle: string | null; showStoryTitle: boolean;
+  heroImage: string | null;
   groomPhoto: string | null; bridePhoto: string | null;
+  showGroomPhoto: boolean; showBridePhoto: boolean;
 } | null;
 
 interface Props {
@@ -29,8 +61,8 @@ interface Props {
     sections: { sectionKey: string; sortOrder: number }[];
     galleries: { id: string; url: string; type: string; sortOrder: number }[];
     gifts: { id: string; bankName: string | null; accountNumber: string | null; accountName: string | null; ewalletType: string | null; ewalletNumber: string | null; qrisImage: string | null; isActive: boolean }[];
-    wishes: { id: string; name: string; message: string; createdAt: Date }[];
-    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string } | null;
+    wishes: { id: string; name: string; message: string; reply: string | null; createdAt: Date }[];
+    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null } | null;
   };
   token: string | null;
 }
@@ -43,7 +75,7 @@ const EVENT_LABEL: Record<string, string> = {
 
 const INVITATION_LABEL: Record<string, string> = {
   WEDDING: "The Wedding Of",
-  SANGJIT: "Sangjit",
+  SANGJIT: "Sangjit Ceremony Of",
   LAMARAN: "Lamaran",
 };
 
@@ -55,7 +87,6 @@ export function DarkTemplate({ guest, client, token }: Props) {
   const profile = client.weddingProfile;
   const music = client.musics[0];
   const sectionKeys = client.sections.map((s) => s.sectionKey);
-  const activeGifts = client.gifts.filter((g) => g.isActive);
 
   // ── Gallery lookups ──
   const heroGallery  = client.galleries.find((g) => g.type === "HERO");
@@ -75,7 +106,22 @@ export function DarkTemplate({ guest, client, token }: Props) {
     ? `${profile.groomNickname || profile.groomName} & ${profile.brideNickname || profile.brideName}`
     : "Groom & Bride";
 
-  function handleOpen() { setOpened(true); }
+  const showCountdown = !!client.theme?.showCountdown;
+  const countdownTarget = showCountdown
+    ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
+    : null;
+  const countdownTimeLeft = useCountdown(countdownTarget);
+
+  const playMusicRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  function handleOpen() {
+    setOpened(true);
+    window.scrollTo(0, 0);
+    // Fire play() immediately — still inside user gesture, browser allows autoplay
+    playMusicRef.current?.();
+  }
 
   function onCoverTransitionEnd() {
     if (opened) setCoverGone(true);
@@ -86,9 +132,22 @@ export function DarkTemplate({ guest, client, token }: Props) {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
         body { background-color: #ffffff; color: #1a1a1a; margin: 0; -webkit-font-smoothing: antialiased; font-family: '${fontBody}', 'IBM Plex Sans', sans-serif; }
+        .story-html ul { list-style: disc; padding-left: 1.4em; margin: 0.4em 0; }
+        .story-html li { margin: 0.15em 0; }
+        .story-html strong, .story-html b { font-weight: 600; opacity: 1; }
+        .story-html em, .story-html i { font-style: italic; }
+        .story-html p { margin: 0.4em 0; }
+        .story-html p:first-child { margin-top: 0; }
+        .story-html p:last-child { margin-bottom: 0; }
       `}</style>
 
-      {music && <MusicPlayer url={music.url} title={music.title} opened={opened} />}
+      {music && (
+        <MusicPlayer
+          url={music.url}
+          title={music.title}
+          registerPlay={(fn) => { playMusicRef.current = fn; }}
+        />
+      )}
 
       {/* ── COVER ── */}
       <div
@@ -102,45 +161,46 @@ export function DarkTemplate({ guest, client, token }: Props) {
         onTransitionEnd={onCoverTransitionEnd}
       >
         <div
-          className="relative flex flex-col justify-end"
+          className="relative flex flex-col justify-start"
           style={{
             height: "100dvh",
             backgroundImage: heroImage ? `url('${heroImage}')` : undefined,
             backgroundSize: "cover",
-            backgroundPosition: "center top",
+            backgroundPosition: "center",
             backgroundColor: heroImage ? undefined : "#1a1a1a",
           }}
         >
           <div className="absolute inset-0" style={{
             background: heroImage
-              ? "linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.25) 40%, rgba(0,0,0,0.75) 75%, rgba(0,0,0,0.92) 100%)"
+              ? "linear-gradient(to bottom, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.45) 40%, rgba(0,0,0,0.15) 70%, rgba(0,0,0,0.05) 100%)"
               : "linear-gradient(160deg, #1a1a1a 0%, #2a2a2a 100%)",
           }} />
 
-          <div className="relative z-10 px-8 pb-10 text-center">
+          {/* Cover selalu pakai teks putih karena background gelap (foto/overlay) */}
+          <div className="relative z-10 px-8 text-center" style={{ paddingTop: "33vh" }}>
             <p className="italic font-light tracking-wide mb-2"
-              style={{ fontFamily: `'${fontHeading}', Cormorant, Georgia, serif`, color: textColor, opacity: 0.75, fontSize: "1rem" }}>
+              style={{ fontFamily: `'${fontHeading}', Cormorant, Georgia, serif`, color: "#1a1a1a", opacity: 0.8, fontSize: "1rem" }}>
               {invitationLabel}
             </p>
             <h1 className="font-light"
-              style={{ fontFamily: `'${fontHeading}', Cormorant, Georgia, serif`, color: textColor, fontSize: "2.75rem", lineHeight: 1.1 }}>
+              style={{ fontFamily: `'${fontHeading}', Cormorant, Georgia, serif`, color: "#1a1a1a", fontSize: "2.75rem", lineHeight: 1.1 }}>
               {coupleLabel}
             </h1>
             <div className="my-5 flex items-center justify-center">
-              <div className="h-px w-16" style={{ backgroundColor: rose, opacity: 0.6 }} />
+              <div className="h-px w-16" style={{ backgroundColor: rose, opacity: 0.8 }} />
             </div>
             {guest ? (
-              <div className="mb-6 text-center">
-                <p className="text-sm mb-1" style={{ color: textColor, opacity: 0.65 }}>
-                  To <span className="font-semibold" style={{ color: textColor }}>{guest.name}</span>,
+              <div className="mb-8 text-center">
+                <p className="text-sm mb-1" style={{ color: "rgba(255,255,255,0.7)" }}>
+                  To <span className="font-semibold text-white">{guest.name}</span>,
                 </p>
-                <p className="text-sm leading-relaxed max-w-xs mx-auto font-light" style={{ color: textColor, opacity: 0.55 }}>
+                <p className="text-sm leading-relaxed max-w-xs mx-auto font-light" style={{ color: "rgba(0, 0, 0, 0.6)" }}>
                   Dengan hormat kami mengundang Bapak/Ibu menyaksikan pernikahan kami. Kehadiran Bapak/Ibu akan menyempurnakan hari bahagia kami.
                 </p>
               </div>
             ) : (
-              <div className="mb-6">
-                <p className="text-sm leading-relaxed max-w-xs mx-auto font-light" style={{ color: textColor, opacity: 0.55 }}>
+              <div className="mb-8">
+                <p className="text-sm leading-relaxed max-w-xs mx-auto font-light" style={{ color: "rgba(0, 0, 0, 0.6)" }}>
                   Dengan hormat kami mengundang Anda menyaksikan hari istimewa kami.
                 </p>
               </div>
@@ -164,7 +224,7 @@ export function DarkTemplate({ guest, client, token }: Props) {
       }}>
         {/* BG overlay to keep readability */}
         {bgImage && (
-          <div className="fixed inset-0 pointer-events-none" style={{ background: "rgba(255,255,255,0.88)", zIndex: 0 }} />
+          <div className="fixed inset-0 pointer-events-none" style={{ background: "rgba(255,255,255,0.72)", zIndex: 0 }} />
         )}
 
         <div style={{ position: "relative", zIndex: 1 }}>
@@ -230,6 +290,25 @@ export function DarkTemplate({ guest, client, token }: Props) {
             </div>
           </div>
 
+          {/* ── Countdown ── */}
+          {showCountdown && countdownTimeLeft && (
+            <section style={{ padding: "3rem 1.5rem", background: secondaryColor, textAlign: "center" }}>
+              <p className="text-xs tracking-[0.28em] uppercase mb-4" style={{ color: rose, opacity: 0.7 }}>
+                Menuju Hari Bahagia
+              </p>
+              <div style={{ display: "flex", justifyContent: "center", gap: "1.5rem" }}>
+                {[{ v: countdownTimeLeft.days, l: "Hari" }, { v: countdownTimeLeft.hours, l: "Jam" }, { v: countdownTimeLeft.minutes, l: "Menit" }, { v: countdownTimeLeft.seconds, l: "Detik" }].map(({ v, l }) => (
+                  <div key={l} style={{ textAlign: "center", minWidth: "3rem" }}>
+                    <div style={{ fontFamily: `'${fontHeading}', Cormorant, Georgia, serif`, fontSize: "2.4rem", fontWeight: 300, color: rose, lineHeight: 1 }}>
+                      {String(v).padStart(2, "0")}
+                    </div>
+                    <div className="text-xs tracking-[0.18em] uppercase mt-1" style={{ color: textColor, opacity: 0.4 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* ── Couple ── */}
           {sectionKeys.includes("COUPLE") && profile && (
             <CoupleSection profile={profile} rose={rose} fontHeading={fontHeading}
@@ -257,6 +336,19 @@ export function DarkTemplate({ guest, client, token }: Props) {
                   textColor={textColor} bgColor={bgColor} secondaryColor={secondaryColor} />
           )}
 
+          {guest?.barcodeChurch && (
+            <BarcodeSection
+              barcodeChurch={guest.barcodeChurch}
+              barcodeReception={guest.barcodeReception ?? null}
+              invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
+              churchVenueName={client.events.find((e) => e.type === "PEMBERKATAN")?.venueName || client.events[0]?.venueName || "Gereja"}
+              receptionVenueName={client.events.find((e) => e.type === "RESEPSI")?.venueName || "Resepsi"}
+              primaryColor={rose}
+              bgColor={bgColor}
+              fontHeading={fontHeading}
+            />
+          )}
+
           {/* ── Wishes ── */}
           {sectionKeys.includes("WISHES") && (
             <WishesSection
@@ -273,7 +365,7 @@ export function DarkTemplate({ guest, client, token }: Props) {
           )}
 
           {/* ── Gift ── */}
-          {(sectionKeys.includes("GIFT") || activeGifts.length > 0) && (
+          {sectionKeys.includes("GIFT") && (
             <GiftSection gifts={client.gifts} rose={rose} fontHeading={fontHeading}
               textColor={textColor} bgColor={bgColor} secondaryColor={secondaryColor} />
           )}
@@ -289,8 +381,9 @@ export function DarkTemplate({ guest, client, token }: Props) {
               style={{ fontFamily: `'${fontHeading}', Cormorant, Georgia, serif`, color: rose }}>
               {coupleLabel}
             </p>
-            <p className="text-xs tracking-widest text-white/40 uppercase">Terima kasih atas doa dan kehadirannya</p>
-            <p className="text-xs text-white/20 mt-4">Made with UdanganKami</p>
+            {/* <p className="text-xs tracking-widest text-white/40 uppercase">Terima kasih atas doa dan kehadirannya</p> */}
+             <p className="text-xs tracking-widest text-white/40 uppercase">2026</p>
+            <p className="text-xs text-white/20 mt-4">Made with ❤️</p>
           </footer>
         </div>
       </div>
@@ -313,14 +406,16 @@ function CoupleSection({ profile, rose, fontHeading, textColor, bgColor }: {
 
         {/* Groom */}
         <div className="flex flex-col items-center mb-6">
-          {profile.groomPhoto ? (
-            <img src={profile.groomPhoto} alt={profile.groomName} className="rounded-full object-cover mb-5"
-              style={{ width: "170px", height: "170px", objectFit: "cover" }} />
-          ) : (
-            <div className="rounded-full mb-5 bg-stone-100 flex items-center justify-center"
-              style={{ width: "170px", height: "170px" }}>
-              <span className="text-5xl text-stone-300">👤</span>
-            </div>
+          {profile.showGroomPhoto && (
+            profile.groomPhoto ? (
+              <img src={profile.groomPhoto} alt={profile.groomName} className="rounded-full object-cover mb-5"
+                style={{ width: "170px", height: "170px", objectFit: "cover" }} />
+            ) : (
+              <div className="rounded-full mb-5 bg-stone-100 flex items-center justify-center"
+                style={{ width: "170px", height: "170px" }}>
+                <span className="text-5xl text-stone-300">👤</span>
+              </div>
+            )
           )}
           <h3 className="font-medium text-2xl"
             style={{ fontFamily: `'${fontHeading}', Cormorant, Georgia, serif`, color: textColor }}>
@@ -336,14 +431,16 @@ function CoupleSection({ profile, rose, fontHeading, textColor, bgColor }: {
 
         {/* Bride */}
         <div className="flex flex-col items-center mt-6">
-          {profile.bridePhoto ? (
-            <img src={profile.bridePhoto} alt={profile.brideName} className="rounded-full object-cover mb-5"
-              style={{ width: "170px", height: "170px", objectFit: "cover" }} />
-          ) : (
-            <div className="rounded-full mb-5 bg-stone-100 flex items-center justify-center"
-              style={{ width: "170px", height: "170px" }}>
-              <span className="text-5xl text-stone-300">👤</span>
-            </div>
+          {profile.showBridePhoto && (
+            profile.bridePhoto ? (
+              <img src={profile.bridePhoto} alt={profile.brideName} className="rounded-full object-cover mb-5"
+                style={{ width: "170px", height: "170px", objectFit: "cover" }} />
+            ) : (
+              <div className="rounded-full mb-5 bg-stone-100 flex items-center justify-center"
+                style={{ width: "170px", height: "170px" }}>
+                <span className="text-5xl text-stone-300">👤</span>
+              </div>
+            )
           )}
           <h3 className="font-medium text-2xl"
             style={{ fontFamily: `'${fontHeading}', Cormorant, Georgia, serif`, color: textColor }}>
@@ -367,13 +464,19 @@ function CoupleSection({ profile, rose, fontHeading, textColor, bgColor }: {
           </div>
         )}
 
-        {/* Story / Cerita Singkat Pasangan */}
+        {/* Story */}
         {profile.story && (
           <div className="mt-6 pt-6" style={{ borderTop: `1px solid ${textColor}18` }}>
-            <p className="text-xs tracking-[0.2em] uppercase mb-3" style={{ color: textColor, opacity: 0.4 }}>Cerita Singkat Pasangan</p>
-            <p className="text-sm font-light leading-relaxed" style={{ color: textColor, opacity: 0.6 }}>
-              {profile.story}
-            </p>
+            {profile.showStoryTitle && (
+              <p className="text-xs tracking-[0.2em] uppercase mb-3" style={{ color: textColor, opacity: 0.4 }}>
+                {profile.storyTitle?.trim() || "Cerita Singkat Pasangan"}
+              </p>
+            )}
+            <div
+              className="story-html text-sm font-light leading-relaxed"
+              style={{ color: textColor, opacity: 0.6 }}
+              dangerouslySetInnerHTML={{ __html: storyToHtml(profile.story) }}
+            />
           </div>
         )}
       </div>
@@ -456,7 +559,6 @@ function GallerySection({ galleries, rose, fontHeading, textColor, bgColor }: {
   galleries: Props["client"]["galleries"]; rose: string; fontHeading: string; textColor: string; bgColor: string;
 }) {
   const photos = galleries.filter((g) => g.type === "GALLERY" || g.type === "PREWEDDING");
-  if (!photos.length) return null;
 
   const count = photos.length;
   const extended = count > 1 ? [photos[count - 1], ...photos, photos[0]] : photos;
@@ -472,6 +574,8 @@ function GallerySection({ galleries, rose, fontHeading, textColor, bgColor }: {
       return () => cancelAnimationFrame(raf);
     }
   }, [animated]);
+
+  if (!photos.length) return null;
 
   function onTransitionEnd(e: React.TransitionEvent) {
     // Only fire for the track's own transform, not bubbled child transitions
@@ -561,7 +665,7 @@ function RSVPSection({ clientId, guest, token, rose, fontHeading, textColor, bgC
   clientId: string; guest: Guest; token: string; rose: string; fontHeading: string;
   textColor: string; bgColor: string; secondaryColor: string;
 }) {
-  const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">(guest.rsvp?.status as any || "HADIR");
+  const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">((guest.rsvp?.status as "HADIR" | "TIDAK_HADIR") || "HADIR");
   const [pax, setPax] = useState(guest.rsvp?.paxCount || 1);
   const [msg, setMsg] = useState(guest.rsvp?.message || "");
   const [saving, setSaving] = useState(false);
@@ -724,6 +828,12 @@ function WishesSection({ clientId, initialWishes, guestName, guestId, rose, font
             <div key={w.id} className="p-4 rounded-xl" style={{ background: secondaryColor, border: `1px solid ${textColor}10` }}>
               <p className="text-xs font-semibold mb-1" style={{ color: rose }}>{w.name}</p>
               <p className="text-sm font-light leading-relaxed" style={{ color: textColor, opacity: 0.65 }}>{w.message}</p>
+              {w.reply && (
+                <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${textColor}12` }}>
+                  <p className="text-xs mb-0.5" style={{ color: rose, opacity: 0.7 }}>Balasan</p>
+                  <p className="text-xs font-light leading-relaxed italic" style={{ color: textColor, opacity: 0.55 }}>{w.reply}</p>
+                </div>
+              )}
             </div>
           ))}
           {wishes.length === 0 && <p className="text-center text-sm py-4" style={{ color: textColor, opacity: 0.4 }}>Belum ada ucapan</p>}
@@ -751,9 +861,9 @@ function GiftSection({ gifts, rose, fontHeading, textColor, bgColor, secondaryCo
   textColor: string; bgColor: string; secondaryColor: string;
 }) {
   const active = gifts.filter((g) => g.isActive);
-  if (!active.length) return null;
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [qrisOpen, setQrisOpen] = useState<string | null>(null);
+  if (!active.length) return null;
   const banks = active.filter((g) => g.bankName && !g.qrisImage);
   const ewallets = active.filter((g) => g.ewalletType && !g.qrisImage);
   const qrisList = active.filter((g) => g.qrisImage);

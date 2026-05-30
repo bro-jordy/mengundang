@@ -11,9 +11,11 @@ export default async function AdminLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
+  const user = session.user as { role?: string };
+
   return (
     <div className="flex h-screen bg-stone-50 overflow-hidden">
-      <AdminSidebar />
+      <AdminSidebar role={user.role} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminTopBar user={session.user} />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>

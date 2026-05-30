@@ -24,7 +24,15 @@ export default async function GuestInvitationPage({ params }: Props) {
 
   return (
     <TemplateRenderer
-      guest={{ id: guest.id, name: guest.name, maxPax: guest.maxPax, rsvp: guest.rsvp }}
+      guest={{
+        id: guest.id,
+        name: guest.name,
+        maxPax: guest.maxPax,
+        rsvp: guest.rsvp,
+        invitationCategory: guest.invitationCategory as "GEREJA_SAJA" | "GEREJA_RESEPSI",
+        barcodeChurch: guest.barcodeChurch,
+        barcodeReception: guest.barcodeReception,
+      }}
       client={guest.client as any}
       token={token}
     />

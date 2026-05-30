@@ -28,10 +28,23 @@
       "Bash(curl -s \"https://undangan.sinarxrey.com/assets/index-DlJUN1ki.css\")",
       "Bash(curl -s \"https://undangan.sinarxrey.com/assets/index-BS-_dkvk.js\")",
       "Bash(grep -oE '\"isOpen[^\"]{0,200}|dvh[^\"]{0,100}|squeeze[^\"]{0,100}|coverHeight[^\"]{0,100}|transition.*620[^\"]{0,200}')",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(mkdir -p /Users/dieudonnejordy/Documents/udangan-kami/src/app/api/users/\\\\[userId\\\\])",
+      "Bash(mkdir -p \"/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]/users\")",
+      "Bash(mkdir -p \"/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]/users\")",
+      "Bash(open /Users/dieudonnejordy/Documents/udangan-kami)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({**d.get\\('dependencies',{}\\), **d.get\\('devDependencies',{}\\)}, indent=2\\)\\)\")",
+      "Bash(npm install *)",
+      "Bash(npx next *)",
+      "Bash(mkdir -p /Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/\\\\[clientId\\\\]/sections)",
+      "Bash(mkdir -p /Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/\\\\[clientId\\\\]/sections)",
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
     ],
     "additionalDirectories": [
-      "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]"
+      "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
+      "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/users",
+      "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]",
+      "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]/sections"
     ]
   }
 }

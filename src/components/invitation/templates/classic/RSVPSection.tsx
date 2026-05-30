@@ -28,7 +28,7 @@ export function RSVPSection({ clientId, guest, token }: Props) {
   const [error, setError] = useState("");
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema),
     defaultValues: {
       name: guest.name,
       paxCount: guest.rsvp?.paxCount ?? 1,

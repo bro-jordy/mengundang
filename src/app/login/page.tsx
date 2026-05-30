@@ -49,7 +49,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-stone-800">UdanganKami</h1>
+          <h1 className="text-2xl font-bold text-stone-800">Mengundang</h1>
           <p className="text-stone-500 mt-1 text-sm">Masuk ke panel admin</p>
         </div>
 
