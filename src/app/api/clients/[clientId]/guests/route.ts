@@ -64,6 +64,49 @@ export async function POST(req: Request, { params }: Params) {
   }
 }
 
+export async function PATCH(req: Request, { params }: Params) {
+  try {
+    const { clientId } = await params;
+    await requireAuth();
+    const hasAccess = await canAccessClient(clientId);
+    if (!hasAccess) return apiError("Akses ditolak", 403);
+
+    const body = await req.json();
+    if (!body.fixUrls) return apiError("Parameter tidak valid");
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl || appUrl.includes("localhost")) {
+      return apiError("NEXT_PUBLIC_APP_URL belum dikonfigurasi dengan benar di server");
+    }
+
+    const guests = await prisma.guest.findMany({
+      where: { clientId, invitationUrl: { contains: "localhost" } },
+      select: { id: true, guestToken: true },
+    });
+
+    const client = await prisma.client.findUnique({
+      where: { id: clientId },
+      select: { slug: true },
+    });
+    if (!client) return apiError("Client tidak ditemukan", 404);
+
+    let updated = 0;
+    for (const guest of guests) {
+      await prisma.guest.update({
+        where: { id: guest.id },
+        data: {
+          invitationUrl: `${appUrl}/invite/${client.slug}/g/${guest.guestToken}`,
+        },
+      });
+      updated++;
+    }
+
+    return apiSuccess({ updated, message: `${updated} URL undangan berhasil diperbarui` });
+  } catch {
+    return apiError("Terjadi kesalahan server", 500);
+  }
+}
+
 export async function DELETE(req: Request, { params }: Params) {
   try {
     const { clientId } = await params;
