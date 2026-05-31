@@ -143,7 +143,7 @@ interface Props {
 
 const TR = {
   id: {
-    kepada: "Kepada Yth.",
+    kepada: "Dear.",
     scroll: "scroll",
     // Couple
     eyebrow_couple: "Mempelai", title_couple: "Dua Hati, Satu Tujuan",
@@ -228,12 +228,12 @@ type Translations = (typeof TR)[Lang];
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const EVENT_LABEL: Record<string, string> = {
-  AKAD: "Akad Nikah",
-  PEMBERKATAN: "Pemberkatan Perkawinan",
-  RESEPSI: "Resepsi",
+  AKAD: "Akad",
+  PEMBERKATAN: "Church Ceremony",
+  RESEPSI: "Reception",
   AFTER_PARTY: "After Party",
   SANGJIT: "Sangjit",
-  LAMARAN: "Lamaran",
+  LAMARAN: "Engagement Ceremony",
 };
 
 const INVITATION_LABEL: Record<string, string> = {
@@ -738,7 +738,7 @@ function EnvelopeOpening({
               }}
             >
               <Heart size={9} fill={gold} strokeWidth={0} />
-              KETUK UNTUK MEMBUKA
+              TAP TO OPEN
               <Heart size={9} fill={gold} strokeWidth={0} />
             </p>
             <motion.p
@@ -775,7 +775,7 @@ function EnvelopeOpening({
             onClick={handleOpen}
             role="button"
             tabIndex={0}
-            aria-label="Buka undangan"
+            aria-label="Open invitation"
             onKeyDown={(e) => e.key === "Enter" && handleOpen()}
           >
             {/* Envelope background */}
@@ -1999,6 +1999,7 @@ function RSVPSection({
   fontH,
   fontB,
   t,
+  onConfirmed,
 }: {
   clientId: string;
   guest: Guest;
@@ -2010,6 +2011,7 @@ function RSVPSection({
   fontH: string;
   fontB: string;
   t: Translations;
+  onConfirmed?: (status: "HADIR" | "TIDAK_HADIR") => void;
 }) {
   const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">(
     (guest.rsvp?.status as "HADIR" | "TIDAK_HADIR") || "HADIR"
@@ -2034,7 +2036,7 @@ function RSVPSection({
         message: msg,
       }),
     });
-    if (res.ok) setDone(true);
+    if (res.ok) { setDone(true); onConfirmed?.(status); }
     setSaving(false);
   }
 
@@ -3226,8 +3228,11 @@ function ClosingSection({
 
 export function EnvelopeTemplate({ guest, client, token }: Props) {
   const [coverGone, setCoverGone] = useState(false);
-  const [lang, setLang] = useState<Lang>("id");
+  const [lang, setLang] = useState<Lang>("en");
   const t: Translations = TR[lang];
+  const [confirmedRsvpStatus, setConfirmedRsvpStatus] = useState<"HADIR" | "TIDAK_HADIR" | null>(
+    (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null
+  );
 
   const profile = client.weddingProfile;
   const music = client.musics[0];
@@ -3370,43 +3375,41 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
         />
       )}
 
-      {/* Language toggle — only show after invitation is opened */}
-      {coverGone && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "5rem",
-            right: "1rem",
-            zIndex: 100,
-            display: "flex",
-            borderRadius: "9999px",
-            overflow: "hidden",
-            border: `1px solid ${gold}44`,
-            boxShadow: `0 4px 16px rgba(0,0,0,0.1)`,
-          }}
-        >
-          {(["id", "en"] as Lang[]).map((l) => (
-            <button
-              key={l}
-              onClick={() => setLang(l)}
-              style={{
-                padding: "0.4rem 0.75rem",
-                fontSize: "0.65rem",
-                fontFamily: "'Cinzel', serif",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase" as const,
-                background: lang === l ? gold : ivory,
-                color: lang === l ? "#fff" : gold,
-                border: "none",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {l.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Language toggle — always visible */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: "5rem",
+          right: "1rem",
+          zIndex: 10000,
+          display: "flex",
+          borderRadius: "9999px",
+          overflow: "hidden",
+          border: `1px solid ${gold}44`,
+          boxShadow: `0 4px 16px rgba(0,0,0,0.1)`,
+        }}
+      >
+        {(["id", "en"] as Lang[]).map((l) => (
+          <button
+            key={l}
+            onClick={() => setLang(l)}
+            style={{
+              padding: "0.4rem 0.75rem",
+              fontSize: "0.65rem",
+              fontFamily: "'Cinzel', serif",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase" as const,
+              background: lang === l ? gold : ivory,
+              color: lang === l ? "#fff" : gold,
+              border: "none",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {l.toUpperCase()}
+          </button>
+        ))}
+      </div>
 
       {/* Envelope Opening Screen */}
       <AnimatePresence>
@@ -3546,6 +3549,7 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
                     fontH={fontH}
                     fontB={fontB}
                     t={t}
+                    onConfirmed={(s) => setConfirmedRsvpStatus(s)}
                   />
                 ) : (
                   <RSVPPlaceholder
@@ -3558,7 +3562,7 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
                   />
                 ))}
 
-              {guest?.barcodeChurch && (
+              {guest?.barcodeChurch && confirmedRsvpStatus === "HADIR" && (
                 <BarcodeSection
                   barcodeChurch={guest.barcodeChurch}
                   barcodeReception={guest.barcodeReception ?? null}

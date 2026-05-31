@@ -23,8 +23,8 @@ export function BarcodeSection({
   barcodeChurch,
   barcodeReception,
   invitationCategory,
-  churchVenueName = "Gereja",
-  receptionVenueName = "Resepsi",
+  churchVenueName = "Church",
+  receptionVenueName = "Reception",
   primaryColor = "#b8860b",
   bgColor = "#fffdf7",
   fontHeading = "Playfair Display",
@@ -34,7 +34,7 @@ export function BarcodeSection({
   const items: BarcodeItem[] = [
     {
       code: barcodeChurch,
-      label: "Tiket Masuk Gereja",
+      label: "Church Entrance Ticket",
       sublabel: churchVenueName,
     },
   ];
@@ -42,7 +42,7 @@ export function BarcodeSection({
   if (invitationCategory === "GEREJA_RESEPSI" && barcodeReception) {
     items.push({
       code: barcodeReception,
-      label: "Tiket Masuk Resepsi",
+      label: "Reception Entrance Ticket",
       sublabel: receptionVenueName,
     });
   }
@@ -60,7 +60,7 @@ export function BarcodeSection({
           className="text-3xl mb-10"
           style={{ fontFamily: `'${fontHeading}', Georgia, serif`, color: primaryColor }}
         >
-          Tiket Undangan
+          Invitation Ticket
         </h2>
 
         <div className={`flex ${items.length > 1 ? "gap-8 justify-center flex-wrap" : "justify-center"}`}>
@@ -96,7 +96,7 @@ export function BarcodeSection({
         </div>
 
         <p className="text-xs text-stone-400 mt-8">
-          Tunjukkan tiket ini kepada petugas saat tiba di lokasi acara.
+          Please show this ticket to staff upon arrival at the venue.
         </p>
       </div>
     </section>
