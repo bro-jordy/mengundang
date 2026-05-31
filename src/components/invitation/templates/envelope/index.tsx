@@ -706,6 +706,52 @@ function EnvelopeOpening({
         )}
       </AnimatePresence>
 
+      {/* KETUK UNTUK MEMBUKA hint — above the envelope, idle only */}
+      <AnimatePresence>
+        {phase === "idle" && (
+          <motion.div
+            key="open-hint"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 0.9, duration: 0.8 } }}
+            exit={{ opacity: 0, transition: { duration: 0.25 } }}
+            style={{
+              position: "absolute",
+              bottom: "calc(50% + min(117px, 30.25vw) + 18px)",
+              left: 0,
+              right: 0,
+              textAlign: "center",
+              zIndex: 30,
+              pointerEvents: "none",
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "'Cinzel', serif",
+                fontSize: "0.6rem",
+                letterSpacing: "0.3em",
+                color: gold,
+                textTransform: "uppercase",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.65rem",
+              }}
+            >
+              <Heart size={9} fill={gold} strokeWidth={0} />
+              KETUK UNTUK MEMBUKA
+              <Heart size={9} fill={gold} strokeWidth={0} />
+            </p>
+            <motion.p
+              animate={{ y: [0, 5, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              style={{ marginTop: "0.45rem", color: gold, fontSize: "1rem", lineHeight: 1 }}
+            >
+              ↓
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Envelope — perspective wrapper */}
       <motion.div
         animate={envelopeControls}
@@ -877,6 +923,30 @@ function EnvelopeOpening({
             >
               {/* Wax seal centered on flap — ring pulses to signal clickability */}
               <motion.div animate={sealControls} style={{ position: "relative" }}>
+                {/* Radiating dash lines around the seal — disabled for now
+                <div
+                  aria-hidden
+                  style={{ position: "absolute", top: "50%", left: "50%", width: 0, height: 0, pointerEvents: "none" }}
+                >
+                  {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => (
+                    <div
+                      key={deg}
+                      style={{
+                        position: "absolute",
+                        top: "-1.5px",
+                        left: 0,
+                        width: "10px",
+                        height: "3px",
+                        background: gold,
+                        borderRadius: "2px",
+                        transformOrigin: "left center",
+                        transform: `rotate(${deg}deg) translateX(34px)`,
+                        opacity: 0.72,
+                      }}
+                    />
+                  ))}
+                </div>
+                */}
                 <WaxSeal size={42} />
                 {/* Pulsing ring */}
                 <motion.div
@@ -904,6 +974,7 @@ function EnvelopeOpening({
                 />
               </motion.div>
             </motion.div>
+
           </div>
         </div>
       </motion.div>
