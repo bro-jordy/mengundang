@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
+import { getYouTubeId, loadYouTubeApi } from "@/lib/youtube";
 
 interface Props {
   url: string;
@@ -9,23 +10,98 @@ interface Props {
   registerPlay?: (fn: () => void) => void;
 }
 
+type YTPlayer = {
+  playVideo: () => void;
+  pauseVideo: () => void;
+  setVolume: (v: number) => void;
+  seekTo: (s: number, allow?: boolean) => void;
+  destroy: () => void;
+};
+
 export function MusicPlayer({ url, registerPlay }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const ytHostRef = useRef<HTMLDivElement>(null);
+  const ytPlayerRef = useRef<YTPlayer | null>(null);
+  const pendingPlayRef = useRef(false);
   const [playing, setPlaying] = useState(false);
 
+  const videoId = getYouTubeId(url);
+  const isYt = !!videoId;
+
   useEffect(() => {
+    // --- YouTube source: drive a hidden IFrame player via the YT API ---
+    if (isYt) {
+      let cancelled = false;
+      const play = () => {
+        const p = ytPlayerRef.current;
+        if (p) p.playVideo();
+        else pendingPlayRef.current = true; // queue until the player is ready
+      };
+      registerPlay?.(play);
+
+      loadYouTubeApi().then((YT) => {
+        if (cancelled || !ytHostRef.current) return;
+        // Let the YT API own its own element so it never fights React's DOM.
+        const el = document.createElement("div");
+        ytHostRef.current.appendChild(el);
+        ytPlayerRef.current = new YT.Player(el, {
+          videoId,
+          playerVars: {
+            autoplay: 0,
+            controls: 0,
+            playsinline: 1,
+            loop: 1,
+            playlist: videoId, // required for loop to work on a single video
+          },
+          events: {
+            onReady: (e: { target: YTPlayer }) => {
+              e.target.setVolume(50);
+              if (pendingPlayRef.current) {
+                pendingPlayRef.current = false;
+                e.target.playVideo();
+              }
+            },
+            onStateChange: (e: { data: number; target: YTPlayer }) => {
+              if (e.data === YT.PlayerState.PLAYING) setPlaying(true);
+              else if (e.data === YT.PlayerState.PAUSED) setPlaying(false);
+              else if (e.data === YT.PlayerState.ENDED) {
+                // Loop fallback in case playlist looping is ignored.
+                e.target.seekTo(0);
+                e.target.playVideo();
+              }
+            },
+          },
+        }) as YTPlayer;
+      });
+
+      return () => {
+        cancelled = true;
+        try {
+          ytPlayerRef.current?.destroy();
+        } catch {}
+        ytPlayerRef.current = null;
+        if (ytHostRef.current) ytHostRef.current.innerHTML = "";
+      };
+    }
+
+    // --- Direct audio source: plain <audio> element ---
     const audio = audioRef.current;
     if (!audio) return;
     audio.volume = 0.5;
     audio.loop = true;
-    if (registerPlay) {
-      registerPlay(() => {
-        audio.play().then(() => setPlaying(true)).catch(() => {});
-      });
-    }
-  }, []);
+    registerPlay?.(() => {
+      audio.play().then(() => setPlaying(true)).catch(() => {});
+    });
+  }, [url]);
 
   function toggle() {
+    if (isYt) {
+      const p = ytPlayerRef.current;
+      if (!p) return;
+      if (playing) p.pauseVideo();
+      else p.playVideo();
+      return;
+    }
     const audio = audioRef.current;
     if (!audio) return;
     if (playing) {
@@ -38,7 +114,17 @@ export function MusicPlayer({ url, registerPlay }: Props) {
 
   return (
     <>
-      <audio ref={audioRef} src={url} preload="auto" />
+      {isYt ? (
+        // Hidden, off-screen host for the YouTube iframe (audio only).
+        <div
+          aria-hidden
+          style={{ position: "fixed", left: -9999, top: -9999, width: 0, height: 0, overflow: "hidden" }}
+        >
+          <div ref={ytHostRef} />
+        </div>
+      ) : (
+        <audio ref={audioRef} src={url} preload="auto" />
+      )}
       <button
         onClick={toggle}
         title={playing ? "Pause musik" : "Play musik"}

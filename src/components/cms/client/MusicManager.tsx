@@ -2,6 +2,14 @@
 
 import { useState, useRef } from "react";
 import { Trash2, Music, Plus, Upload, Link, Play, Pause, Radio } from "lucide-react";
+import { getYouTubeId, loadYouTubeApi } from "@/lib/youtube";
+
+type YTPlayer = {
+  playVideo: () => void;
+  pauseVideo: () => void;
+  setVolume: (v: number) => void;
+  destroy: () => void;
+};
 
 interface MusicItem {
   id: string;
@@ -35,6 +43,62 @@ export function MusicManager({ clientId, initialMusics }: Props) {
   // Single audio element — src switched on demand
   const audioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Hidden YouTube IFrame player for previewing YouTube links
+  const ytHostRef = useRef<HTMLDivElement>(null);
+  const ytPlayerRef = useRef<YTPlayer | null>(null);
+
+  const urlIsYouTube = mode === "url" && !!getYouTubeId(url);
+
+  function stopYouTube() {
+    try {
+      ytPlayerRef.current?.pauseVideo();
+    } catch {}
+  }
+
+  async function previewYouTube(music: MusicItem, videoId: string) {
+    // Stop any direct-audio preview first
+    audioRef.current?.pause();
+
+    if (playingId === music.id) {
+      stopYouTube();
+      setPlayingId(null);
+      return;
+    }
+
+    try {
+      const YT = await loadYouTubeApi();
+      // Recreate a fresh player per preview to avoid load-before-ready races
+      try {
+        ytPlayerRef.current?.destroy();
+      } catch {}
+      if (ytHostRef.current) ytHostRef.current.innerHTML = "";
+      const el = document.createElement("div");
+      ytHostRef.current?.appendChild(el);
+      ytPlayerRef.current = new YT.Player(el, {
+        height: "0",
+        width: "0",
+        videoId,
+        playerVars: { autoplay: 1, controls: 0, playsinline: 1 },
+        events: {
+          onReady: (e: { target: YTPlayer }) => {
+            e.target.setVolume(60);
+            e.target.playVideo();
+          },
+          onStateChange: (e: { data: number }) => {
+            if (e.data === YT.PlayerState.ENDED) setPlayingId(null);
+          },
+          onError: () => {
+            setPlayError("YouTube tidak bisa diputar (pemilik video mungkin menonaktifkan embed). Coba video lain.");
+            setPlayingId(null);
+          },
+        },
+      }) as YTPlayer;
+      setPlayingId(music.id);
+    } catch {
+      setPlayError("Gagal memuat pemutar YouTube. Cek koneksi internet.");
+      setPlayingId(null);
+    }
+  }
 
   async function uploadAndAdd(file: File) {
     if (!title.trim()) { setError("Isi judul lagu terlebih dahulu"); return; }
@@ -103,6 +167,7 @@ export function MusicManager({ clientId, initialMusics }: Props) {
     if (!confirm("Hapus lagu ini?")) return;
     if (playingId === id) {
       audioRef.current?.pause();
+      stopYouTube();
       setPlayingId(null);
     }
     const res = await fetch(`/api/clients/${clientId}/music`, {
@@ -114,9 +179,18 @@ export function MusicManager({ clientId, initialMusics }: Props) {
   }
 
   async function handlePreview(music: MusicItem) {
+    setPlayError("");
+
+    const videoId = getYouTubeId(music.url);
+    if (videoId) {
+      await previewYouTube(music, videoId);
+      return;
+    }
+
     const audio = audioRef.current;
     if (!audio) return;
-    setPlayError("");
+    // Stop any YouTube preview before playing a direct file
+    stopYouTube();
 
     if (playingId === music.id) {
       // Pause current
@@ -149,6 +223,11 @@ export function MusicManager({ clientId, initialMusics }: Props) {
           setPlayingId(null);
         }}
       />
+
+      {/* Hidden host for the YouTube preview player */}
+      <div aria-hidden style={{ position: "fixed", left: -9999, top: -9999, width: 0, height: 0, overflow: "hidden" }}>
+        <div ref={ytHostRef} />
+      </div>
 
       {/* Add form */}
       <div className="bg-white rounded-2xl border border-stone-200 p-6">
@@ -196,10 +275,18 @@ export function MusicManager({ clientId, initialMusics }: Props) {
             </>
           ) : (
             <div>
-              <label className={labelClass}>URL Lagu</label>
-              <input type="url" placeholder="https://example.com/song.mp3"
+              <label className={labelClass}>URL Lagu / Link YouTube</label>
+              <input type="text" placeholder="Tempel link YouTube atau URL file audio (.mp3)"
                 value={url} onChange={(e) => setUrl(e.target.value)} className={inputClass} />
-              <p className="text-xs text-stone-400 mt-1">Gunakan URL langsung ke file audio (MP3, OGG, WAV)</p>
+              {urlIsYouTube ? (
+                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                  <Play size={11} /> Link YouTube terdeteksi — bisa langsung dipakai. Klik tombol play di daftar untuk tes.
+                </p>
+              ) : (
+                <p className="text-xs text-stone-400 mt-1">
+                  Tempel link YouTube (mis. https://youtu.be/...) atau URL langsung ke file audio (MP3, OGG, WAV).
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -283,7 +370,7 @@ export function MusicManager({ clientId, initialMusics }: Props) {
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
         <p className="text-xs text-amber-700">
-          <strong>Catatan:</strong> Lagu akan otomatis diputar saat tamu membuka undangan (setelah klik "Buka Undangan").
+          <strong>Catatan:</strong> Lagu akan otomatis diputar saat tamu membuka undangan (setelah klik "Buka Undangan"). Link YouTube juga didukung — pemutaran berjalan di latar (audio saja).
         </p>
       </div>
     </div>
