@@ -16,8 +16,8 @@ interface Client {
 
 const BASE_TABS = [
   { label: "Overview", path: "" },
-  { label: "Profil", path: "/profile" },
   { label: "Acara", path: "/events" },
+  { label: "Profil", path: "/profile" },
   { label: "Tamu", path: "/guests" },
   { label: "RSVP", path: "/rsvp" },
   { label: "Ucapan", path: "/wishes" },

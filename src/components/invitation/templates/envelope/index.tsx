@@ -134,6 +134,7 @@ interface Props {
       fontHeading: string;
       fontBody: string;
       showCountdown?: boolean | null;
+      showMap?: boolean | null;
     } | null;
   };
   token: string | null;
@@ -1461,6 +1462,14 @@ function CoupleSection({
 
 // ─── Events Section ────────────────────────────────────────────────────────────
 
+function getMapEmbedUrl(mapsUrl: string, venueName: string, venueAddress: string): string {
+  const coordMatch = mapsUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (coordMatch) return `https://maps.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&output=embed&z=17`;
+  const qMatch = mapsUrl.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (qMatch) return `https://maps.google.com/maps?q=${qMatch[1]},${qMatch[2]}&output=embed&z=17`;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(`${venueName} ${venueAddress}`.trim())}&output=embed&z=17`;
+}
+
 function EventsSection({
   events,
   gold,
@@ -1470,6 +1479,7 @@ function EventsSection({
   fontH,
   fontB,
   t,
+  showMap,
 }: {
   events: Props["client"]["events"];
   gold: string;
@@ -1479,6 +1489,7 @@ function EventsSection({
   fontH: string;
   fontB: string;
   t: Translations;
+  showMap: boolean;
 }) {
   if (!events.length) return null;
 
@@ -1624,6 +1635,18 @@ function EventsSection({
                   )}
                 </div>
 
+                {showMap && ev.mapsUrl && ev.venueName && (
+                  <div style={{ marginTop: "1rem", borderRadius: "12px", overflow: "hidden", border: `1px solid ${gold}22` }}>
+                    <iframe
+                      src={getMapEmbedUrl(ev.mapsUrl, ev.venueName, ev.venueAddress)}
+                      width="100%" height="200"
+                      style={{ display: "block", border: "none" }}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={ev.venueName}
+                    />
+                  </div>
+                )}
                 {ev.mapsUrl && (
                   <a
                     href={ev.mapsUrl}
@@ -3239,6 +3262,7 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
   const sectionKeys = client.sections.map((s) => s.sectionKey);
 
   const showCountdown = !!client.theme?.showCountdown;
+  const showMap = client.theme?.showMap !== false;
   const countdownTarget = showCountdown
     ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
     : null;
@@ -3519,6 +3543,7 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
                   fontH={fontH}
                   fontB={fontB}
                   t={t}
+                  showMap={showMap}
                 />
               )}
 

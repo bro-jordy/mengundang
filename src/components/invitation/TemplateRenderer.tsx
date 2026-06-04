@@ -32,7 +32,7 @@ type InvitationClient = {
   galleries: { id: string; url: string; type: string; sortOrder: number }[];
   gifts: { id: string; bankName: string | null; accountNumber: string | null; accountName: string | null; ewalletType: string | null; ewalletNumber: string | null; qrisImage: string | null; isActive: boolean }[];
   wishes: { id: string; name: string; message: string; reply: string | null; createdAt: Date }[];
-  theme: { templateSlug?: string | null; primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null } | null;
+  theme: { templateSlug?: string | null; primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null; showMap?: boolean | null } | null;
 };
 
 interface Props {

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/database/prisma";
 import { notFound } from "next/navigation";
 import { canAccessClient } from "@/lib/auth/permissions";
 import { WhatsAppBlast } from "@/components/cms/client/WhatsAppBlast";
-import { DEFAULT_TEMPLATE } from "@/lib/whatsapp";
+import { getDefaultTemplate, getDefaultTemplateEn } from "@/lib/whatsapp";
 
 interface Props {
   params: Promise<{ clientId: string }>;
@@ -45,13 +45,16 @@ export default async function WhatsAppPage({ params }: Props) {
     invitationUrl: g.invitationUrl,
   }));
 
+  const clientType = client.clientType as string;
+
   return (
     <WhatsAppBlast
       clientId={clientId}
       clientName={client.name}
+      clientType={clientType}
       initialGuests={guestList}
-      initialTemplate={client.whatsappTemplate?.bodyTemplate ?? DEFAULT_TEMPLATE}
-      initialTemplateEn={client.whatsappTemplate?.bodyTemplateEn ?? ""}
+      initialTemplate={client.whatsappTemplate?.bodyTemplate ?? getDefaultTemplate(clientType)}
+      initialTemplateEn={client.whatsappTemplate?.bodyTemplateEn ?? getDefaultTemplateEn(clientType)}
       profile={
         client.weddingProfile
           ? {

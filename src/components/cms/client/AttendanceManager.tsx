@@ -8,7 +8,7 @@ interface Guest {
   name: string;
   phone: string | null;
   maxPax: number;
-  invitationCategory: "GEREJA_SAJA" | "GEREJA_RESEPSI";
+  invitationCategory: string;
 }
 
 interface AttendanceRow {
@@ -38,10 +38,16 @@ interface Props {
 const CATEGORY_LABEL: Record<string, string> = {
   GEREJA_SAJA: "Gereja Saja",
   GEREJA_RESEPSI: "Gereja + Resepsi",
+  AKAD: "Akad",
+  AKAD_RESEPSI: "Akad & Resepsi",
+  PEMBERKATAN: "Pemberkatan",
+  PEMBERKATAN_RESEPSI: "Pemberkatan & Resepsi",
+  SANGJIT: "Sangjit",
+  LAMARAN: "Lamaran",
 };
 
 const BARCODE_TYPE_LABEL: Record<string, string> = {
-  CHURCH: "Gereja",
+  CHURCH: "Upacara",
   RECEPTION: "Resepsi",
 };
 

@@ -1,12 +1,20 @@
 import { prisma } from "@/lib/database/prisma";
 import { generateGuestToken, generateInvitationUrl } from "@/lib/token";
 import { randomBytes } from "crypto";
-import type { CreateGuestInput, UpdateGuestInput } from "./guests.schema";
+import type { CreateGuestInput, UpdateGuestInput, InvitationCategoryValue } from "./guests.schema";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 function generateBarcode(): string {
   return randomBytes(10).toString("base64url");
+}
+
+function needsBarcodeReception(category: string): boolean {
+  return [
+    "GEREJA_RESEPSI",
+    "AKAD_RESEPSI",
+    "PEMBERKATAN_RESEPSI",
+  ].includes(category);
 }
 
 export async function getGuests(clientId: string) {
@@ -46,8 +54,7 @@ export async function createGuest(
   const token = generateGuestToken();
   const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token);
   const barcodeChurch = generateBarcode();
-  const barcodeReception =
-    data.invitationCategory === "GEREJA_RESEPSI" ? generateBarcode() : null;
+  const barcodeReception = needsBarcodeReception(data.invitationCategory) ? generateBarcode() : null;
 
   return prisma.guest.create({
     data: {
@@ -66,20 +73,20 @@ export async function createGuest(
 
 export async function importGuests(
   clientId: string,
-  guests: Array<{ name: string; phone?: string; invitationCategory?: "GEREJA_SAJA" | "GEREJA_RESEPSI"; maxPax?: number }>,
+  guests: Array<{ name: string; phone?: string; invitationCategory?: InvitationCategoryValue; maxPax?: number }>,
   clientSlug: string
 ) {
   const rows = guests.map((g) => {
     const token = generateGuestToken();
     const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token);
-    const category = g.invitationCategory ?? "GEREJA_RESEPSI";
+    const category = g.invitationCategory ?? "AKAD_RESEPSI";
     return {
       clientId,
       name: g.name,
       phone: g.phone || null,
       invitationCategory: category,
       barcodeChurch: generateBarcode(),
-      barcodeReception: category === "GEREJA_RESEPSI" ? generateBarcode() : null,
+      barcodeReception: needsBarcodeReception(category) ? generateBarcode() : null,
       maxPax: g.maxPax ?? 2,
       guestToken: token,
       invitationUrl,
@@ -114,8 +121,7 @@ export async function regenerateGuestBarcodes(id: string) {
     where: { id },
     data: {
       barcodeChurch: generateBarcode(),
-      barcodeReception:
-        guest.invitationCategory === "GEREJA_RESEPSI" ? generateBarcode() : null,
+      barcodeReception: needsBarcodeReception(guest.invitationCategory) ? generateBarcode() : null,
     },
   });
 }

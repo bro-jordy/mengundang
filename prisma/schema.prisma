@@ -58,6 +58,12 @@ enum RsvpStatus {
 enum InvitationCategory {
   GEREJA_SAJA
   GEREJA_RESEPSI
+  AKAD
+  AKAD_RESEPSI
+  PEMBERKATAN
+  PEMBERKATAN_RESEPSI
+  SANGJIT
+  LAMARAN
 }
 
 enum AttendanceType {
@@ -221,6 +227,7 @@ model Theme {
   fontBody       String  @default("Lato")
   customCss      String? @db.Text
   showCountdown  Boolean  @default(false)
+  showMap        Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

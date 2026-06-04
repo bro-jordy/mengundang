@@ -22,7 +22,15 @@ interface Event {
   mapsUrl: string;
 }
 
-export function EventSection({ events }: { events: Event[] }) {
+function getMapEmbedUrl(mapsUrl: string, venueName: string, venueAddress: string): string {
+  const coordMatch = mapsUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (coordMatch) return `https://maps.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&output=embed&z=17`;
+  const qMatch = mapsUrl.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (qMatch) return `https://maps.google.com/maps?q=${qMatch[1]},${qMatch[2]}&output=embed&z=17`;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(`${venueName} ${venueAddress}`.trim())}&output=embed&z=17`;
+}
+
+export function EventSection({ events, showMap }: { events: Event[]; showMap?: boolean }) {
   const firstEvent = events[0];
 
   return (
@@ -86,6 +94,18 @@ export function EventSection({ events }: { events: Event[] }) {
                 )}
               </div>
 
+              {showMap && event.mapsUrl && event.venueName && (
+                <div className="mt-4 rounded-xl overflow-hidden border border-stone-200">
+                  <iframe
+                    src={getMapEmbedUrl(event.mapsUrl, event.venueName, event.venueAddress)}
+                    width="100%" height="200"
+                    style={{ display: "block", border: "none" }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title={event.venueName}
+                  />
+                </div>
+              )}
               {event.mapsUrl && (
                 <a
                   href={event.mapsUrl}

@@ -24,8 +24,9 @@ type GuestWithRsvp = Guest & { rsvp: Rsvp | null; attendances: Attendance[] };
 interface ClientData {
   name: string;
   slug: string;
+  clientType: string;
   weddingProfile: { groomName: string; brideName: string } | null;
-  events: { date: Date | null }[];
+  events: { date: Date | null; type: string }[];
   whatsappTemplate: { bodyTemplate: string } | null;
 }
 
@@ -50,12 +51,60 @@ const STATUS_COLOR: Record<string, string> = {
 const CATEGORY_LABEL: Record<string, string> = {
   GEREJA_SAJA: "Gereja Saja",
   GEREJA_RESEPSI: "Gereja + Resepsi",
+  AKAD: "Akad",
+  AKAD_RESEPSI: "Akad & Resepsi",
+  PEMBERKATAN: "Pemberkatan",
+  PEMBERKATAN_RESEPSI: "Pemberkatan & Resepsi",
+  SANGJIT: "Sangjit",
+  LAMARAN: "Lamaran",
 };
 
 const CATEGORY_COLOR: Record<string, string> = {
   GEREJA_SAJA: "bg-blue-50 text-blue-700",
   GEREJA_RESEPSI: "bg-purple-50 text-purple-700",
+  AKAD: "bg-blue-50 text-blue-700",
+  AKAD_RESEPSI: "bg-purple-50 text-purple-700",
+  PEMBERKATAN: "bg-blue-50 text-blue-700",
+  PEMBERKATAN_RESEPSI: "bg-purple-50 text-purple-700",
+  SANGJIT: "bg-orange-50 text-orange-700",
+  LAMARAN: "bg-pink-50 text-pink-700",
 };
+
+function getInvitationCategories(
+  clientType: string,
+  eventTypes: string[]
+): { value: string; label: string }[] {
+  if (clientType === "SANGJIT") {
+    return [{ value: "SANGJIT", label: "Sangjit" }];
+  }
+  if (clientType === "LAMARAN") {
+    return [{ value: "LAMARAN", label: "Lamaran" }];
+  }
+
+  // WEDDING
+  const hasAkad = eventTypes.includes("AKAD");
+  const hasPemberkatan = eventTypes.includes("PEMBERKATAN");
+  const hasResepsi = eventTypes.includes("RESEPSI");
+
+  const result: { value: string; label: string }[] = [];
+
+  if (hasAkad) {
+    result.push({ value: "AKAD", label: "Akad" });
+    if (hasResepsi) result.push({ value: "AKAD_RESEPSI", label: "Akad & Resepsi" });
+  }
+
+  if (hasPemberkatan) {
+    result.push({ value: "PEMBERKATAN", label: "Pemberkatan" });
+    if (hasResepsi) result.push({ value: "PEMBERKATAN_RESEPSI", label: "Pemberkatan & Resepsi" });
+  }
+
+  if (result.length === 0) {
+    result.push({ value: "AKAD_RESEPSI", label: "Akad & Resepsi" });
+    result.push({ value: "PEMBERKATAN_RESEPSI", label: "Pemberkatan & Resepsi" });
+  }
+
+  return result;
+}
 
 export function GuestsManager({ clientId, initialGuests, client }: Props) {
   const [guests, setGuests] = useState<GuestWithRsvp[]>(initialGuests);
@@ -65,13 +114,19 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
   const [search, setSearch] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const invitationCategories = getInvitationCategories(
+    client?.clientType ?? "WEDDING",
+    (client?.events ?? []).map((e) => e.type)
+  );
+  const defaultCategory = invitationCategories[0]?.value ?? "AKAD_RESEPSI";
+
   const filteredGuests = guests.filter((g) =>
     g.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateGuestInput>({
     resolver: zodResolver(createGuestSchema) as any,
-    defaultValues: { maxPax: 2, invitationCategory: "GEREJA_RESEPSI" },
+    defaultValues: { maxPax: 2, invitationCategory: defaultCategory as any },
   });
 
   function buildMessage(guest: GuestWithRsvp): string {
@@ -155,12 +210,16 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
     const text = await file.text();
     const lines = text.trim().split("\n").slice(1);
+    const validCategories = invitationCategories.map((c) => c.value);
     const parsed = lines.map((line) => {
       const [name, phone, category, maxPax] = line.split(",").map((s) => s.trim());
+      const resolvedCategory = validCategories.includes(category)
+        ? category
+        : defaultCategory;
       return {
         name,
         phone,
-        invitationCategory: (category === "GEREJA_SAJA" ? "GEREJA_SAJA" : "GEREJA_RESEPSI") as "GEREJA_SAJA" | "GEREJA_RESEPSI",
+        invitationCategory: resolvedCategory as any,
         maxPax: Number(maxPax) || 2,
       };
     }).filter((g) => g.name);
@@ -199,6 +258,8 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
     a.download = `tamu-${clientId}.csv`;
     a.click();
   }
+
+  const csvCategoryValues = invitationCategories.map((c) => c.value).join("/");
 
   return (
     <div className="space-y-4">
@@ -240,7 +301,8 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
       {/* Format CSV info */}
       <p className="text-xs text-stone-400">
-        Format CSV: <span className="font-mono">Nama,Telepon,Kategori(GEREJA_SAJA/GEREJA_RESEPSI),MaksTamu</span>
+        Format CSV:{" "}
+        <span className="font-mono">Nama,Telepon,Kategori({csvCategoryValues}),MaksTamu</span>
       </p>
 
       {/* Add form */}
@@ -263,8 +325,11 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
             <div>
               <label className={labelClass}>Kategori Undangan *</label>
               <select {...register("invitationCategory")} className={inputClass}>
-                <option value="GEREJA_RESEPSI">Gereja + Syukuran Makan / Resepsi</option>
-                <option value="GEREJA_SAJA">Gereja Saja</option>
+                {invitationCategories.map((cat) => (
+                  <option key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </option>
+                ))}
               </select>
               {errors.invitationCategory && (
                 <p className="text-red-500 text-xs mt-1">{errors.invitationCategory.message}</p>
@@ -301,12 +366,15 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
       )}
 
       {/* Stats */}
-      <div className="flex gap-4 text-sm text-stone-500">
+      <div className="flex gap-4 text-sm text-stone-500 flex-wrap">
         <span>{guests.length} tamu</span>
         <span>{guests.filter((g) => g.isOpened).length} sudah buka</span>
         <span>{guests.filter((g) => g.rsvpStatus === "HADIR").length} konfirmasi hadir</span>
-        <span>{guests.filter((g) => g.invitationCategory === "GEREJA_SAJA").length} gereja saja</span>
-        <span>{guests.filter((g) => g.invitationCategory === "GEREJA_RESEPSI").length} gereja+resepsi</span>
+        {invitationCategories.map((cat) => (
+          <span key={cat.value}>
+            {guests.filter((g) => g.invitationCategory === cat.value).length} {cat.label.toLowerCase()}
+          </span>
+        ))}
       </div>
 
       {/* Guest table */}
@@ -345,8 +413,12 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLOR[guest.invitationCategory]}`}>
-                        {CATEGORY_LABEL[guest.invitationCategory]}
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          CATEGORY_COLOR[guest.invitationCategory] ?? "bg-stone-100 text-stone-600"
+                        }`}
+                      >
+                        {CATEGORY_LABEL[guest.invitationCategory] ?? guest.invitationCategory}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -359,13 +431,14 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                       {guest.barcodeChurch ? (
                         <div className="flex flex-col gap-0.5">
                           <span className="text-xs text-stone-500">
-                            G: <span className="font-mono text-stone-700">{guest.barcodeChurch.slice(0, 6)}…</span>
+                            1: <span className="font-mono text-stone-700">{guest.barcodeChurch.slice(0, 6)}…</span>
                           </span>
                           {guest.barcodeReception && (
                             <span className="text-xs text-stone-500">
-                              R: <span className="font-mono text-stone-700">{guest.barcodeReception.slice(0, 6)}…</span>
+                              2: <span className="font-mono text-stone-700">{guest.barcodeReception.slice(0, 6)}…</span>
                             </span>
                           )}
+
                         </div>
                       ) : (
                         <span className="text-xs text-stone-400">—</span>

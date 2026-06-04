@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { eventSchema, type EventInput } from "@/modules/wedding/wedding.schema";
 import { formatDate, formatDateInput } from "@/lib/utils";
@@ -19,8 +19,8 @@ const EVENT_LABELS: Record<string, string> = {
 
 const EVENT_OPTIONS_BY_TYPE: Record<string, { value: string; label: string }[]> = {
   WEDDING: [
-    { value: "AKAD", label: "Akad Nikah" },
-    { value: "PEMBERKATAN", label: "Pemberkatan Perkawinan" },
+    { value: "AKAD", label: "Akad Nikah · Muslim" },
+    { value: "PEMBERKATAN", label: "Pemberkatan Perkawinan · Kristen / Katolik / Hindu / Buddha" },
     { value: "RESEPSI", label: "Resepsi" },
     { value: "AFTER_PARTY", label: "After Party" },
   ],
@@ -32,6 +32,39 @@ const EVENT_OPTIONS_BY_TYPE: Record<string, { value: string; label: string }[]> 
     { value: "LAMARAN", label: "Lamaran" },
     { value: "AFTER_PARTY", label: "After Party" },
   ],
+};
+
+const VENUE_PLACEHOLDERS: Record<string, { name: string; address: string; maps: string }> = {
+  AKAD: {
+    name: "Masjid Al-Aqsha",
+    address: "Jl. Masjid Raya No. 1, Jakarta",
+    maps: "https://maps.google.com/...",
+  },
+  PEMBERKATAN: {
+    name: "Gereja Santo Petrus",
+    address: "Jl. Gereja No. 1, Jakarta",
+    maps: "https://maps.google.com/...",
+  },
+  RESEPSI: {
+    name: "Gedung Serbaguna Harmoni",
+    address: "Jl. Merdeka No. 1, Jakarta Pusat",
+    maps: "https://maps.google.com/...",
+  },
+  AFTER_PARTY: {
+    name: "Resto & Lounge XYZ",
+    address: "Jl. Sudirman No. 10, Jakarta",
+    maps: "https://maps.google.com/...",
+  },
+  SANGJIT: {
+    name: "Kediaman Keluarga",
+    address: "Jl. Kelapa Gading No. 5, Jakarta",
+    maps: "https://maps.google.com/...",
+  },
+  LAMARAN: {
+    name: "Kediaman Keluarga",
+    address: "Jl. Kelapa Gading No. 5, Jakarta",
+    maps: "https://maps.google.com/...",
+  },
 };
 
 interface Props {
@@ -179,10 +212,13 @@ function EventForm({
   onCancel?: () => void;
   loading?: boolean;
 }) {
-  const { register, handleSubmit, formState: { errors } } = useForm<EventInput>({
+  const { register, handleSubmit, control, formState: { errors } } = useForm<EventInput>({
     resolver: zodResolver(eventSchema) as any,
     defaultValues: defaultValues ?? { type: (eventOptions[0]?.value ?? "AKAD") as EventInput["type"], sortOrder: 0 },
   });
+
+  const selectedType = useWatch({ control, name: "type" }) as string;
+  const ph = VENUE_PLACEHOLDERS[selectedType] ?? VENUE_PLACEHOLDERS.RESEPSI;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -218,17 +254,17 @@ function EventForm({
 
       <div>
         <label className={labelClass}>Nama Venue</label>
-        <input {...register("venueName")} placeholder="Gedung Serbaguna Harmoni" className={inputClass} />
+        <input {...register("venueName")} placeholder={ph.name} className={inputClass} />
       </div>
 
       <div>
         <label className={labelClass}>Alamat Venue</label>
-        <textarea {...register("venueAddress")} rows={2} placeholder="Jl. Merdeka No. 1, Jakarta Pusat" className={inputClass} />
+        <textarea {...register("venueAddress")} rows={2} placeholder={ph.address} className={inputClass} />
       </div>
 
       <div>
         <label className={labelClass}>Link Google Maps</label>
-        <input {...register("mapsUrl")} placeholder="https://maps.google.com/..." className={inputClass} />
+        <input {...register("mapsUrl")} placeholder={ph.maps} className={inputClass} />
       </div>
 
       <div className="flex gap-3">

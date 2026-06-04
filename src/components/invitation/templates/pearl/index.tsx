@@ -64,7 +64,7 @@ interface Props {
     galleries: { id: string; url: string; type: string; sortOrder: number }[];
     gifts: { id: string; bankName: string | null; accountNumber: string | null; accountName: string | null; ewalletType: string | null; ewalletNumber: string | null; qrisImage: string | null; isActive: boolean }[];
     wishes: { id: string; name: string; message: string; reply: string | null; createdAt: Date }[];
-    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null } | null;
+    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null; showMap?: boolean | null } | null;
   };
   token: string | null;
 }
@@ -126,6 +126,7 @@ export function PearlTemplate({ guest, client, token }: Props) {
   const sectionKeys = client.sections.map((s) => s.sectionKey);
 
   const showCountdown = !!client.theme?.showCountdown;
+  const showMap = client.theme?.showMap !== false;
   const countdownTarget = showCountdown
     ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
     : null;
@@ -321,7 +322,7 @@ export function PearlTemplate({ guest, client, token }: Props) {
 
               {/* ── Events ── */}
               {sectionKeys.includes("EVENT") && (
-                <EventSection events={client.events} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} />
+                <EventSection events={client.events} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} showMap={showMap} />
               )}
 
               {/* ── Gallery ── */}
@@ -559,8 +560,16 @@ function CoupleSection({ profile, gold, ivory, champagne, text, fontH, fontB }: 
 
 // ─── Event Section ────────────────────────────────────────────────────────────
 
-function EventSection({ events, gold, ivory, champagne, text, fontH, fontB }: {
-  events: Props["client"]["events"]; gold: string; ivory: string; champagne: string; text: string; fontH: string; fontB: string;
+function getMapEmbedUrl(mapsUrl: string, venueName: string, venueAddress: string): string {
+  const coordMatch = mapsUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (coordMatch) return `https://maps.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&output=embed&z=17`;
+  const qMatch = mapsUrl.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (qMatch) return `https://maps.google.com/maps?q=${qMatch[1]},${qMatch[2]}&output=embed&z=17`;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(`${venueName} ${venueAddress}`.trim())}&output=embed&z=17`;
+}
+
+function EventSection({ events, gold, ivory, champagne, text, fontH, fontB, showMap }: {
+  events: Props["client"]["events"]; gold: string; ivory: string; champagne: string; text: string; fontH: string; fontB: string; showMap: boolean;
 }) {
   if (!events.length) return null;
   return (
@@ -612,6 +621,18 @@ function EventSection({ events, gold, ivory, champagne, text, fontH, fontB }: {
                     </div>
                   )}
                 </div>
+                {showMap && ev.mapsUrl && ev.venueName && (
+                  <div style={{ marginTop: "1rem", borderRadius: "12px", overflow: "hidden", border: `1px solid ${gold}22` }}>
+                    <iframe
+                      src={getMapEmbedUrl(ev.mapsUrl, ev.venueName, ev.venueAddress)}
+                      width="100%" height="200"
+                      style={{ display: "block", border: "none" }}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={ev.venueName}
+                    />
+                  </div>
+                )}
                 {ev.mapsUrl && (
                   <a href={ev.mapsUrl} target="_blank" rel="noopener noreferrer"
                     style={{

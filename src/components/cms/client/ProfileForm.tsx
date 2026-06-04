@@ -163,7 +163,11 @@ export function ProfileForm({ clientId, initialData }: Props) {
           />
         </Field>
         <Field label="Sumber Quote" error={errors.openingQuoteBy?.message}>
-          <input {...register("openingQuoteBy")} placeholder="QS. Ar-Rum: 21" className={inputClass} />
+          <input
+            {...register("openingQuoteBy")}
+            placeholder="Contoh: QS. Ar-Rum: 21 · 1 Korintus 13:4 · Bhagavad Gita · Dhammapada"
+            className={inputClass}
+          />
         </Field>
         <Field label="Isi Cerita / Pesan" error={errors.story?.message}>
           <RichTextEditor

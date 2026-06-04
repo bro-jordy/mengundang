@@ -33,6 +33,7 @@ interface Profile {
 interface Props {
   clientId: string;
   clientName: string;
+  clientType: string;
   initialGuests: Guest[];
   initialTemplate: string;
   initialTemplateEn?: string;
@@ -59,6 +60,7 @@ const RSVP_LABEL: Record<RsvpStatus, string> = {
 export function WhatsAppBlast({
   clientId,
   clientName,
+  clientType,
   initialGuests,
   initialTemplate,
   initialTemplateEn = "",
@@ -179,7 +181,11 @@ export function WhatsAppBlast({
         <div className="bg-white rounded-2xl border border-stone-200 p-6">
           <h2 className="font-semibold text-stone-800 mb-1">Template Pesan</h2>
           <p className="text-xs text-stone-400 mb-4">
-            Buat template untuk masing-masing bahasa. Kedua template disimpan bersama.
+            Template untuk acara{" "}
+            <span className="font-medium text-stone-600">
+              {clientType === "SANGJIT" ? "Sangjit" : clientType === "LAMARAN" ? "Lamaran" : "Pernikahan"}
+            </span>
+            . Kedua bahasa disimpan bersama.
           </p>
 
           {/* Language tabs */}

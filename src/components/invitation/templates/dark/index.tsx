@@ -62,7 +62,7 @@ interface Props {
     galleries: { id: string; url: string; type: string; sortOrder: number }[];
     gifts: { id: string; bankName: string | null; accountNumber: string | null; accountName: string | null; ewalletType: string | null; ewalletNumber: string | null; qrisImage: string | null; isActive: boolean }[];
     wishes: { id: string; name: string; message: string; reply: string | null; createdAt: Date }[];
-    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null } | null;
+    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null; showMap?: boolean | null } | null;
   };
   token: string | null;
 }
@@ -107,6 +107,7 @@ export function DarkTemplate({ guest, client, token }: Props) {
     : "Groom & Bride";
 
   const showCountdown = !!client.theme?.showCountdown;
+  const showMap = client.theme?.showMap !== false;
   const countdownTarget = showCountdown
     ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
     : null;
@@ -318,7 +319,7 @@ export function DarkTemplate({ guest, client, token }: Props) {
           {/* ── Events ── */}
           {sectionKeys.includes("EVENT") && (
             <EventSection events={client.events} rose={rose} fontHeading={fontHeading}
-              textColor={textColor} bgColor={bgColor} secondaryColor={secondaryColor} />
+              textColor={textColor} bgColor={bgColor} secondaryColor={secondaryColor} showMap={showMap} />
           )}
 
           {/* ── Gallery ── */}
@@ -486,9 +487,17 @@ function CoupleSection({ profile, rose, fontHeading, textColor, bgColor }: {
 
 // ─── Event Section ────────────────────────────────────────────────────────────
 
-function EventSection({ events, rose, fontHeading, textColor, bgColor, secondaryColor }: {
+function getMapEmbedUrl(mapsUrl: string, venueName: string, venueAddress: string): string {
+  const coordMatch = mapsUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (coordMatch) return `https://maps.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&output=embed&z=17`;
+  const qMatch = mapsUrl.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (qMatch) return `https://maps.google.com/maps?q=${qMatch[1]},${qMatch[2]}&output=embed&z=17`;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(`${venueName} ${venueAddress}`.trim())}&output=embed&z=17`;
+}
+
+function EventSection({ events, rose, fontHeading, textColor, bgColor, secondaryColor, showMap }: {
   events: Props["client"]["events"]; rose: string; fontHeading: string;
-  textColor: string; bgColor: string; secondaryColor: string;
+  textColor: string; bgColor: string; secondaryColor: string; showMap: boolean;
 }) {
   if (!events.length) return null;
   return (
@@ -534,6 +543,18 @@ function EventSection({ events, rose, fontHeading, textColor, bgColor, secondary
                   </div>
                 )}
               </div>
+              {showMap && event.mapsUrl && event.venueName && (
+                <div className="mt-4 rounded-xl overflow-hidden" style={{ border: `1px solid ${rose}22` }}>
+                  <iframe
+                    src={getMapEmbedUrl(event.mapsUrl, event.venueName, event.venueAddress)}
+                    width="100%" height="200"
+                    style={{ display: "block", border: "none" }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title={event.venueName}
+                  />
+                </div>
+              )}
               {event.mapsUrl && (
                 <a href={event.mapsUrl} target="_blank" rel="noopener noreferrer"
                   className="mt-5 w-full flex items-center justify-center gap-2 text-xs tracking-widest uppercase py-2.5 rounded-full border transition-colors"

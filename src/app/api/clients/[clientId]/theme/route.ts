@@ -14,6 +14,7 @@ const themeSchema = z.object({
   fontBody: z.string().min(1).optional(),
   customCss: z.string().optional(),
   showCountdown: z.boolean().optional(),
+  showMap: z.boolean().optional(),
 });
 
 interface Params {

@@ -24,6 +24,70 @@ Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan m
 
 Terima kasih. 🙏`;
 
+export const DEFAULT_TEMPLATE_SANGJIT = `Halo {guest_name},
+
+Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara Sangjit kami:
+
+✨ {groom_name} & {bride_name} ✨
+
+Silakan buka undangan melalui link berikut:
+{invitation_url}
+
+Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.
+
+Terima kasih. 🙏`;
+
+export const DEFAULT_TEMPLATE_SANGJIT_EN = `Dear {guest_name},
+
+We cordially invite you to join our Sangjit ceremony:
+
+✨ {groom_name} & {bride_name} ✨
+
+Please open your personal invitation via the link below:
+{invitation_url}
+
+We would be honored to have you with us on this special day.
+
+Thank you. 🙏`;
+
+export const DEFAULT_TEMPLATE_LAMARAN = `Halo {guest_name},
+
+Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir di acara Lamaran kami:
+
+✨ {groom_name} & {bride_name} ✨
+
+Silakan buka undangan melalui link berikut:
+{invitation_url}
+
+Merupakan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.
+
+Terima kasih. 🙏`;
+
+export const DEFAULT_TEMPLATE_LAMARAN_EN = `Dear {guest_name},
+
+We cordially invite you to our Engagement ceremony:
+
+✨ {groom_name} & {bride_name} ✨
+
+Please open your personal invitation via the link below:
+{invitation_url}
+
+We would be honored to have your presence and blessings.
+
+Thank you. 🙏`;
+
+export function getDefaultTemplate(clientType: string): string {
+  if (clientType === "SANGJIT") return DEFAULT_TEMPLATE_SANGJIT;
+  if (clientType === "LAMARAN") return DEFAULT_TEMPLATE_LAMARAN;
+  return DEFAULT_TEMPLATE;
+}
+
+export function getDefaultTemplateEn(clientType: string): string {
+  if (clientType === "SANGJIT") return DEFAULT_TEMPLATE_SANGJIT_EN;
+  if (clientType === "LAMARAN") return DEFAULT_TEMPLATE_LAMARAN_EN;
+  return DEFAULT_TEMPLATE_EN;
+}
+
 interface TemplateVars {
   guest_name: string;
   groom_name: string;

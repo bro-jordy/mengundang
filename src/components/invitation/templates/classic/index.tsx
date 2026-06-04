@@ -108,6 +108,7 @@ interface Props {
       fontHeading: string;
       fontBody: string;
       showCountdown?: boolean | null;
+      showMap?: boolean | null;
     } | null;
   };
   token: string | null;
@@ -138,6 +139,7 @@ export function ClassicTemplate({ guest, client, token }: Props) {
   const fontHeading = theme?.fontHeading || "Playfair Display";
 
   const showCountdown = !!client.theme?.showCountdown;
+  const showMap = client.theme?.showMap !== false;
   const countdownTarget = showCountdown
     ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
     : null;
@@ -266,7 +268,7 @@ export function ClassicTemplate({ guest, client, token }: Props) {
           )}
 
           {sectionKeys.includes("COUPLE") && <CoupleSection profile={profile} />}
-          {sectionKeys.includes("EVENT") && <EventSection events={client.events} />}
+          {sectionKeys.includes("EVENT") && <EventSection events={client.events} showMap={showMap} />}
           {sectionKeys.includes("GALLERY") && <GallerySection galleries={client.galleries} />}
 
           {sectionKeys.includes("RSVP") && (

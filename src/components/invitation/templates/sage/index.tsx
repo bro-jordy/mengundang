@@ -31,6 +31,96 @@ function useCountdown(target: Date | null) {
   return targetMs !== null ? t : null;
 }
 
+// ─── Translations ─────────────────────────────────────────────────────────────
+
+const TR = {
+  id: {
+    kepada: "Kepada Yth.",
+    openBtn: "Buka Undangan",
+    // Countdown
+    countdownLabel: "Menuju Hari Bahagia",
+    days: "Hari", hours: "Jam", minutes: "Menit", seconds: "Detik",
+    // Couple
+    eyebrow_couple: " ", title_couple: "Pasangan",
+    // Events
+    eyebrow_event: "Jadwal", title_event: "Detail Acara",
+    viewLocation: "Lihat Lokasi",
+    // Gallery
+    eyebrow_gallery: "Galeri", title_gallery: "Momen Berharga",
+    swipe: "Geser untuk lihat lebih →",
+    // RSVP
+    eyebrow_rsvp: "Konfirmasi", title_rsvp: "RSVP",
+    attending: "Hadir", notAttending: "Tidak Hadir",
+    guestCount: "Jumlah Tamu", max: "maks.",
+    msgPlaceholder: "Pesan atau doa (opsional)",
+    confirmBtn: "Konfirmasi Kehadiran", sending: "Mengirim...",
+    thankYou: "Terima kasih!", confirmed: "Konfirmasi kehadiran telah diterima",
+    rsvpLocked: "RSVP tersedia melalui link undangan personal.",
+    // Wishes
+    eyebrow_wishes: "Pesan", title_wishes: "Ucapan & Doa",
+    yourName: "Nama Anda", wishPlaceholder: "Tulis doa dan ucapan...",
+    sendWish: "Kirim Ucapan", sent: "Terkirim!", beFirst: "Jadilah yang pertama memberikan ucapan",
+    reply: "Balasan",
+    // Gift
+    eyebrow_gift: "Hadiah", title_gift: "Amplop Digital",
+    giftNote: "Doa restu Anda adalah hadiah terbaik kami.",
+    transferLabel: "Transfer Bank", accountName: "Atas Nama",
+    copy: "Salin", copied: "Tersalin",
+    eWallet: "E-Wallet", qris: "QRIS",
+    viewQr: "Lihat QR", closeQr: "Tutup", scanToTransfer: "Scan untuk transfer",
+    giftThanks: "Terima kasih atas kasih sayang Anda",
+    // Footer
+    footerThanks: "Terima kasih atas doa dan kehadirannya",
+    madeWith: "Made with love",
+    // Story
+    storyDefault: "Cerita Singkat Pasangan",
+  },
+  en: {
+    kepada: "Dear",
+    openBtn: "Open Invitation",
+    // Countdown
+    countdownLabel: "Counting Down to Our Day",
+    days: "Days", hours: "Hours", minutes: "Mins", seconds: "Secs",
+    // Couple
+    eyebrow_couple: " ", title_couple: "The Couple",
+    // Events
+    eyebrow_event: "Schedule", title_event: "Event Details",
+    viewLocation: "View Location",
+    // Gallery
+    eyebrow_gallery: "Gallery", title_gallery: "Precious Moments",
+    swipe: "Swipe for more →",
+    // RSVP
+    eyebrow_rsvp: "Confirmation", title_rsvp: "RSVP",
+    attending: "Attending", notAttending: "Not Attending",
+    guestCount: "Number of Guests", max: "max.",
+    msgPlaceholder: "Message or prayer (optional)",
+    confirmBtn: "Confirm Attendance", sending: "Sending...",
+    thankYou: "Thank you!", confirmed: "Your attendance has been confirmed",
+    rsvpLocked: "RSVP is available via your personal invitation link.",
+    // Wishes
+    eyebrow_wishes: "Messages", title_wishes: "Wishes & Prayers",
+    yourName: "Your Name", wishPlaceholder: "Write your wishes and prayers...",
+    sendWish: "Send Wishes", sent: "Sent!", beFirst: "Be the first to leave a wish",
+    reply: "Reply",
+    // Gift
+    eyebrow_gift: "Gift", title_gift: "Digital Gift",
+    giftNote: "Your blessings are the greatest gift we could ask for.",
+    transferLabel: "Bank Transfer", accountName: "Account Name",
+    copy: "Copy", copied: "Copied",
+    eWallet: "E-Wallet", qris: "QRIS",
+    viewQr: "View QR", closeQr: "Close", scanToTransfer: "Scan to transfer",
+    giftThanks: "Thank you for your love and generosity",
+    // Footer
+    footerThanks: "Thank you for your prayers and presence",
+    madeWith: "Made with love",
+    // Story
+    storyDefault: "Our Story",
+  },
+} as const;
+
+type Lang = keyof typeof TR;
+type T = (typeof TR)[Lang];
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Guest {
@@ -62,7 +152,7 @@ interface Props {
     galleries: { id: string; url: string; type: string; sortOrder: number }[];
     gifts: { id: string; bankName: string | null; accountNumber: string | null; accountName: string | null; ewalletType: string | null; ewalletNumber: string | null; qrisImage: string | null; isActive: boolean }[];
     wishes: { id: string; name: string; message: string; reply: string | null; createdAt: Date }[];
-    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null } | null;
+    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null; showMap?: boolean | null } | null;
   };
   token: string | null;
 }
@@ -81,7 +171,7 @@ const INVITATION_LABEL: Record<string, string> = {
 
 // ─── Sage palette defaults ────────────────────────────────────────────────────
 const SAGE = {
-  accent: "#7c9a7e",   // sage green
+  accent: "#7c9a7e",
   cream: "#fafaf8",
   ivory: "#f2efe9",
   text: "#1e1e1c",
@@ -89,7 +179,16 @@ const SAGE = {
   sand: "#e8e2d9",
 };
 
-// ─── Fade-in on scroll — whileInView once:true, stays visible permanently ────
+// ─── Map embed helper ─────────────────────────────────────────────────────────
+function getMapEmbedUrl(mapsUrl: string, venueName: string, venueAddress: string): string {
+  const coordMatch = mapsUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (coordMatch) return `https://maps.google.com/maps?q=${coordMatch[1]},${coordMatch[2]}&output=embed&z=17`;
+  const qMatch = mapsUrl.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (qMatch) return `https://maps.google.com/maps?q=${qMatch[1]},${qMatch[2]}&output=embed&z=17`;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(`${venueName} ${venueAddress}`.trim())}&output=embed&z=17`;
+}
+
+// ─── Fade-in on scroll ────────────────────────────────────────────────────────
 
 function Reveal({ children, delay = 0, y = 24, className }: {
   children: React.ReactNode; delay?: number; y?: number; className?: string;
@@ -112,6 +211,8 @@ function Reveal({ children, delay = 0, y = 24, className }: {
 export function SageTemplate({ guest, client, token }: Props) {
   const [opened, setOpened] = useState(false);
   const [coverGone, setCoverGone] = useState(false);
+  const [lang, setLang] = useState<Lang>("en");
+  const t: T = TR[lang];
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -120,6 +221,7 @@ export function SageTemplate({ guest, client, token }: Props) {
   const sectionKeys = client.sections.map((s) => s.sectionKey);
 
   const showCountdown = !!client.theme?.showCountdown;
+  const showMap = client.theme?.showMap !== false;
   const countdownTarget = showCountdown
     ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
     : null;
@@ -172,6 +274,26 @@ export function SageTemplate({ guest, client, token }: Props) {
         <MusicPlayer url={music.url} title={music.title} registerPlay={(fn) => { playMusicRef.current = fn; }} />
       )}
 
+      {/* Language toggle — always visible */}
+      <div style={{
+        position: "fixed", bottom: "5rem", right: "1rem", zIndex: 10000,
+        display: "flex", borderRadius: "9999px", overflow: "hidden",
+        border: `1px solid ${accent}44`, boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+      }}>
+        {(["id", "en"] as Lang[]).map((l) => (
+          <button key={l} onClick={() => setLang(l)} style={{
+            padding: "0.4rem 0.75rem", fontSize: "0.65rem",
+            fontFamily: `'${fontB}', Lato, sans-serif`, letterSpacing: "0.1em",
+            textTransform: "uppercase" as const,
+            background: lang === l ? accent : cream,
+            color: lang === l ? "#fff" : accent,
+            border: "none", cursor: "pointer", transition: "all 0.2s ease",
+          }}>
+            {l.toUpperCase()}
+          </button>
+        ))}
+      </div>
+
       {/* ── COVER ── */}
       <AnimatePresence>
         {!coverGone && (
@@ -183,7 +305,6 @@ export function SageTemplate({ guest, client, token }: Props) {
             onAnimationComplete={() => { if (opened) setCoverGone(true); }}
             style={{ position: "fixed", inset: 0, zIndex: 50, pointerEvents: opened ? "none" : "auto" }}
           >
-            {/* BG */}
             <div style={{
               position: "absolute", inset: 0,
               backgroundImage: heroUrl ? `url('${heroUrl}')` : undefined,
@@ -191,8 +312,6 @@ export function SageTemplate({ guest, client, token }: Props) {
               backgroundColor: heroUrl ? undefined : ivory,
             }} />
             {heroUrl && <div style={{ position: "absolute", inset: 0, background: "rgba(30,30,28,0.42)" }} />}
-
-            {/* Top rule */}
             <div style={{ position: "absolute", top: "1.5rem", left: "2rem", right: "2rem", height: "1px", background: heroUrl ? "rgba(255,255,255,0.3)" : SAGE.sand }} />
 
             <div style={{ position: "relative", zIndex: 10, height: "100dvh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 2rem" }}>
@@ -209,7 +328,7 @@ export function SageTemplate({ guest, client, token }: Props) {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.55, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "clamp(2.4rem,8vw,3.5rem)", fontWeight: 400, lineHeight: 1.15, color: heroUrl ? "#fff" : text, marginBottom: "0" }}
+                style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "clamp(2.4rem,8vw,3.5rem)", fontWeight: 400, lineHeight: 1.15, color: heroUrl ? "#fff" : text }}
               >
                 {profile?.groomNickname || "Groom"}
               </motion.h1>
@@ -231,7 +350,7 @@ export function SageTemplate({ guest, client, token }: Props) {
               {guest && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
                   style={{ marginBottom: "2rem", textAlign: "center" }}>
-                  <p style={{ fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: heroUrl ? "rgba(255,255,255,0.55)" : SAGE.muted, marginBottom: "0.25rem" }}>Kepada Yth.</p>
+                  <p style={{ fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: heroUrl ? "rgba(255,255,255,0.55)" : SAGE.muted, marginBottom: "0.25rem" }}>{t.kepada}</p>
                   <p style={{ fontWeight: 600, color: heroUrl ? "#fff" : text, fontSize: "1rem" }}>{guest.name}</p>
                 </motion.div>
               )}
@@ -252,11 +371,10 @@ export function SageTemplate({ guest, client, token }: Props) {
                   boxShadow: `0 4px 20px ${accent}44`,
                 }}
               >
-                Buka Undangan
+                {t.openBtn}
               </motion.button>
             </div>
 
-            {/* Bottom rule */}
             <div style={{ position: "absolute", bottom: "1.5rem", left: "2rem", right: "2rem", height: "1px", background: heroUrl ? "rgba(255,255,255,0.3)" : SAGE.sand }} />
           </motion.div>
         )}
@@ -278,7 +396,7 @@ export function SageTemplate({ guest, client, token }: Props) {
 
         {coverGone && (
           <>
-            {/* ── Hero strip ── */}
+            {/* Hero strip */}
             {heroUrl && (
               <div style={{ position: "relative", height: "160px", overflow: "hidden" }}>
                 <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${heroUrl}')`, backgroundSize: "cover", backgroundPosition: "center 25%" }} />
@@ -295,14 +413,14 @@ export function SageTemplate({ guest, client, token }: Props) {
               </div>
             )}
 
-            {/* ── Countdown ── */}
+            {/* Countdown */}
             {showCountdown && countdownTimeLeft && (
               <section style={{ padding: "3rem 1.5rem", background: cream, textAlign: "center", borderTop: `1px solid ${accent}18` }}>
-                <p style={{ fontFamily: "'Lato', sans-serif", fontSize: "0.62rem", letterSpacing: "0.28em", textTransform: "uppercase", color: accent, opacity: 0.8, marginBottom: "1.5rem" }}>
-                  Menuju Hari Bahagia
+                <p style={{ fontFamily: `'${fontB}', Lato, sans-serif`, fontSize: "0.62rem", letterSpacing: "0.28em", textTransform: "uppercase", color: accent, opacity: 0.8, marginBottom: "1.5rem" }}>
+                  {t.countdownLabel}
                 </p>
                 <div style={{ display: "flex", justifyContent: "center", gap: "1.5rem" }}>
-                  {[{ v: countdownTimeLeft.days, l: "Hari" }, { v: countdownTimeLeft.hours, l: "Jam" }, { v: countdownTimeLeft.minutes, l: "Menit" }, { v: countdownTimeLeft.seconds, l: "Detik" }].map(({ v, l }) => (
+                  {[{ v: countdownTimeLeft.days, l: t.days }, { v: countdownTimeLeft.hours, l: t.hours }, { v: countdownTimeLeft.minutes, l: t.minutes }, { v: countdownTimeLeft.seconds, l: t.seconds }].map(({ v, l }) => (
                     <div key={l} style={{ textAlign: "center", minWidth: "3rem" }}>
                       <div style={{ fontFamily: `'${fontH}', Georgia, serif`, fontSize: "2.4rem", fontWeight: 400, color: accent, lineHeight: 1 }}>
                         {String(v).padStart(2, "0")}
@@ -314,26 +432,26 @@ export function SageTemplate({ guest, client, token }: Props) {
               </section>
             )}
 
-            {/* ── Couple ── */}
+            {/* Couple */}
             {sectionKeys.includes("COUPLE") && profile && (
-              <CoupleSection profile={profile} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} />
+              <CoupleSection profile={profile} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} t={t} />
             )}
 
-            {/* ── Events ── */}
+            {/* Events */}
             {sectionKeys.includes("EVENT") && (
-              <EventSection events={client.events} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} />
+              <EventSection events={client.events} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} showMap={showMap} t={t} />
             )}
 
-            {/* ── Gallery ── */}
+            {/* Gallery */}
             {sectionKeys.includes("GALLERY") && (
-              <GallerySection galleries={client.galleries} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} />
+              <GallerySection galleries={client.galleries} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} t={t} />
             )}
 
-            {/* ── RSVP ── */}
+            {/* RSVP */}
             {sectionKeys.includes("RSVP") && (
               token && guest
-                ? <RSVPSection clientId={client.id} guest={guest} token={token} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} />
-                : <RSVPPlaceholder accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} />
+                ? <RSVPSection clientId={client.id} guest={guest} token={token} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} t={t} />
+                : <RSVPPlaceholder accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} t={t} />
             )}
 
             {guest?.barcodeChurch && (
@@ -349,26 +467,26 @@ export function SageTemplate({ guest, client, token }: Props) {
               />
             )}
 
-            {/* ── Wishes ── */}
+            {/* Wishes */}
             {sectionKeys.includes("WISHES") && (
               <WishesSection
                 clientId={client.id} initialWishes={client.wishes}
                 guestName={guest?.name} guestId={guest?.id}
-                accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB}
+                accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} t={t}
               />
             )}
 
-            {/* ── Gift ── */}
+            {/* Gift */}
             {sectionKeys.includes("GIFT") && (
-              <GiftSection gifts={client.gifts} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} />
+              <GiftSection gifts={client.gifts} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} t={t} />
             )}
 
-            {/* ── Footer ── */}
+            {/* Footer */}
             <footer style={{ padding: "4rem 2rem", textAlign: "center", borderTop: `1px solid ${SAGE.sand}`, background: cream }}>
               <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "1.5rem", fontStyle: "italic", color: accent, marginBottom: "0.5rem" }}>{coupleLabel}</p>
-              <p style={{ fontSize: "0.65rem", letterSpacing: "0.3em", textTransform: "uppercase", color: SAGE.muted }}>Terima kasih atas doa dan kehadirannya</p>
+              <p style={{ fontSize: "0.65rem", letterSpacing: "0.3em", textTransform: "uppercase", color: SAGE.muted }}>{t.footerThanks}</p>
               <div style={{ height: "1px", width: "40px", background: SAGE.sand, margin: "1.5rem auto" }} />
-              <p style={{ fontSize: "0.6rem", color: SAGE.muted, opacity: 0.5 }}>Made with love</p>
+              <p style={{ fontSize: "0.6rem", color: SAGE.muted, opacity: 0.5 }}>{t.madeWith}</p>
             </footer>
           </>
         )}
@@ -391,17 +509,16 @@ function SectionLabel({ eyebrow, title, accent, text, fontH, fontB }: { eyebrow:
 
 // ─── Couple Section ───────────────────────────────────────────────────────────
 
-function CoupleSection({ profile, accent, cream, ivory, text, fontH, fontB }: {
-  profile: NonNullable<Profile>; accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string;
+function CoupleSection({ profile, accent, cream, ivory, text, fontH, fontB, t }: {
+  profile: NonNullable<Profile>; accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string; t: T;
 }) {
   return (
     <section style={{ padding: "4rem 1.5rem", background: cream }}>
       <div style={{ maxWidth: "520px", margin: "0 auto" }}>
         <Reveal>
-          <SectionLabel eyebrow="Mempelai" title="Pasangan Bahagia" accent={accent} text={text} fontH={fontH} fontB={fontB} />
+          <SectionLabel eyebrow={t.eyebrow_couple} title={t.title_couple} accent={accent} text={text} fontH={fontH} fontB={fontB} />
         </Reveal>
 
-        {/* Side-by-side couple */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", alignItems: "start" }}>
           {/* Groom */}
           <Reveal delay={0.1}>
@@ -468,7 +585,7 @@ function CoupleSection({ profile, accent, cream, ivory, text, fontH, fontB }: {
             <div style={{ marginTop: "2rem", paddingTop: "2rem", borderTop: `1px solid ${SAGE.sand}` }}>
               {profile.showStoryTitle && (
                 <p style={{ fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase", color: accent, marginBottom: "0.75rem" }}>
-                  {profile.storyTitle?.trim() || "Cerita Singkat Pasangan"}
+                  {profile.storyTitle?.trim() || t.storyDefault}
                 </p>
               )}
               <div
@@ -486,15 +603,15 @@ function CoupleSection({ profile, accent, cream, ivory, text, fontH, fontB }: {
 
 // ─── Event Section ────────────────────────────────────────────────────────────
 
-function EventSection({ events, accent, cream, ivory, text, fontH, fontB }: {
-  events: Props["client"]["events"]; accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string;
+function EventSection({ events, accent, cream, ivory, text, fontH, fontB, showMap, t }: {
+  events: Props["client"]["events"]; accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string; showMap: boolean; t: T;
 }) {
   if (!events.length) return null;
   return (
     <section style={{ padding: "4rem 1.5rem", background: ivory }}>
       <div style={{ maxWidth: "520px", margin: "0 auto" }}>
         <Reveal>
-          <SectionLabel eyebrow="Jadwal" title="Detail Acara" accent={accent} text={text} fontH={fontH} fontB={fontB} />
+          <SectionLabel eyebrow={t.eyebrow_event} title={t.title_event} accent={accent} text={text} fontH={fontH} fontB={fontB} />
         </Reveal>
         <div style={{ display: "flex", flexDirection: "column", gap: "1px", background: SAGE.sand, borderRadius: "8px", overflow: "hidden" }}>
           {events.map((ev, i) => (
@@ -526,10 +643,26 @@ function EventSection({ events, accent, cream, ivory, text, fontH, fontB }: {
                     </div>
                   )}
                 </div>
+
+                {/* Interactive map embed */}
+                {showMap && ev.mapsUrl && ev.venueName && (
+                  <div style={{ marginTop: "1rem", borderRadius: "8px", overflow: "hidden", border: `1px solid ${SAGE.sand}` }}>
+                    <iframe
+                      src={getMapEmbedUrl(ev.mapsUrl, ev.venueName, ev.venueAddress)}
+                      width="100%"
+                      height="200"
+                      style={{ display: "block", border: "none" }}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={ev.venueName}
+                    />
+                  </div>
+                )}
+
                 {ev.mapsUrl && (
                   <a href={ev.mapsUrl} target="_blank" rel="noopener noreferrer"
                     style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", marginTop: "0.75rem", fontSize: "0.7rem", letterSpacing: "0.1em", textTransform: "uppercase", color: accent, textDecoration: "none", fontWeight: 600 }}>
-                    <MapPin size={10} /> Lihat Lokasi →
+                    <MapPin size={10} /> {t.viewLocation} →
                   </a>
                 )}
               </div>
@@ -542,37 +675,33 @@ function EventSection({ events, accent, cream, ivory, text, fontH, fontB }: {
 }
 
 // ─── Gallery Section ──────────────────────────────────────────────────────────
-// Two sections: Pinterest masonry grid (stagger) + horizontal scroll snap
 
-function GallerySection({ galleries, accent, cream, ivory, text, fontH }: {
-  galleries: Props["client"]["galleries"]; accent: string; cream: string; ivory: string; text: string; fontH: string;
+function GallerySection({ galleries, accent, cream, ivory, text, fontH, t }: {
+  galleries: Props["client"]["galleries"]; accent: string; cream: string; ivory: string; text: string; fontH: string; t: T;
 }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
 
   const photos = galleries.filter((g) => g.type === "GALLERY" || g.type === "PREWEDDING");
   if (!photos.length) return null;
 
-  // Split into two columns for masonry
   const col1 = photos.filter((_, i) => i % 2 === 0);
   const col2 = photos.filter((_, i) => i % 2 === 1);
 
   return (
     <section style={{ background: cream }}>
 
-      {/* ── Part 1: Pinterest masonry grid ── */}
+      {/* Masonry grid */}
       <div style={{ padding: "4rem 1.5rem 2rem" }}>
         <div style={{ maxWidth: "520px", margin: "0 auto" }}>
           <Reveal>
             <div style={{ marginBottom: "2rem" }}>
-              <p style={{ fontSize: "0.6rem", letterSpacing: "0.35em", textTransform: "uppercase", color: accent, marginBottom: "0.4rem" }}>Galeri</p>
-              <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "2rem", fontWeight: 400, color: text }}>Momen Berharga</p>
+              <p style={{ fontSize: "0.6rem", letterSpacing: "0.35em", textTransform: "uppercase", color: accent, marginBottom: "0.4rem" }}>{t.eyebrow_gallery}</p>
+              <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "2rem", fontWeight: 400, color: text }}>{t.title_gallery}</p>
               <div style={{ height: "2px", width: "32px", background: accent, marginTop: "0.75rem", borderRadius: "1px" }} />
             </div>
           </Reveal>
 
-          {/* Masonry 2-column grid with stagger */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-            {/* Column 1 */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {col1.map((photo, i) => (
                 <motion.div
@@ -600,7 +729,6 @@ function GallerySection({ galleries, accent, cream, ivory, text, fontH }: {
               ))}
             </div>
 
-            {/* Column 2 — offset by half a card for Pinterest feel */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "40px" }}>
               {col2.map((photo, i) => (
                 <motion.div
@@ -631,11 +759,11 @@ function GallerySection({ galleries, accent, cream, ivory, text, fontH }: {
         </div>
       </div>
 
-      {/* ── Part 2: Horizontal scroll snap cinematic strip ── */}
+      {/* Horizontal scroll strip */}
       {photos.length > 1 && (
         <div style={{ padding: "0 0 4rem" }}>
           <Reveal>
-            <p style={{ fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase", color: accent, padding: "0 1.5rem", marginBottom: "1rem" }}>Swipe untuk lihat lebih →</p>
+            <p style={{ fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase", color: accent, padding: "0 1.5rem", marginBottom: "1rem" }}>{t.swipe}</p>
           </Reveal>
           <div
             className="sage-snap-x"
@@ -658,7 +786,7 @@ function GallerySection({ galleries, accent, cream, ivory, text, fontH }: {
               >
                 <div style={{ aspectRatio: "2/3" }}>
                   <img src={photo.url} alt="" draggable={false} loading="lazy"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s ease" }} />
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 </div>
               </motion.div>
             ))}
@@ -693,9 +821,9 @@ function GallerySection({ galleries, accent, cream, ivory, text, fontH }: {
 
 // ─── RSVP Section ─────────────────────────────────────────────────────────────
 
-function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH, fontB }: {
+function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH, fontB, t }: {
   clientId: string; guest: Guest; token: string;
-  accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string;
+  accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string; t: T;
 }) {
   const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">(guest.rsvp?.status as "HADIR" | "TIDAK_HADIR" || "HADIR");
   const [pax, setPax] = useState(guest.rsvp?.paxCount || 1);
@@ -723,14 +851,14 @@ function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH
     <section style={{ padding: "4rem 1.5rem", background: ivory }}>
       <div style={{ maxWidth: "520px", margin: "0 auto" }}>
         <Reveal>
-          <SectionLabel eyebrow="Konfirmasi" title="RSVP" accent={accent} text={text} fontH={fontH} fontB={fontB} />
+          <SectionLabel eyebrow={t.eyebrow_rsvp} title={t.title_rsvp} accent={accent} text={text} fontH={fontH} fontB={fontB} />
         </Reveal>
         <Reveal delay={0.1}>
           {done ? (
             <div style={{ textAlign: "center", padding: "3rem 1.5rem", background: cream, borderRadius: "8px", border: `1px solid ${SAGE.sand}` }}>
               <Heart size={24} color={accent} style={{ margin: "0 auto 1rem" }} />
-              <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "1.2rem", color: text }}>Terima kasih!</p>
-              <p style={{ fontSize: "0.82rem", color: text, opacity: 0.5, marginTop: "0.25rem" }}>Konfirmasi kehadiran telah diterima</p>
+              <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "1.2rem", color: text }}>{t.thankYou}</p>
+              <p style={{ fontSize: "0.82rem", color: text, opacity: 0.5, marginTop: "0.25rem" }}>{t.confirmed}</p>
             </div>
           ) : (
             <div style={{ background: cream, borderRadius: "8px", border: `1px solid ${SAGE.sand}`, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -744,25 +872,25 @@ function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH
                       fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
                       cursor: "pointer", fontFamily: `'${fontB}',Lato,sans-serif`, transition: "all 0.2s",
                     }}>
-                    {s === "HADIR" ? "Hadir" : "Tidak Hadir"}
+                    {s === "HADIR" ? t.attending : t.notAttending}
                   </button>
                 ))}
               </div>
               {status === "HADIR" && (
                 <div>
-                  <p style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: accent, marginBottom: "0.5rem" }}>Jumlah Tamu</p>
+                  <p style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: accent, marginBottom: "0.5rem" }}>{t.guestCount}</p>
                   <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                     <button onClick={() => setPax(Math.max(1, pax - 1))}
                       style={{ width: "32px", height: "32px", borderRadius: "4px", border: `1px solid ${SAGE.sand}`, background: "transparent", color: text, cursor: "pointer", fontSize: "1.1rem" }}>−</button>
                     <span style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "1.3rem", color: text, minWidth: "1.5rem", textAlign: "center" }}>{pax}</span>
                     <button onClick={() => setPax(Math.min(guest.maxPax, pax + 1))}
                       style={{ width: "32px", height: "32px", borderRadius: "4px", border: `1px solid ${SAGE.sand}`, background: "transparent", color: text, cursor: "pointer", fontSize: "1.1rem" }}>+</button>
-                    <span style={{ fontSize: "0.72rem", color: text, opacity: 0.4 }}>maks. {guest.maxPax}</span>
+                    <span style={{ fontSize: "0.72rem", color: text, opacity: 0.4 }}>{t.max} {guest.maxPax}</span>
                   </div>
                 </div>
               )}
               <textarea value={msg} onChange={(e) => setMsg(e.target.value)} rows={3}
-                placeholder="Pesan atau doa (opsional)"
+                placeholder={t.msgPlaceholder}
                 style={{ ...fieldStyle, resize: "none" }} />
               <button onClick={submit} disabled={saving}
                 style={{
@@ -770,7 +898,7 @@ function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH
                   padding: "0.8rem", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase",
                   cursor: "pointer", fontFamily: `'${fontB}',Lato,sans-serif`, opacity: saving ? 0.6 : 1,
                 }}>
-                {saving ? "Mengirim..." : "Konfirmasi Kehadiran"}
+                {saving ? t.sending : t.confirmBtn}
               </button>
             </div>
           )}
@@ -780,17 +908,17 @@ function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH
   );
 }
 
-function RSVPPlaceholder({ accent, cream, ivory, text, fontH }: { accent: string; cream: string; ivory: string; text: string; fontH: string }) {
+function RSVPPlaceholder({ accent, cream, ivory, text, fontH, t }: { accent: string; cream: string; ivory: string; text: string; fontH: string; t: T }) {
   return (
     <section style={{ padding: "4rem 1.5rem", background: ivory }}>
       <div style={{ maxWidth: "520px", margin: "0 auto" }}>
         <Reveal>
           <div style={{ background: cream, borderRadius: "8px", border: `1px solid ${SAGE.sand}`, padding: "2.5rem 1.5rem", textAlign: "center" }}>
             <LockKeyhole size={20} color={accent} style={{ margin: "0 auto 1rem", opacity: 0.6 }} />
-            <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "1.1rem", color: text }}>Konfirmasi Kehadiran</p>
-            <p style={{ fontSize: "0.8rem", color: text, opacity: 0.45, marginTop: "0.4rem", lineHeight: 1.6 }}>RSVP tersedia melalui link undangan personal.</p>
+            <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "1.1rem", color: text }}>{t.title_rsvp}</p>
+            <p style={{ fontSize: "0.8rem", color: text, opacity: 0.45, marginTop: "0.4rem", lineHeight: 1.6 }}>{t.rsvpLocked}</p>
             <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem", pointerEvents: "none" }}>
-              {["Hadir", "Tidak Hadir"].map((s) => (
+              {[t.attending, t.notAttending].map((s) => (
                 <div key={s} style={{ flex: 1, padding: "0.65rem", borderRadius: "6px", border: `1px solid ${accent}28`, fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: `${accent}55`, textAlign: "center" }}>{s}</div>
               ))}
             </div>
@@ -803,10 +931,10 @@ function RSVPPlaceholder({ accent, cream, ivory, text, fontH }: { accent: string
 
 // ─── Wishes Section ───────────────────────────────────────────────────────────
 
-function WishesSection({ clientId, initialWishes, guestName, guestId, accent, cream, ivory, text, fontH, fontB }: {
+function WishesSection({ clientId, initialWishes, guestName, guestId, accent, cream, ivory, text, fontH, fontB, t }: {
   clientId: string; initialWishes: Props["client"]["wishes"];
   guestName?: string; guestId?: string;
-  accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string;
+  accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string; t: T;
 }) {
   const [wishes, setWishes] = useState(initialWishes);
   const [name, setName] = useState(guestName || "");
@@ -840,17 +968,16 @@ function WishesSection({ clientId, initialWishes, guestName, guestId, accent, cr
     <section style={{ padding: "4rem 1.5rem", background: cream }}>
       <div style={{ maxWidth: "520px", margin: "0 auto" }}>
         <Reveal>
-          <SectionLabel eyebrow="Pesan" title="Ucapan & Doa" accent={accent} text={text} fontH={fontH} fontB={fontB} />
+          <SectionLabel eyebrow={t.eyebrow_wishes} title={t.title_wishes} accent={accent} text={text} fontH={fontH} fontB={fontB} />
         </Reveal>
 
-        {/* Form */}
         <Reveal delay={0.1}>
           <div style={{ background: ivory, borderRadius: "8px", padding: "1.25rem", marginBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {!guestName && (
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nama Anda" style={fieldStyle} />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t.yourName} style={fieldStyle} />
             )}
             <textarea value={msg} onChange={(e) => setMsg(e.target.value)} rows={3}
-              placeholder="Tulis doa dan ucapan..." style={{ ...fieldStyle, resize: "none" }} />
+              placeholder={t.wishPlaceholder} style={{ ...fieldStyle, resize: "none" }} />
             <button onClick={send} disabled={sending || !msg.trim()}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
@@ -858,12 +985,11 @@ function WishesSection({ clientId, initialWishes, guestName, guestId, accent, cr
                 padding: "0.75rem", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase",
                 cursor: "pointer", fontFamily: `'${fontB}',Lato,sans-serif`, opacity: sending || !msg.trim() ? 0.5 : 1,
               }}>
-              <Send size={12} /> {sent ? "Terkirim!" : sending ? "Mengirim..." : "Kirim Ucapan"}
+              <Send size={12} /> {sent ? t.sent : sending ? t.sending : t.sendWish}
             </button>
           </div>
         </Reveal>
 
-        {/* Wishes */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1px", background: SAGE.sand, borderRadius: "8px", overflow: "hidden", maxHeight: "400px", overflowY: "auto" }}>
           {wishes.map((w, i) => (
             <motion.div
@@ -881,7 +1007,7 @@ function WishesSection({ clientId, initialWishes, guestName, guestId, accent, cr
               <p style={{ fontSize: "0.85rem", lineHeight: 1.6, color: text, opacity: 0.65 }}>{w.message}</p>
               {w.reply && (
                 <div style={{ marginTop: "0.75rem", paddingLeft: "0.75rem", borderLeft: `2px solid ${accent}66` }}>
-                  <p style={{ fontSize: "0.62rem", letterSpacing: "0.1em", textTransform: "uppercase", color: accent, marginBottom: "0.2rem" }}>Balasan</p>
+                  <p style={{ fontSize: "0.62rem", letterSpacing: "0.1em", textTransform: "uppercase", color: accent, marginBottom: "0.2rem" }}>{t.reply}</p>
                   <p style={{ fontSize: "0.82rem", lineHeight: 1.55, color: text, opacity: 0.6, fontStyle: "italic" }}>{w.reply}</p>
                 </div>
               )}
@@ -889,7 +1015,7 @@ function WishesSection({ clientId, initialWishes, guestName, guestId, accent, cr
           ))}
           {wishes.length === 0 && (
             <div style={{ background: cream, padding: "2rem", textAlign: "center" }}>
-              <p style={{ fontSize: "0.85rem", color: text, opacity: 0.35, fontStyle: "italic" }}>Jadilah yang pertama memberikan ucapan</p>
+              <p style={{ fontSize: "0.85rem", color: text, opacity: 0.35, fontStyle: "italic" }}>{t.beFirst}</p>
             </div>
           )}
         </div>
@@ -911,8 +1037,8 @@ function getBankTheme(name: string) {
   return { from: "#2c2c2a", to: "#4a4a48" };
 }
 
-function GiftSection({ gifts, accent, cream, ivory, text, fontH, fontB }: {
-  gifts: Props["client"]["gifts"]; accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string;
+function GiftSection({ gifts, accent, cream, ivory, text, fontH, fontB, t }: {
+  gifts: Props["client"]["gifts"]; accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string; t: T;
 }) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [qrisOpen, setQrisOpen] = useState<string | null>(null);
@@ -933,9 +1059,9 @@ function GiftSection({ gifts, accent, cream, ivory, text, fontH, fontB }: {
     <section style={{ padding: "4rem 1.5rem", background: ivory }}>
       <div style={{ maxWidth: "520px", margin: "0 auto" }}>
         <Reveal>
-          <SectionLabel eyebrow="Hadiah" title="Amplop Digital" accent={accent} text={text} fontH={fontH} fontB={fontB} />
+          <SectionLabel eyebrow={t.eyebrow_gift} title={t.title_gift} accent={accent} text={text} fontH={fontH} fontB={fontB} />
           <p style={{ fontSize: "0.82rem", lineHeight: 1.7, color: text, opacity: 0.5, marginTop: "-1rem", marginBottom: "1.5rem", fontStyle: "italic" }}>
-            Doa restu Anda adalah hadiah terbaik kami.
+            {t.giftNote}
           </p>
         </Reveal>
 
@@ -950,19 +1076,19 @@ function GiftSection({ gifts, accent, cream, ivory, text, fontH, fontB }: {
                   <div style={{ position: "relative", zIndex: 1, height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "1.25rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontWeight: 700, color: "#fff", fontSize: "1rem", letterSpacing: "0.05em" }}>{gift.bankName}</span>
-                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>Transfer Bank</span>
+                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase" }}>{t.transferLabel}</span>
                     </div>
                     <p style={{ fontFamily: "monospace", color: "#fff", fontSize: "1rem", letterSpacing: "0.2em" }}>
                       {(gift.accountNumber || "").replace(/(.{4})/g, "$1  ").trim()}
                     </p>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                       <div>
-                        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "2px" }}>Atas Nama</p>
+                        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "2px" }}>{t.accountName}</p>
                         <p style={{ color: "#fff", fontSize: "0.82rem", fontWeight: 500, textTransform: "uppercase" }}>{gift.accountName}</p>
                       </div>
                       <button onClick={() => copy(key, gift.accountNumber || "")}
                         style={{ display: "flex", alignItems: "center", gap: "0.35rem", padding: "0.35rem 0.65rem", border: "1px solid rgba(255,255,255,0.3)", background: "rgba(255,255,255,0.1)", borderRadius: "4px", color: "#fff", fontSize: "0.68rem", cursor: "pointer" }}>
-                        {copiedId === key ? <><Check size={10} /> Tersalin</> : <><Copy size={10} /> Salin</>}
+                        {copiedId === key ? <><Check size={10} /> {t.copied}</> : <><Copy size={10} /> {t.copy}</>}
                       </button>
                     </div>
                   </div>
@@ -980,7 +1106,7 @@ function GiftSection({ gifts, accent, cream, ivory, text, fontH, fontB }: {
                     <Wallet size={16} color={accent} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: text, opacity: 0.4 }}>E-Wallet</p>
+                    <p style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: text, opacity: 0.4 }}>{t.eWallet}</p>
                     <p style={{ fontWeight: 600, color: text, fontSize: "0.9rem" }}>{gift.ewalletType}</p>
                     <p style={{ fontFamily: "monospace", fontSize: "0.82rem", color: text, opacity: 0.55, marginTop: "1px" }}>{gift.ewalletNumber}</p>
                   </div>
@@ -999,13 +1125,13 @@ function GiftSection({ gifts, accent, cream, ivory, text, fontH, fontB }: {
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                     <div style={{ padding: "0.6rem", borderRadius: "6px", background: `${accent}15` }}><QrCode size={16} color={accent} /></div>
                     <div>
-                      <p style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: text, opacity: 0.4 }}>QRIS</p>
-                      <p style={{ fontWeight: 600, color: text, fontSize: "0.9rem" }}>{gift.ewalletType || gift.bankName || "Scan QR"}</p>
+                      <p style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: text, opacity: 0.4 }}>{t.qris}</p>
+                      <p style={{ fontWeight: 600, color: text, fontSize: "0.9rem" }}>{gift.ewalletType || gift.bankName || t.qris}</p>
                     </div>
                   </div>
                   <button onClick={() => setQrisOpen(qrisOpen === gift.id ? null : gift.id)}
                     style={{ padding: "0.4rem 0.875rem", border: `1px solid ${accent}`, borderRadius: "4px", background: "transparent", color: accent, fontSize: "0.68rem", fontWeight: 600, letterSpacing: "0.1em", cursor: "pointer" }}>
-                    {qrisOpen === gift.id ? "Tutup" : "Lihat QR"}
+                    {qrisOpen === gift.id ? t.closeQr : t.viewQr}
                   </button>
                 </div>
                 <AnimatePresence>
@@ -1013,7 +1139,7 @@ function GiftSection({ gifts, accent, cream, ivory, text, fontH, fontB }: {
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       style={{ overflow: "hidden", borderTop: `1px solid ${SAGE.sand}`, padding: "1.25rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
                       <img src={gift.qrisImage!} alt="QRIS" style={{ maxWidth: "160px", width: "100%", borderRadius: "8px" }} />
-                      <p style={{ fontSize: "0.68rem", color: text, opacity: 0.4, marginTop: "0.5rem" }}>Scan untuk transfer</p>
+                      <p style={{ fontSize: "0.68rem", color: text, opacity: 0.4, marginTop: "0.5rem" }}>{t.scanToTransfer}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1025,7 +1151,7 @@ function GiftSection({ gifts, accent, cream, ivory, text, fontH, fontB }: {
         <Reveal>
           <div style={{ textAlign: "center", marginTop: "2rem" }}>
             <Gift size={16} color={accent} style={{ opacity: 0.35, margin: "0 auto 0.4rem" }} />
-            <p style={{ fontSize: "0.72rem", color: text, opacity: 0.35, fontStyle: "italic" }}>Terima kasih atas kasih sayang Anda</p>
+            <p style={{ fontSize: "0.72rem", color: text, opacity: 0.35, fontStyle: "italic" }}>{t.giftThanks}</p>
           </div>
         </Reveal>
       </div>

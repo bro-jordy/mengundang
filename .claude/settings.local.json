@@ -38,7 +38,10 @@
       "Bash(npx next *)",
       "Bash(mkdir -p /Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/\\\\[clientId\\\\]/sections)",
       "Bash(mkdir -p /Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/\\\\[clientId\\\\]/sections)",
-      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r-pooler.c-8.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx prisma migrate dev --name add_new_invitation_categories)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require\" npx prisma migrate dev --name add_new_invitation_categories)",
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r-pooler.c-8.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx prisma generate)"
     ],
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",

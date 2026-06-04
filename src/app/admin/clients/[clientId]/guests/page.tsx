@@ -15,7 +15,7 @@ export default async function GuestsPage({ params }: Props) {
       where: { id: clientId },
       include: {
         weddingProfile: true,
-        events: { where: { type: "RESEPSI" }, take: 1 },
+        events: { orderBy: { sortOrder: "asc" } },
         whatsappTemplate: true,
       },
     }),
@@ -29,7 +29,14 @@ export default async function GuestsPage({ params }: Props) {
       <GuestsManager
         clientId={clientId}
         initialGuests={guests}
-        client={client}
+        client={client ? {
+          name: client.name,
+          slug: client.slug,
+          clientType: client.clientType,
+          weddingProfile: client.weddingProfile,
+          events: client.events.map((e) => ({ date: e.date, type: e.type })),
+          whatsappTemplate: client.whatsappTemplate,
+        } : null}
       />
     </div>
   );
