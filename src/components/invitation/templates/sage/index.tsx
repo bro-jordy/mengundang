@@ -268,6 +268,7 @@ export function SageTemplate({ guest, client, token }: Props) {
         .story-html p { margin: 0.4em 0; }
         .story-html p:first-child { margin-top: 0; }
         .story-html p:last-child { margin-bottom: 0; }
+        ${bgImage ? `body{background-image:url('${bgImage.url}');background-size:cover;background-attachment:fixed;background-position:center;}.sage-has-bg section,.sage-has-bg footer{background:${cream}cc!important;}` : ''}
       `}</style>
 
       {music && (
@@ -385,24 +386,20 @@ export function SageTemplate({ guest, client, token }: Props) {
         initial={{ opacity: 0 }}
         animate={{ opacity: opened ? 1 : 0 }}
         transition={{ duration: 0.7, delay: 0.3 }}
+        className={bgImage ? "sage-has-bg" : undefined}
         style={{ background: bgImage ? undefined : cream, position: "relative" }}
       >
-        {bgImage && (
-          <>
-            <div style={{ position: "fixed", inset: 0, backgroundImage: `url('${bgImage.url}')`, backgroundSize: "cover", backgroundPosition: "center", zIndex: -2 }} />
-            <div style={{ position: "fixed", inset: 0, background: `${cream}e0`, zIndex: -1 }} />
-          </>
-        )}
 
         {coverGone && (
           <>
             {/* Hero strip */}
             {heroUrl && (
-              <div style={{ position: "relative", height: "160px", overflow: "hidden" }}>
+              <div style={{ position: "sticky", top: 0, zIndex: 20, height: "200px", overflow: "hidden" }}>
                 <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${heroUrl}')`, backgroundSize: "cover", backgroundPosition: "center 25%" }} />
-                <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, rgba(30,30,28,0.1) 0%, ${cream} 100%)` }} />
-                <div style={{ position: "absolute", bottom: "1rem", left: 0, right: 0, textAlign: "center" }}>
-                  <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "1.2rem", fontWeight: 400, color: text }}>{coupleLabel}</p>
+                <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, rgba(30,30,28,0.08) 0%, rgba(255,255,255,0.55) 50%, ${cream} 100%)` }} />
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 1.5rem" }}>
+                  <p style={{ fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase", color: accent, marginBottom: "0.35rem", textShadow: "0 1px 8px rgba(255,255,255,0.95)" }}>{invLabel}</p>
+                  <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "1.6rem", fontWeight: 400, color: text, textShadow: "0 1px 8px rgba(255,255,255,0.95)" }}>{coupleLabel}</p>
                 </div>
               </div>
             )}
