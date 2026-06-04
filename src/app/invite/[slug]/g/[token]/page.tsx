@@ -39,18 +39,25 @@ export default async function GuestInvitationPage({ params }: Props) {
   );
 }
 
+function getEventLabel(clientType: string): string {
+  if (clientType === "SANGJIT") return "Sangjit";
+  if (clientType === "LAMARAN") return "Lamaran";
+  return "Pernikahan";
+}
+
 export async function generateMetadata({ params }: Props) {
   const { token } = await params;
   const guest = await getGuestByToken(token);
   if (!guest) return {};
 
   const profile = guest.client.weddingProfile;
-  const title = profile
-    ? `Undangan Pernikahan ${profile.groomName} & ${profile.brideName}`
-    : `Undangan Pernikahan - ${guest.client.name}`;
+  const eventLabel = getEventLabel(guest.client.clientType);
+  const coupleNames = profile
+    ? `${profile.groomName} & ${profile.brideName}`
+    : guest.client.name;
 
   return {
-    title,
-    description: `Anda diundang ke acara pernikahan ${guest.client.name}`,
+    title: `Undangan ${eventLabel} ${coupleNames}`,
+    description: `Anda diundang ke acara ${eventLabel.toLowerCase()} ${coupleNames}`,
   };
 }

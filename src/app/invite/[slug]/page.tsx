@@ -2,6 +2,7 @@ import { getClientBySlug } from "@/modules/clients/clients.service";
 import { notFound } from "next/navigation";
 import { TemplateRenderer } from "@/components/invitation/TemplateRenderer";
 import { getSession } from "@/lib/auth/permissions";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
@@ -27,4 +28,27 @@ export default async function PublicInvitationPage({ params, searchParams }: Pro
   }
 
   return <TemplateRenderer guest={null} client={client as any} token={null} />;
+}
+
+function getEventLabel(clientType: string): string {
+  if (clientType === "SANGJIT") return "Sangjit";
+  if (clientType === "LAMARAN") return "Lamaran";
+  return "Pernikahan";
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const client = await getClientBySlug(slug);
+  if (!client) return {};
+
+  const profile = client.weddingProfile;
+  const eventLabel = getEventLabel(client.clientType);
+  const coupleNames = profile
+    ? `${profile.groomName} & ${profile.brideName}`
+    : client.name;
+
+  return {
+    title: `Undangan ${eventLabel} ${coupleNames}`,
+    description: `Anda diundang ke acara ${eventLabel.toLowerCase()} ${coupleNames}`,
+  };
 }
