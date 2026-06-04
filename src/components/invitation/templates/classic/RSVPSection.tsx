@@ -20,9 +20,10 @@ interface Props {
   clientId: string;
   guest: { id: string; name: string; maxPax: number; rsvp: Rsvp | null };
   token: string;
+  onConfirmed?: (status: "HADIR" | "TIDAK_HADIR") => void;
 }
 
-export function RSVPSection({ clientId, guest, token }: Props) {
+export function RSVPSection({ clientId, guest, token, onConfirmed }: Props) {
   const [submitted, setSubmitted] = useState(!!guest.rsvp);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -49,6 +50,7 @@ export function RSVPSection({ clientId, guest, token }: Props) {
 
     if (res.ok) {
       setSubmitted(true);
+      onConfirmed?.(data.status);
     } else {
       const json = await res.json();
       setError(json.error || "Gagal mengirim konfirmasi");

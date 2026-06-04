@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MapPin, Clock, Calendar, Copy, Check, Wallet, QrCode, Gift, Send, Heart, LockKeyhole } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
-import { BarcodeSection } from "../../sections/BarcodeSection";
+import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
 
@@ -83,6 +83,9 @@ const INVITATION_LABEL: Record<string, string> = {
 
 export function DarkTemplate({ guest, client, token }: Props) {
   const [opened, setOpened] = useState(false);
+  const [confirmedRsvpStatus, setConfirmedRsvpStatus] = useState<"HADIR" | "TIDAK_HADIR" | null>(
+    (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null
+  );
   const [coverGone, setCoverGone] = useState(false);
   const profile = client.weddingProfile;
   const music = client.musics[0];
@@ -332,17 +335,19 @@ export function DarkTemplate({ guest, client, token }: Props) {
           {sectionKeys.includes("RSVP") && (
             token && guest
               ? <RSVPSection clientId={client.id} guest={guest} token={token} rose={rose} fontHeading={fontHeading}
-                  textColor={textColor} bgColor={bgColor} secondaryColor={secondaryColor} />
+                  textColor={textColor} bgColor={bgColor} secondaryColor={secondaryColor} onConfirmed={setConfirmedRsvpStatus} />
               : <RSVPPlaceholder rose={rose} fontHeading={fontHeading}
                   textColor={textColor} bgColor={bgColor} secondaryColor={secondaryColor} />
           )}
 
-          {guest?.barcodeChurch && (
+          {guest?.barcodeChurch && confirmedRsvpStatus === "HADIR" && (
             <BarcodeSection
               barcodeChurch={guest.barcodeChurch}
               barcodeReception={guest.barcodeReception ?? null}
               invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
-              churchVenueName={client.events.find((e) => e.type === "PEMBERKATAN")?.venueName || client.events[0]?.venueName || "Gereja"}
+              churchLabel={getEventLabel(client.events.find((e) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.type ?? client.events[0]?.type ?? "ACARA")}
+              receptionLabel={getEventLabel(client.events.find((e) => e.type === "RESEPSI")?.type ?? "RESEPSI")}
+              churchVenueName={client.events.find((e) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
               receptionVenueName={client.events.find((e) => e.type === "RESEPSI")?.venueName || "Resepsi"}
               primaryColor={rose}
               bgColor={bgColor}
@@ -682,9 +687,10 @@ function GallerySection({ galleries, rose, fontHeading, textColor, bgColor }: {
 
 // ─── RSVP Section ─────────────────────────────────────────────────────────────
 
-function RSVPSection({ clientId, guest, token, rose, fontHeading, textColor, bgColor, secondaryColor }: {
+function RSVPSection({ clientId, guest, token, rose, fontHeading, textColor, bgColor, secondaryColor, onConfirmed }: {
   clientId: string; guest: Guest; token: string; rose: string; fontHeading: string;
   textColor: string; bgColor: string; secondaryColor: string;
+  onConfirmed?: (status: "HADIR" | "TIDAK_HADIR") => void;
 }) {
   const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">((guest.rsvp?.status as "HADIR" | "TIDAK_HADIR") || "HADIR");
   const [pax, setPax] = useState(guest.rsvp?.paxCount || 1);
@@ -698,7 +704,7 @@ function RSVPSection({ clientId, guest, token, rose, fontHeading, textColor, bgC
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clientId, guestId: guest.id, token, name: guest.name, paxCount: pax, status, message: msg }),
     });
-    if (res.ok) setDone(true);
+    if (res.ok) { setDone(true); onConfirmed?.(status); }
     setSaving(false);
   }
 

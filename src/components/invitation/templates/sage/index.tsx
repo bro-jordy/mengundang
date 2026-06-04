@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Calendar, Copy, Check, Wallet, QrCode, Gift, Send, Heart, LockKeyhole, X } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
-import { BarcodeSection } from "../../sections/BarcodeSection";
+import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
 
@@ -210,6 +210,9 @@ function Reveal({ children, delay = 0, y = 24, className }: {
 
 export function SageTemplate({ guest, client, token }: Props) {
   const [opened, setOpened] = useState(false);
+  const [confirmedRsvpStatus, setConfirmedRsvpStatus] = useState<"HADIR" | "TIDAK_HADIR" | null>(
+    (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null
+  );
   const [coverGone, setCoverGone] = useState(false);
   const [lang, setLang] = useState<Lang>("en");
   const t: T = TR[lang];
@@ -447,16 +450,18 @@ export function SageTemplate({ guest, client, token }: Props) {
             {/* RSVP */}
             {sectionKeys.includes("RSVP") && (
               token && guest
-                ? <RSVPSection clientId={client.id} guest={guest} token={token} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} t={t} />
+                ? <RSVPSection clientId={client.id} guest={guest} token={token} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} t={t} onConfirmed={setConfirmedRsvpStatus} />
                 : <RSVPPlaceholder accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} t={t} />
             )}
 
-            {guest?.barcodeChurch && (
+            {guest?.barcodeChurch && confirmedRsvpStatus === "HADIR" && (
               <BarcodeSection
                 barcodeChurch={guest.barcodeChurch}
                 barcodeReception={guest.barcodeReception ?? null}
                 invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
-                churchVenueName={client.events.find((e: any) => e.type === "PEMBERKATAN")?.venueName || client.events[0]?.venueName || "Gereja"}
+                churchLabel={getEventLabel(client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.type ?? client.events[0]?.type ?? "ACARA")}
+                receptionLabel={getEventLabel(client.events.find((e: any) => e.type === "RESEPSI")?.type ?? "RESEPSI")}
+                churchVenueName={client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
                 receptionVenueName={client.events.find((e: any) => e.type === "RESEPSI")?.venueName || "Resepsi"}
                 primaryColor={accent}
                 bgColor={cream}
@@ -818,9 +823,10 @@ function GallerySection({ galleries, accent, cream, ivory, text, fontH, t }: {
 
 // ─── RSVP Section ─────────────────────────────────────────────────────────────
 
-function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH, fontB, t }: {
+function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH, fontB, t, onConfirmed }: {
   clientId: string; guest: Guest; token: string;
   accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string; t: T;
+  onConfirmed?: (status: "HADIR" | "TIDAK_HADIR") => void;
 }) {
   const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">(guest.rsvp?.status as "HADIR" | "TIDAK_HADIR" || "HADIR");
   const [pax, setPax] = useState(guest.rsvp?.paxCount || 1);
@@ -834,7 +840,7 @@ function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clientId, guestId: guest.id, token, name: guest.name, paxCount: pax, status, message: msg }),
     });
-    if (res.ok) setDone(true);
+    if (res.ok) { setDone(true); onConfirmed?.(status); }
     setSaving(false);
   }
 

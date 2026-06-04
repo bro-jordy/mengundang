@@ -12,6 +12,10 @@ interface Props {
   barcodeChurch: string | null;
   barcodeReception: string | null;
   invitationCategory: "GEREJA_SAJA" | "GEREJA_RESEPSI";
+  /** Human-readable label for the first barcode, e.g. "Akad", "Pemberkatan", "Sangjit" */
+  churchLabel?: string;
+  /** Human-readable label for the second barcode, e.g. "Resepsi" */
+  receptionLabel?: string;
   churchVenueName?: string;
   receptionVenueName?: string;
   primaryColor?: string;
@@ -19,12 +23,28 @@ interface Props {
   fontHeading?: string;
 }
 
+const EVENT_TYPE_LABEL: Record<string, string> = {
+  AKAD: "Akad",
+  PEMBERKATAN: "Pemberkatan",
+  RESEPSI: "Resepsi",
+  AFTER_PARTY: "After Party",
+  SANGJIT: "Sangjit",
+  LAMARAN: "Lamaran",
+};
+
+/** Convert an EventType enum value to a display label. */
+export function getEventLabel(eventType: string): string {
+  return EVENT_TYPE_LABEL[eventType] ?? eventType;
+}
+
 export function BarcodeSection({
   barcodeChurch,
   barcodeReception,
   invitationCategory,
-  churchVenueName = "Church",
-  receptionVenueName = "Reception",
+  churchLabel = "Acara",
+  receptionLabel = "Resepsi",
+  churchVenueName = "Venue",
+  receptionVenueName = "Resepsi",
   primaryColor = "#b8860b",
   bgColor = "#fffdf7",
   fontHeading = "Playfair Display",
@@ -34,7 +54,7 @@ export function BarcodeSection({
   const items: BarcodeItem[] = [
     {
       code: barcodeChurch,
-      label: "Church Entrance Ticket",
+      label: `Tiket Masuk ${churchLabel}`,
       sublabel: churchVenueName,
     },
   ];
@@ -42,7 +62,7 @@ export function BarcodeSection({
   if (invitationCategory === "GEREJA_RESEPSI" && barcodeReception) {
     items.push({
       code: barcodeReception,
-      label: "Reception Entrance Ticket",
+      label: `Tiket Masuk ${receptionLabel}`,
       sublabel: receptionVenueName,
     });
   }
@@ -96,7 +116,7 @@ export function BarcodeSection({
         </div>
 
         <p className="text-xs text-stone-400 mt-8">
-          Please show this ticket to staff upon arrival at the venue.
+          Tunjukkan tiket ini kepada petugas saat tiba di venue.
         </p>
       </div>
     </section>

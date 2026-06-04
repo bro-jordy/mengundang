@@ -26,7 +26,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
-import { BarcodeSection } from "../../sections/BarcodeSection";
+import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import { formatDate } from "@/lib/utils";
 import type { Rsvp } from "@/types/prisma.types";
 
@@ -3592,7 +3592,9 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
                   barcodeChurch={guest.barcodeChurch}
                   barcodeReception={guest.barcodeReception ?? null}
                   invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
-                  churchVenueName={client.events.find((e: any) => e.type === "PEMBERKATAN")?.venueName || client.events[0]?.venueName || "Gereja"}
+                  churchLabel={getEventLabel(client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.type ?? client.events[0]?.type ?? "ACARA")}
+                  receptionLabel={getEventLabel(client.events.find((e: any) => e.type === "RESEPSI")?.type ?? "RESEPSI")}
+                  churchVenueName={client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
                   receptionVenueName={client.events.find((e: any) => e.type === "RESEPSI")?.venueName || "Resepsi"}
                   primaryColor={gold}
                   bgColor={ivory}

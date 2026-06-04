@@ -9,7 +9,7 @@ import { WishesSection } from "./WishesSection";
 import { GallerySection } from "./GallerySection";
 import { GiftSection } from "./GiftSection";
 import { MusicPlayer } from "../../sections/MusicPlayer";
-import { BarcodeSection } from "../../sections/BarcodeSection";
+import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import type { Rsvp } from "@/types/prisma.types";
 
 function useCountdown(target: Date | null) {
@@ -122,6 +122,9 @@ const INVITATION_LABEL: Record<string, string> = {
 
 export function ClassicTemplate({ guest, client, token }: Props) {
   const [opened, setOpened] = useState(false);
+  const [confirmedRsvpStatus, setConfirmedRsvpStatus] = useState<"HADIR" | "TIDAK_HADIR" | null>(
+    (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null
+  );
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
@@ -273,16 +276,18 @@ export function ClassicTemplate({ guest, client, token }: Props) {
 
           {sectionKeys.includes("RSVP") && (
             token && guest
-              ? <RSVPSection clientId={client.id} guest={guest} token={token} />
+              ? <RSVPSection clientId={client.id} guest={guest} token={token} onConfirmed={setConfirmedRsvpStatus} />
               : <RSVPPlaceholder />
           )}
 
-          {guest?.barcodeChurch && (
+          {guest?.barcodeChurch && confirmedRsvpStatus === "HADIR" && (
             <BarcodeSection
               barcodeChurch={guest.barcodeChurch}
               barcodeReception={guest.barcodeReception ?? null}
               invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
-              churchVenueName={client.events.find((e) => e.type === "PEMBERKATAN")?.venueName || client.events[0]?.venueName || "Gereja"}
+              churchLabel={getEventLabel(client.events.find((e) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.type ?? client.events[0]?.type ?? "ACARA")}
+              receptionLabel={getEventLabel(client.events.find((e) => e.type === "RESEPSI")?.type ?? "RESEPSI")}
+              churchVenueName={client.events.find((e) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
               receptionVenueName={client.events.find((e) => e.type === "RESEPSI")?.venueName || "Resepsi"}
               primaryColor={primaryColor}
               bgColor={bgColor}

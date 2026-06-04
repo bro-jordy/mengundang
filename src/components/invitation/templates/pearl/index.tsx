@@ -6,7 +6,7 @@ import {
 } from "framer-motion";
 import { MapPin, Clock, Calendar, Copy, Check, Wallet, QrCode, Gift, Send, Heart, LockKeyhole } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
-import { BarcodeSection } from "../../sections/BarcodeSection";
+import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
 
@@ -117,6 +117,9 @@ function FadeSection({ children, className, style, delay = 0 }: {
 
 export function PearlTemplate({ guest, client, token }: Props) {
   const [opened, setOpened] = useState(false);
+  const [confirmedRsvpStatus, setConfirmedRsvpStatus] = useState<"HADIR" | "TIDAK_HADIR" | null>(
+    (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null
+  );
   const [coverGone, setCoverGone] = useState(false);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -333,16 +336,18 @@ export function PearlTemplate({ guest, client, token }: Props) {
               {/* ── RSVP ── */}
               {sectionKeys.includes("RSVP") && (
                 token && guest
-                  ? <RSVPSection clientId={client.id} guest={guest} token={token} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} />
+                  ? <RSVPSection clientId={client.id} guest={guest} token={token} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} onConfirmed={setConfirmedRsvpStatus} />
                   : <RSVPPlaceholder gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} />
               )}
 
-              {guest?.barcodeChurch && (
+              {guest?.barcodeChurch && confirmedRsvpStatus === "HADIR" && (
                 <BarcodeSection
                   barcodeChurch={guest.barcodeChurch}
                   barcodeReception={guest.barcodeReception ?? null}
                   invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
-                  churchVenueName={client.events.find((e: any) => e.type === "PEMBERKATAN")?.venueName || client.events[0]?.venueName || "Gereja"}
+                  churchLabel={getEventLabel(client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.type ?? client.events[0]?.type ?? "ACARA")}
+                  receptionLabel={getEventLabel(client.events.find((e: any) => e.type === "RESEPSI")?.type ?? "RESEPSI")}
+                  churchVenueName={client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
                   receptionVenueName={client.events.find((e: any) => e.type === "RESEPSI")?.venueName || "Resepsi"}
                   primaryColor={gold}
                   bgColor={ivory}
@@ -765,9 +770,10 @@ function GallerySection({ galleries, gold, ivory, champagne, text, fontH }: {
 
 // ─── RSVP Section ─────────────────────────────────────────────────────────────
 
-function RSVPSection({ clientId, guest, token, gold, ivory, champagne, text, fontH, fontB }: {
+function RSVPSection({ clientId, guest, token, gold, ivory, champagne, text, fontH, fontB, onConfirmed }: {
   clientId: string; guest: Guest; token: string;
   gold: string; ivory: string; champagne: string; text: string; fontH: string; fontB: string;
+  onConfirmed?: (status: "HADIR" | "TIDAK_HADIR") => void;
 }) {
   const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">(guest.rsvp?.status as "HADIR" | "TIDAK_HADIR" || "HADIR");
   const [pax, setPax] = useState(guest.rsvp?.paxCount || 1);
@@ -781,7 +787,7 @@ function RSVPSection({ clientId, guest, token, gold, ivory, champagne, text, fon
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clientId, guestId: guest.id, token, name: guest.name, paxCount: pax, status, message: msg }),
     });
-    if (res.ok) setDone(true);
+    if (res.ok) { setDone(true); onConfirmed?.(status); }
     setSaving(false);
   }
 
