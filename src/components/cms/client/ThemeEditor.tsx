@@ -151,6 +151,29 @@ const TEMPLATES: Template[] = [
       </div>
     ),
   },
+  {
+    slug: "lucky-jackpot",
+    name: "Lucky Jackpot",
+    description: "Opening animasi mesin fortune mewah — 8826 bertransformasi menjadi 888, simbol keberuntungan berlipat ganda",
+    tag: "Fortune ✦✦✦",
+    tagColor: "#c9a84c",
+    defaultColors: { primaryColor: "#c9a84c", secondaryColor: "#fdf3d0", bgColor: "#fdf9f0", textColor: "#2d1f0a" },
+    defaultFonts: { fontHeading: "Cormorant Garamond", fontBody: "Lato" },
+    preview: (
+      <div style={{ background: "linear-gradient(135deg, #fdf9f0 0%, #f5e9c8 100%)", borderRadius: "12px", padding: "1rem", minHeight: "130px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", border: "1px solid #c9a84c33" }}>
+        <p style={{ color: "#8b6914", fontSize: "8px", letterSpacing: "0.28em", fontFamily: "Georgia,serif", textTransform: "uppercase" }}>✦ Fortune ✦</p>
+        <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+          {["8", "8", "8"].map((d, i) => (
+            <div key={i} style={{ width: "22px", height: "26px", background: "linear-gradient(135deg,#fef9ed,#fdf3d0)", border: "1.5px solid #c9b87a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontFamily: "Georgia,serif", fontSize: "13px", fontWeight: "bold", color: "#8b6914" }}>{d}</span>
+            </div>
+          ))}
+        </div>
+        <p style={{ color: "#2d1f0a", fontFamily: "Georgia, serif", fontSize: "13px", fontWeight: 300 }}>Groom &amp; Bride</p>
+        <p style={{ color: "#c9a84c", fontSize: "7px", letterSpacing: "0.2em", fontStyle: "italic", fontFamily: "Georgia,serif" }}>✦ The Ultimate Jackpot ✦</p>
+      </div>
+    ),
+  },
 ];
 
 interface Theme {

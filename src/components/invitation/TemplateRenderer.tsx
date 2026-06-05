@@ -3,6 +3,7 @@ import { ClassicTemplate } from "./templates/classic";
 import { PearlTemplate } from "./templates/pearl";
 import { SageTemplate } from "./templates/sage";
 import { EnvelopeTemplate } from "./templates/envelope";
+import { LuckyJackpotTemplate } from "./templates/lucky-jackpot";
 import type { Rsvp } from "@/types/prisma.types";
 
 interface Guest {
@@ -48,5 +49,6 @@ export function TemplateRenderer({ guest, client, token }: Props) {
   if (slug === "pearl") return <PearlTemplate guest={guest} client={client as any} token={token} />;
   if (slug === "sage") return <SageTemplate guest={guest} client={client as any} token={token} />;
   if (slug === "envelope") return <EnvelopeTemplate guest={guest} client={client as any} token={token} />;
+  if (slug === "lucky-jackpot") return <LuckyJackpotTemplate guest={guest} client={client as any} token={token} />;
   return <DarkTemplate guest={guest} client={client as any} token={token} />;
 }
