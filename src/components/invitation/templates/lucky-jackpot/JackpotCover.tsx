@@ -14,8 +14,25 @@ interface Props {
   primaryColor: string;
   bgColor: string;
   fontHeading: string;
+  lang: "EN" | "ID";
+  onLangToggle: () => void;
   onOpen: () => void;
 }
+
+const COVER_T = {
+  EN: {
+    dearGuest: "Dear",
+    tapToOpen: "Tap to Open Invitation",
+    revealing: "Revealing your fortune…",
+    jackpotText: "The Ultimate Jackpot",
+  },
+  ID: {
+    dearGuest: "Kepada Yth.",
+    tapToOpen: "Buka Undangan",
+    revealing: "Mengungkap keberuntungan Anda…",
+    jackpotText: "Keberuntungan Terbesar",
+  },
+};
 
 export function JackpotCover({
   groomNickname,
@@ -27,6 +44,8 @@ export function JackpotCover({
   primaryColor,
   bgColor,
   fontHeading,
+  lang,
+  onLangToggle,
   onOpen,
 }: Props) {
   const [phase, setPhase] = useState<JackpotPhase>("idle");
@@ -42,15 +61,13 @@ export function JackpotCover({
 
     setPhase("spinning");
     at(2600, () => setPhase("result8826"));
-    // 4 reels lock at 0, 520, 1040, 1560ms after result8826 → all locked by ~1600ms
     at(5000, () => setPhase("transforming"));
     at(6300, () => setPhase("result888"));
-    // "The Ultimate Jackpot" text shows at result888
     at(7800, () => setPhase("opening"));
-    // onOpen is called via animation complete callback
   }
 
   const gold = primaryColor || "#c9a84c";
+  const t = COVER_T[lang];
 
   return (
     <motion.div
@@ -76,6 +93,41 @@ export function JackpotCover({
         <div className="h-px w-14" style={{ background: `linear-gradient(90deg, transparent, ${gold})` }} />
         <span style={{ color: gold, fontSize: 11 }}>✦</span>
         <div className="h-px w-14" style={{ background: `linear-gradient(90deg, ${gold}, transparent)` }} />
+      </div>
+
+      {/* Language toggle */}
+      <div
+        className="absolute top-5 right-5 z-10"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          background: `${bgColor}dd`,
+          border: `1px solid ${gold}33`,
+          borderRadius: 99,
+          padding: 3,
+        }}
+      >
+        {(["ID", "EN"] as const).map((l) => (
+          <button
+            key={l}
+            onClick={() => { if (l !== lang) onLangToggle(); }}
+            style={{
+              fontSize: "0.6rem",
+              letterSpacing: "0.15em",
+              fontFamily: "Georgia, serif",
+              padding: "3px 10px",
+              borderRadius: 99,
+              border: "none",
+              cursor: l !== lang ? "pointer" : "default",
+              background: lang === l ? gold : "transparent",
+              color: lang === l ? "#fff" : `${gold}77`,
+              fontWeight: lang === l ? 700 : 400,
+              transition: "all 0.2s",
+            }}
+          >
+            {l}
+          </button>
+        ))}
       </div>
 
       <div className="relative z-10 flex flex-col items-center w-full max-w-sm">
@@ -114,7 +166,6 @@ export function JackpotCover({
 
         {/* Groom | Machine | Bride row */}
         <div className="flex items-end justify-center gap-3 w-full mb-5">
-          {/* Groom placeholder / photo */}
           <motion.div
             initial={{ opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
@@ -140,7 +191,6 @@ export function JackpotCover({
             )}
           </motion.div>
 
-          {/* Fortune machine */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -149,7 +199,6 @@ export function JackpotCover({
             <JackpotMachine phase={phase} />
           </motion.div>
 
-          {/* Bride placeholder / photo */}
           <motion.div
             initial={{ opacity: 0, x: 16 }}
             animate={{ opacity: 1, x: 0 }}
@@ -183,7 +232,7 @@ export function JackpotCover({
               className="text-xs tracking-widest uppercase"
               style={{ color: `${gold}88`, fontFamily: "Georgia, serif" }}
             >
-              Kepada Yth.
+              {t.dearGuest}
             </p>
             <p style={{ color: "#2d1f0a", fontSize: "1.05rem", fontFamily: "Georgia, serif" }}>
               {guestName}
@@ -215,7 +264,7 @@ export function JackpotCover({
                 fontFamily: "Georgia, serif",
               }}
             >
-              Tap to Open Invitation
+              {t.tapToOpen}
             </motion.button>
           )}
         </AnimatePresence>
@@ -236,12 +285,12 @@ export function JackpotCover({
                 marginTop: 12,
               }}
             >
-              Revealing your fortune…
+              {t.revealing}
             </motion.p>
           )}
         </AnimatePresence>
 
-        {/* "The Ultimate Jackpot" text */}
+        {/* Jackpot text */}
         <AnimatePresence>
           {(phase === "result888" || phase === "opening") && (
             <motion.div
@@ -261,7 +310,7 @@ export function JackpotCover({
                   fontStyle: "italic",
                 }}
               >
-                ✦ &nbsp;The Ultimate Jackpot&nbsp; ✦
+                ✦ &nbsp;{t.jackpotText}&nbsp; ✦
               </p>
             </motion.div>
           )}

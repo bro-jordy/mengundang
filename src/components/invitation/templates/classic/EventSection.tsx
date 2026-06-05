@@ -4,11 +4,15 @@ import { formatDate } from "@/lib/utils";
 import { MapPin, Clock, Calendar } from "lucide-react";
 import { CountdownTimer } from "../../sections/CountdownTimer";
 
-const EVENT_LABEL: Record<string, string> = {
-  AKAD: "Akad Nikah",
-  RESEPSI: "Resepsi",
-  AFTER_PARTY: "After Party",
-};
+const EVENT_LABEL = {
+  EN: { AKAD: "Wedding Ceremony", PEMBERKATAN: "Church Wedding", RESEPSI: "Reception", AFTER_PARTY: "After Party", SANGJIT: "Sangjit", LAMARAN: "Engagement" },
+  ID: { AKAD: "Akad Nikah", PEMBERKATAN: "Pemberkatan", RESEPSI: "Resepsi", AFTER_PARTY: "After Party", SANGJIT: "Sangjit", LAMARAN: "Lamaran" },
+} as const;
+
+const EVENT_T = {
+  EN: { eyebrow: "Wedding Events", saveTheDate: "Save the Date", openMaps: "Open Google Maps" },
+  ID: { eyebrow: "Acara Pernikahan", saveTheDate: "Simpan Tanggalnya", openMaps: "Buka Google Maps" },
+} as const;
 
 interface Event {
   id: string;
@@ -30,17 +34,19 @@ function getMapEmbedUrl(mapsUrl: string, venueName: string, venueAddress: string
   return `https://maps.google.com/maps?q=${encodeURIComponent(`${venueName} ${venueAddress}`.trim())}&output=embed&z=17`;
 }
 
-export function EventSection({ events, showMap }: { events: Event[]; showMap?: boolean }) {
+export function EventSection({ events, showMap, lang = "ID" }: { events: Event[]; showMap?: boolean; lang?: "EN" | "ID" }) {
+  const t = EVENT_T[lang];
+  const labels = EVENT_LABEL[lang];
   const firstEvent = events[0];
 
   return (
     <section className="py-20 px-6 bg-stone-50">
       <div className="max-w-lg mx-auto text-center">
         <p className="text-xs tracking-widest uppercase text-stone-400 mb-2">
-          Acara Pernikahan
+          {t.eyebrow}
         </p>
         <h2 className="font-heading text-3xl text-stone-800 mb-10">
-          Simpan Tanggalnya
+          {t.saveTheDate}
         </h2>
 
         {firstEvent?.date && (
@@ -54,7 +60,7 @@ export function EventSection({ events, showMap }: { events: Event[]; showMap?: b
               className="bg-white rounded-2xl border border-stone-200 p-6 text-left"
             >
               <h3 className="font-heading text-xl text-stone-800 mb-4 text-center">
-                {event.label || EVENT_LABEL[event.type] || event.type}
+                {event.label || labels[event.type as keyof typeof labels] || event.type}
               </h3>
 
               <div className="space-y-3">
@@ -114,7 +120,7 @@ export function EventSection({ events, showMap }: { events: Event[]; showMap?: b
                   className="mt-5 flex items-center justify-center gap-2 border border-stone-300 rounded-full px-4 py-2 text-sm text-stone-600 hover:bg-stone-50 transition-colors w-full"
                 >
                   <MapPin size={14} />
-                  Buka Google Maps
+                  {t.openMaps}
                 </a>
               )}
             </div>

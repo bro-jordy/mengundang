@@ -20,11 +20,18 @@ interface Profile {
   showStoryTitle: boolean;
 }
 
+const COUPLE_T = {
+  EN: { couple: "The Couple", defaultStoryTitle: "Our Story" },
+  ID: { couple: "Mempelai", defaultStoryTitle: "Cerita Singkat Pasangan" },
+} as const;
+
 interface Props {
   profile: Profile | null;
+  lang?: "EN" | "ID";
 }
 
-export function CoupleSection({ profile }: Props) {
+export function CoupleSection({ profile, lang = "ID" }: Props) {
+  const t = COUPLE_T[lang];
   if (!profile) return null;
 
   return (
@@ -39,7 +46,7 @@ export function CoupleSection({ profile }: Props) {
         .story-html p:last-child { margin-bottom: 0; }
       `}</style>
       <p className="text-xs tracking-widest uppercase text-stone-400 mb-10">
-        Mempelai
+        {t.couple}
       </p>
 
       <div className="grid grid-cols-2 gap-8">
@@ -98,7 +105,7 @@ export function CoupleSection({ profile }: Props) {
         <div className="mt-12 border-t border-stone-200 pt-8">
           {profile.showStoryTitle && (
             <p className="text-xs tracking-widest uppercase text-stone-400 mb-4">
-              {profile.storyTitle?.trim() || "Cerita Singkat Pasangan"}
+              {profile.storyTitle?.trim() || t.defaultStoryTitle}
             </p>
           )}
           <div

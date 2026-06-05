@@ -12,7 +12,6 @@ export type JackpotPhase =
   | "opening";
 
 const TARGETS = [8, 8, 2, 6];
-// Staggered starting digits so reels always show different numbers
 const IDLE_OFFSETS = [0, 4, 7, 2];
 
 interface ReelProps {
@@ -20,9 +19,11 @@ interface ReelProps {
   glow: boolean;
   exited: boolean;
   justLocked: boolean;
+  mergingOut: boolean;
+  justMergedPop: boolean;
 }
 
-function Reel({ digit, glow, exited, justLocked }: ReelProps) {
+function Reel({ digit, glow, exited, justLocked, mergingOut, justMergedPop }: ReelProps) {
   return (
     <motion.div
       animate={
@@ -37,7 +38,7 @@ function Reel({ digit, glow, exited, justLocked }: ReelProps) {
         animate={{
           borderColor: glow ? "#d4a843" : "#c9b87a",
           boxShadow: glow
-            ? "0 0 18px rgba(212,168,67,0.8), 0 0 6px rgba(212,168,67,0.4)"
+            ? "0 0 22px rgba(212,168,67,0.9), 0 0 8px rgba(212,168,67,0.5)"
             : "inset 0 1px 3px rgba(0,0,0,0.08)",
           background: glow
             ? "linear-gradient(135deg, #fffbe8, #fff5c4)"
@@ -54,16 +55,21 @@ function Reel({ digit, glow, exited, justLocked }: ReelProps) {
           border: "2px solid #c9b87a",
         }}
       >
-        {/*
-          key: stable "spinning" while running → no per-tick remount.
-          On lock: key flips to "locked-N" → triggers slide-in once.
-          On result888 digit flip (2→8): key flips again → slides in again.
-        */}
         <motion.span
-          key={justLocked ? `locked-${digit}` : "spinning"}
-          initial={justLocked ? { y: -14, opacity: 0 } : false}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: justLocked ? 0.22 : 0 }}
+          key={justLocked ? `locked-${digit}` : justMergedPop ? `merged-${digit}` : "spinning"}
+          initial={
+            justLocked ? { y: -14, opacity: 0 } :
+            justMergedPop ? { scale: 1.6, opacity: 0 } :
+            false
+          }
+          animate={
+            mergingOut
+              ? { scale: 0.15, opacity: 0 }
+              : { y: 0, opacity: 1, x: 0, scale: 1 }
+          }
+          transition={{
+            duration: mergingOut ? 0.18 : justMergedPop ? 0.32 : justLocked ? 0.22 : 0,
+          }}
           style={{
             fontFamily: "Georgia, serif",
             fontSize: "1.65rem",
@@ -91,6 +97,11 @@ export function JackpotMachine({ phase }: Props) {
   const [locked, setLocked] = useState([false, false, false, false]);
   const [glowing, setGlowing] = useState([false, false, false, false]);
   const [exited, setExited] = useState([false, false, false, false]);
+  const [mergingOut, setMergingOut] = useState([false, false, false, false]);
+  const [justMergedPop, setJustMergedPop] = useState([false, false, false, false]);
+  // x-offsets for the collision animation (reels at index 2 and 3)
+  const [cx2, setCx2] = useState(0);
+  const [cx3, setCx3] = useState(0);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lockedRef = useRef([false, false, false, false]);
@@ -131,21 +142,26 @@ export function JackpotMachine({ phase }: Props) {
       setLocked([false, false, false, false]);
       setGlowing([false, false, false, false]);
       setExited([false, false, false, false]);
-      // Spin at idle with staggered offsets so all reels show different numbers
+      setMergingOut([false, false, false, false]);
+      setJustMergedPop([false, false, false, false]);
+      setCx2(0);
+      setCx3(0);
       startInterval();
       return stopInterval;
     }
 
     if (phase === "spinning") {
-      // Restart interval after idle cleanup; digits & offsets preserved from idle
       lockedRef.current = [false, false, false, false];
       setLocked([false, false, false, false]);
+      setMergingOut([false, false, false, false]);
+      setJustMergedPop([false, false, false, false]);
+      setCx2(0);
+      setCx3(0);
       startInterval();
       return stopInterval;
     }
 
     if (phase === "result8826") {
-      // Keep non-locked reels spinning — restart interval here
       startInterval();
 
       TARGETS.forEach((target, i) => {
@@ -176,13 +192,31 @@ export function JackpotMachine({ phase }: Props) {
     }
 
     if (phase === "result888") {
-      setDigits((prev) => {
-        const next = [...prev];
-        next[2] = 8;
-        return next;
-      });
       setGlowing([false, false, false, false]);
-      at(320, () => setExited([false, false, false, true]));
+      // Step 1: both reels rush toward each other
+      setCx2(15);
+      setCx3(-15);
+      // Step 2: at collision peak, both digits scale out
+      at(130, () => {
+        setMergingOut([false, false, true, true]);
+      });
+      // Step 3: reel 2 springs back showing 8, reel 3 stays moved
+      at(290, () => {
+        setDigits((prev) => {
+          const next = [...prev];
+          next[2] = 8;
+          return next;
+        });
+        setJustMergedPop([false, false, true, false]);
+        setGlowing([false, false, true, false]);
+        setMergingOut([false, false, false, false]);
+        setCx2(0);
+      });
+      // Step 4: reel 3 collapses and disappears
+      at(460, () => {
+        setExited([false, false, false, true]);
+        setGlowing([false, false, false, false]);
+      });
       return () => clearTimeouts();
     }
 
@@ -194,7 +228,6 @@ export function JackpotMachine({ phase }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
-  // Cleanup on unmount
   useEffect(
     () => () => {
       stopInterval();
@@ -250,15 +283,66 @@ export function JackpotMachine({ phase }: Props) {
           alignItems: "center",
         }}
       >
-        {[0, 1, 2, 3].map((i) => (
+        {/* Reels 0 and 1 — normal */}
+        {[0, 1].map((i) => (
           <Reel
             key={i}
             digit={digits[i]}
             glow={glowing[i]}
             exited={exited[i]}
             justLocked={locked[i]}
+            mergingOut={mergingOut[i]}
+            justMergedPop={justMergedPop[i]}
           />
         ))}
+
+        {/* Reel 2 — moves right during collision, springs back with 8 */}
+        <motion.div
+          animate={{ x: cx2 }}
+          transition={
+            cx2 !== 0
+              ? { duration: 0.14, ease: [0.4, 0, 1, 1] }
+              : { type: "spring", stiffness: 600, damping: 28 }
+          }
+          style={{ flexShrink: 0 }}
+        >
+          <Reel
+            digit={digits[2]}
+            glow={glowing[2]}
+            exited={exited[2]}
+            justLocked={locked[2]}
+            mergingOut={mergingOut[2]}
+            justMergedPop={justMergedPop[2]}
+          />
+        </motion.div>
+
+        {/* "+" between reels 2 and 3, visible only during transforming */}
+        <motion.div
+          animate={{
+            opacity: phase === "transforming" ? 1 : 0,
+            width: phase === "transforming" ? 18 : 0,
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          style={{ overflow: "hidden", flexShrink: 0, marginLeft: -4, marginRight: -4, display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
+          <span style={{ fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: "bold", color: "#8b6914", userSelect: "none" }}>+</span>
+        </motion.div>
+
+        {/* Reel 3 — moves left during collision, then exits */}
+        <motion.div
+          animate={{ x: cx3 }}
+          transition={{ duration: 0.14, ease: [0.4, 0, 1, 1] }}
+          style={{ flexShrink: 0 }}
+        >
+          <Reel
+            digit={digits[3]}
+            glow={glowing[3]}
+            exited={exited[3]}
+            justLocked={locked[3]}
+            mergingOut={mergingOut[3]}
+            justMergedPop={justMergedPop[3]}
+          />
+        </motion.div>
       </div>
 
       <motion.div

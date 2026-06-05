@@ -1,17 +1,72 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { motion, useInView } from "framer-motion";
 import { JackpotCover } from "./JackpotCover";
-import { HeroSection } from "../classic/HeroSection";
 import { CoupleSection } from "../classic/CoupleSection";
 import { EventSection } from "../classic/EventSection";
 import { GallerySection } from "../classic/GallerySection";
-import { RSVPSection, RSVPPlaceholder } from "../classic/RSVPSection";
 import { WishesSection } from "../classic/WishesSection";
 import { GiftSection } from "../classic/GiftSection";
 import { MusicPlayer } from "../../sections/MusicPlayer";
 import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
+import { Heart, LockKeyhole } from "lucide-react";
 import type { Rsvp } from "@/types/prisma.types";
+import { formatDate } from "@/lib/utils";
+
+// ─── Translations ─────────────────────────────────────────────────────────────
+
+const LANGS = {
+  EN: {
+    dearGuest: "Dear",
+    invitedLabel: "We joyfully invite you",
+    scrollHint: "scroll",
+    countdownLabel: "Counting Down to Our Day",
+    days: "Days", hours: "Hours", minutes: "Mins", seconds: "Secs",
+    rsvpEyebrow: "Confirmation",
+    rsvpTitle: "RSVP",
+    attending: "Attending",
+    notAttending: "Not Attending",
+    guestCount: "Number of Guests",
+    max: "max.",
+    msgPlaceholder: "Message or prayer (optional)",
+    confirmBtn: "Confirm Attendance",
+    sending: "Sending...",
+    thankYou: "Thank you!",
+    confirmed: "Your attendance has been confirmed",
+    rsvpLocked: "RSVP is available via your personal invitation link.",
+    // closingText: "Thank you for your prayers and presence",
+    closingText: "Made with ❤️",
+    // madeWith: "Made with Mengundang",
+    madeWith: " ",
+  },
+  ID: {
+    dearGuest: "Kepada Yth.",
+    invitedLabel: "Dengan penuh sukacita kami mengundang",
+    scrollHint: "geser",
+    countdownLabel: "Menuju Hari Bahagia",
+    days: "Hari", hours: "Jam", minutes: "Menit", seconds: "Detik",
+    rsvpEyebrow: "Konfirmasi",
+    rsvpTitle: "RSVP",
+    attending: "Hadir",
+    notAttending: "Tidak Hadir",
+    guestCount: "Jumlah Tamu",
+    max: "maks.",
+    msgPlaceholder: "Pesan atau doa (opsional)",
+    confirmBtn: "Konfirmasi Kehadiran",
+    sending: "Mengirim...",
+    thankYou: "Terima kasih!",
+    confirmed: "Konfirmasi kehadiran telah diterima",
+    rsvpLocked: "RSVP tersedia melalui link undangan personal.",
+    // closingText: "Terima kasih atas doa dan kehadirannya",
+    closingText: "Dibuat dengan ❤️",
+    // madeWith: "Made with Mengundang",
+    madeWith: " ",
+  },
+} as const;
+type Lang = keyof typeof LANGS;
+
+// ─── Countdown hook ───────────────────────────────────────────────────────────
 
 function useCountdown(target: Date | null) {
   const targetMs = target?.getTime() ?? null;
@@ -29,6 +84,8 @@ function useCountdown(target: Date | null) {
   }, [targetMs]);
   return targetMs !== null ? t : null;
 }
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Guest {
   id: string;
@@ -115,24 +172,203 @@ interface Props {
   token: string | null;
 }
 
-const INVITATION_LABEL: Record<string, string> = {
-  WEDDING: "The Wedding Of",
-  SANGJIT: "Sangjit Ceremony Of",
-  LAMARAN: "Lamaran",
-};
+const INVITATION_LABEL = {
+  EN: { WEDDING: "The Wedding Of", SANGJIT: "Sangjit Ceremony Of", LAMARAN: "Engagement Of" },
+  ID: { WEDDING: "Pernikahan", SANGJIT: "Sangjit", LAMARAN: "Lamaran" },
+} as const;
+
+// ─── RSVP ─────────────────────────────────────────────────────────────────────
+
+function JackpotRSVP({
+  clientId, guest, token, primaryColor, bgColor, secondaryColor, textColor, fontHeading, t, onConfirmed,
+}: {
+  clientId: string; guest: NonNullable<Props["guest"]>; token: string;
+  primaryColor: string; bgColor: string; secondaryColor: string; textColor: string; fontHeading: string;
+  t: typeof LANGS[Lang];
+  onConfirmed?: (s: "HADIR" | "TIDAK_HADIR") => void;
+}) {
+  const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">(
+    (guest.rsvp?.status as "HADIR" | "TIDAK_HADIR") || "HADIR"
+  );
+  const [pax, setPax] = useState(guest.rsvp?.paxCount || 1);
+  const [msg, setMsg] = useState(guest.rsvp?.message || "");
+  const [saving, setSaving] = useState(false);
+  const [done, setDone] = useState(!!guest.rsvp);
+
+  async function submit() {
+    setSaving(true);
+    const res = await fetch("/api/rsvp", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clientId, guestId: guest.id, token, name: guest.name, paxCount: pax, status, message: msg }),
+    });
+    if (res.ok) { setDone(true); onConfirmed?.(status); }
+    setSaving(false);
+  }
+
+  const sandBorder = `${primaryColor}28`;
+
+  return (
+    <section style={{ padding: "4rem 1.5rem", background: bgColor }}>
+      <div style={{ maxWidth: "520px", margin: "0 auto" }}>
+        <p style={{ fontSize: "0.7rem", letterSpacing: "0.28em", textTransform: "uppercase", color: primaryColor, fontFamily: "Georgia, serif", textAlign: "center", marginBottom: "0.4rem" }}>
+          {t.rsvpEyebrow}
+        </p>
+        <h2 style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "1.9rem", color: textColor, fontWeight: 400, textAlign: "center", marginBottom: "2rem" }}>
+          {t.rsvpTitle}
+        </h2>
+
+        {done ? (
+          <div style={{ textAlign: "center", padding: "3rem 1.5rem", background: secondaryColor, borderRadius: "8px", border: `1px solid ${sandBorder}` }}>
+            <Heart size={24} color={primaryColor} style={{ margin: "0 auto 1rem" }} />
+            <p style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "1.2rem", color: textColor }}>{t.thankYou}</p>
+            <p style={{ fontSize: "0.82rem", color: textColor, opacity: 0.5, marginTop: "0.25rem" }}>{t.confirmed}</p>
+          </div>
+        ) : (
+          <div style={{ background: secondaryColor, borderRadius: "8px", border: `1px solid ${sandBorder}`, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {/* Attendance toggle */}
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              {(["HADIR", "TIDAK_HADIR"] as const).map((s) => (
+                <button key={s} onClick={() => setStatus(s)} style={{
+                  flex: 1, padding: "0.65rem", borderRadius: "4px",
+                  border: `1px solid ${status === s ? primaryColor : sandBorder}`,
+                  background: status === s ? primaryColor : "transparent",
+                  color: status === s ? "#fff" : textColor,
+                  opacity: status === s ? 1 : 0.55,
+                  fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase",
+                  cursor: "pointer", fontFamily: "Georgia, serif", transition: "all 0.2s",
+                }}>
+                  {s === "HADIR" ? t.attending : t.notAttending}
+                </button>
+              ))}
+            </div>
+
+            {/* Pax counter */}
+            {status === "HADIR" && (
+              <div>
+                <p style={{ fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: primaryColor, marginBottom: "0.6rem", fontFamily: "Georgia, serif" }}>
+                  {t.guestCount}
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <button
+                    onClick={() => setPax(Math.max(1, pax - 1))}
+                    style={{ width: 36, height: 36, borderRadius: "6px", border: `1px solid ${sandBorder}`, background: "transparent", color: textColor, cursor: "pointer", fontSize: "1.2rem", fontFamily: "Georgia, serif" }}
+                  >−</button>
+                  <span style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "1.5rem", color: textColor, minWidth: "2rem", textAlign: "center" }}>{pax}</span>
+                  <button
+                    onClick={() => setPax(Math.min(guest.maxPax, pax + 1))}
+                    style={{ width: 36, height: 36, borderRadius: "6px", border: `1px solid ${sandBorder}`, background: "transparent", color: textColor, cursor: "pointer", fontSize: "1.2rem", fontFamily: "Georgia, serif" }}
+                  >+</button>
+                  <span style={{ fontSize: "0.72rem", color: textColor, opacity: 0.4, fontFamily: "Georgia, serif" }}>
+                    {t.max} {guest.maxPax}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Message */}
+            <textarea
+              value={msg}
+              onChange={(e) => setMsg(e.target.value)}
+              rows={3}
+              placeholder={t.msgPlaceholder}
+              style={{
+                width: "100%", background: bgColor, border: `1px solid ${sandBorder}`,
+                borderRadius: "4px", padding: "0.7rem 0.85rem", fontSize: "0.85rem",
+                color: textColor, outline: "none", boxSizing: "border-box", resize: "none",
+                fontFamily: "Georgia, serif",
+              }}
+            />
+
+            {/* Submit */}
+            <button
+              onClick={submit}
+              disabled={saving}
+              style={{
+                background: primaryColor, color: "#fff", border: "none", borderRadius: "4px",
+                padding: "0.85rem", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em",
+                textTransform: "uppercase", cursor: "pointer", fontFamily: "Georgia, serif",
+                opacity: saving ? 0.6 : 1, transition: "opacity 0.2s",
+              }}
+            >
+              {saving ? t.sending : t.confirmBtn}
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function JackpotRSVPPlaceholder({ primaryColor, bgColor, secondaryColor, textColor, fontHeading, t }: {
+  primaryColor: string; bgColor: string; secondaryColor: string; textColor: string; fontHeading: string;
+  t: typeof LANGS[Lang];
+}) {
+  const sandBorder = `${primaryColor}28`;
+  return (
+    <section style={{ padding: "4rem 1.5rem", background: bgColor }}>
+      <div style={{ maxWidth: "520px", margin: "0 auto" }}>
+        <p style={{ fontSize: "0.7rem", letterSpacing: "0.28em", textTransform: "uppercase", color: primaryColor, fontFamily: "Georgia, serif", textAlign: "center", marginBottom: "0.4rem" }}>
+          {t.rsvpEyebrow}
+        </p>
+        <h2 style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "1.9rem", color: textColor, fontWeight: 400, textAlign: "center", marginBottom: "2rem" }}>
+          {t.rsvpTitle}
+        </h2>
+        <div style={{ background: secondaryColor, borderRadius: "8px", border: `1px solid ${sandBorder}`, padding: "2.5rem 1.5rem", textAlign: "center" }}>
+          <LockKeyhole size={20} color={primaryColor} style={{ margin: "0 auto 1rem", opacity: 0.6 }} />
+          <p style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "1.1rem", color: textColor }}>{t.rsvpTitle}</p>
+          <p style={{ fontSize: "0.8rem", color: textColor, opacity: 0.45, marginTop: "0.4rem", lineHeight: 1.6, fontFamily: "Georgia, serif" }}>{t.rsvpLocked}</p>
+          <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem", pointerEvents: "none" }}>
+            {[t.attending, t.notAttending].map((s) => (
+              <div key={s} style={{ flex: 1, padding: "0.65rem", borderRadius: "4px", border: `1px solid ${sandBorder}`, fontSize: "0.7rem", letterSpacing: "0.15em", textTransform: "uppercase", color: `${primaryColor}55`, textAlign: "center", fontFamily: "Georgia, serif" }}>{s}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Scroll animation wrapper ─────────────────────────────────────────────────
+
+function FadeInSection({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: false, amount: 0.15 });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 28 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
+      transition={{ duration: 0.7, ease: "easeOut" }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ─── Main Template ─────────────────────────────────────────────────────────────
 
 export function LuckyJackpotTemplate({ guest, client, token }: Props) {
   const [opened, setOpened] = useState(false);
+  const [showHero, setShowHero] = useState(false);
+  const [lang, setLang] = useState<Lang>("EN");
   const [confirmedRsvpStatus, setConfirmedRsvpStatus] = useState<"HADIR" | "TIDAK_HADIR" | null>(
     (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null
   );
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
+  useEffect(() => {
+    if (!showHero) return;
+    function onScroll() { if (window.scrollY > 20) setShowHero(false); }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [showHero]);
+
   const profile = client.weddingProfile;
   const theme = client.theme;
   const music = client.musics[0];
   const sectionKeys = client.sections.map((s) => s.sectionKey);
+  const t = LANGS[lang];
 
   const primaryColor = theme?.primaryColor || "#c9a84c";
   const secondaryColor = theme?.secondaryColor || "#fdf3d0";
@@ -148,12 +384,19 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
   const countdownTimeLeft = useCountdown(countdownTarget);
 
   const bgImage = client.galleries.find((g) => g.type === "BACKGROUND");
-  const invitationLabel = INVITATION_LABEL[client.clientType] || "The Wedding Of";
+  const invitationLabels = INVITATION_LABEL[lang];
+  const invitationLabel = invitationLabels[client.clientType as keyof typeof invitationLabels] || invitationLabels.WEDDING;
+
+  // First upcoming event for the hero page teaser
+  const firstEvent = client.events
+    .filter((e) => e.date)
+    .sort((a, b) => new Date(a.date!).getTime() - new Date(b.date!).getTime())[0] ?? null;
 
   const playMusicRef = useRef<(() => void) | null>(null);
 
   function handleOpen() {
     setOpened(true);
+    setShowHero(true);
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     playMusicRef.current?.();
   }
@@ -193,8 +436,117 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
           primaryColor={primaryColor}
           bgColor={bgColor}
           fontHeading={fontHeading}
+          lang={lang}
+          onLangToggle={() => setLang((l) => l === "EN" ? "ID" : "EN")}
           onOpen={handleOpen}
         />
+      )}
+
+      {/* Hero page — shown after jackpot, dismissed on scroll */}
+      {showHero && (
+        <div
+          className="fixed inset-0 z-40 flex flex-col items-center justify-center text-center px-6"
+          style={{ backgroundColor: bgColor }}
+        >
+          <div className="flex flex-col items-center w-full max-w-sm">
+            <p
+              className="text-xs tracking-[0.28em] uppercase mb-6"
+              style={{ color: `${primaryColor}88`, fontFamily: "Georgia, serif" }}
+            >
+              {invitationLabel}
+            </p>
+
+            <h1 style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "clamp(2.5rem,10vw,4rem)", color: textColor, lineHeight: 1.1, marginBottom: 4 }}>
+              {profile?.groomNickname || "Groom"}
+            </h1>
+            <p style={{ fontFamily: "Georgia, serif", fontSize: "1.5rem", color: primaryColor, margin: "6px 0" }}>&amp;</p>
+            <h1 style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "clamp(2.5rem,10vw,4rem)", color: textColor, lineHeight: 1.1 }}>
+              {profile?.brideNickname || "Bride"}
+            </h1>
+
+            <div className="mt-6 h-px w-16" style={{ background: `linear-gradient(90deg, transparent, ${primaryColor}, transparent)` }} />
+
+            {profile?.openingQuote && (
+              <div className="mt-6 text-center px-2">
+                <p style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "0.78rem", fontStyle: "italic", lineHeight: 1.9, color: textColor, opacity: 0.55 }}>
+                  &ldquo;{profile.openingQuote}&rdquo;
+                </p>
+                {profile.openingQuoteBy && (
+                  <p className="text-xs mt-1" style={{ color: primaryColor, fontFamily: "Georgia, serif", opacity: 0.7, letterSpacing: "0.1em" }}>
+                    — {profile.openingQuoteBy}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Guest name */}
+            {guest?.name && (
+              <div className="mt-5">
+                <p className="text-xs tracking-widest uppercase" style={{ color: `${primaryColor}77`, fontFamily: "Georgia, serif", marginBottom: 4 }}>
+                  {t.dearGuest}
+                </p>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: "1rem", color: textColor }}>
+                  {guest.name}
+                </p>
+              </div>
+            )}
+
+            {/* First event teaser */}
+            {firstEvent?.date && (
+              <p className="mt-4 text-xs" style={{ color: `${primaryColor}88`, fontFamily: "Georgia, serif", letterSpacing: "0.08em" }}>
+                {formatDate(firstEvent.date)} · {firstEvent.venueName}
+              </p>
+            )}
+
+            <p
+              className="mt-8 text-xs tracking-widest uppercase"
+              style={{ color: `${primaryColor}55`, fontFamily: "Georgia, serif", animation: "jackpot-bounce 1.8s ease-in-out infinite" }}
+            >
+              {t.scrollHint}
+            </p>
+          </div>
+          <style>{`@keyframes jackpot-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }`}</style>
+        </div>
+      )}
+
+      {/* Persistent lang toggle (visible after opened) */}
+      {opened && (
+        <div
+          className="fixed z-50"
+          style={{
+            bottom: 82,
+            right: 24,
+            display: "flex",
+            alignItems: "center",
+            background: bgColor,
+            border: `1px solid ${primaryColor}33`,
+            borderRadius: 99,
+            padding: 3,
+            boxShadow: `0 2px 12px ${primaryColor}22`,
+          }}
+        >
+          {(["ID", "EN"] as const).map((l) => (
+            <button
+              key={l}
+              onClick={() => setLang(l)}
+              style={{
+                fontSize: "0.6rem",
+                letterSpacing: "0.15em",
+                fontFamily: "Georgia, serif",
+                padding: "4px 11px",
+                borderRadius: 99,
+                border: "none",
+                cursor: "pointer",
+                background: lang === l ? primaryColor : "transparent",
+                color: lang === l ? "#fff" : `${primaryColor}77`,
+                fontWeight: lang === l ? 700 : 400,
+                transition: "all 0.2s",
+              }}
+            >
+              {l}
+            </button>
+          ))}
+        </div>
       )}
 
       {/* Main invitation content */}
@@ -211,83 +563,93 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
         )}
 
         <div className="relative z-10">
-          {sectionKeys.includes("HERO") && <HeroSection profile={profile} />}
-
           {/* Countdown */}
           {showCountdown && countdownTimeLeft && (
-            <section className="py-12 text-center" style={{ background: secondaryColor }}>
-              <p className="text-xs tracking-[0.28em] uppercase mb-4" style={{ color: primaryColor, fontFamily: "Georgia, serif" }}>
-                Menuju Hari Bahagia
-              </p>
-              <div className="flex justify-center gap-6">
-                {[
-                  { v: countdownTimeLeft.days, l: "Hari" },
-                  { v: countdownTimeLeft.hours, l: "Jam" },
-                  { v: countdownTimeLeft.minutes, l: "Menit" },
-                  { v: countdownTimeLeft.seconds, l: "Detik" },
-                ].map(({ v, l }) => (
-                  <div key={l} className="text-center min-w-12">
-                    <div
-                      className="font-light"
-                      style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "2.4rem", color: primaryColor, lineHeight: 1 }}
-                    >
-                      {String(v).padStart(2, "0")}
+            <FadeInSection>
+              <section className="py-12 text-center" style={{ background: secondaryColor }}>
+                <p className="text-xs tracking-[0.28em] uppercase mb-4" style={{ color: primaryColor, fontFamily: "Georgia, serif" }}>
+                  {t.countdownLabel}
+                </p>
+                <div className="flex justify-center gap-6">
+                  {[
+                    { v: countdownTimeLeft.days, l: t.days },
+                    { v: countdownTimeLeft.hours, l: t.hours },
+                    { v: countdownTimeLeft.minutes, l: t.minutes },
+                    { v: countdownTimeLeft.seconds, l: t.seconds },
+                  ].map(({ v, l }) => (
+                    <div key={l} className="text-center min-w-12">
+                      <div
+                        className="font-light"
+                        style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "2.4rem", color: primaryColor, lineHeight: 1 }}
+                      >
+                        {String(v).padStart(2, "0")}
+                      </div>
+                      <div className="text-xs tracking-[0.16em] uppercase mt-1" style={{ color: textColor, opacity: 0.45 }}>
+                        {l}
+                      </div>
                     </div>
-                    <div className="text-xs tracking-[0.16em] uppercase mt-1" style={{ color: textColor, opacity: 0.45 }}>
-                      {l}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            </FadeInSection>
           )}
 
-          {sectionKeys.includes("COUPLE") && <CoupleSection profile={profile} />}
-          {sectionKeys.includes("EVENT") && <EventSection events={client.events} showMap={showMap} />}
-          {sectionKeys.includes("GALLERY") && <GallerySection galleries={client.galleries} />}
+          {sectionKeys.includes("COUPLE") && <FadeInSection><CoupleSection profile={profile} lang={lang} /></FadeInSection>}
+          {sectionKeys.includes("EVENT") && <FadeInSection><EventSection events={client.events} showMap={showMap} lang={lang} /></FadeInSection>}
+          {sectionKeys.includes("GALLERY") && <FadeInSection><GallerySection galleries={client.galleries} /></FadeInSection>}
 
           {sectionKeys.includes("RSVP") && (
-            token && guest
-              ? <RSVPSection clientId={client.id} guest={guest} token={token} onConfirmed={setConfirmedRsvpStatus} />
-              : <RSVPPlaceholder />
+            <FadeInSection>
+              {token && guest
+                ? <JackpotRSVP clientId={client.id} guest={guest} token={token} primaryColor={primaryColor} bgColor={bgColor} secondaryColor={secondaryColor} textColor={textColor} fontHeading={fontHeading} t={t} onConfirmed={setConfirmedRsvpStatus} />
+                : <JackpotRSVPPlaceholder primaryColor={primaryColor} bgColor={bgColor} secondaryColor={secondaryColor} textColor={textColor} fontHeading={fontHeading} t={t} />
+              }
+            </FadeInSection>
           )}
 
           {guest?.barcodeChurch && confirmedRsvpStatus === "HADIR" && (
-            <BarcodeSection
-              barcodeChurch={guest.barcodeChurch}
-              barcodeReception={guest.barcodeReception ?? null}
-              invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
-              churchLabel={getEventLabel(client.events.find((e) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.type ?? client.events[0]?.type ?? "ACARA")}
-              receptionLabel={getEventLabel(client.events.find((e) => e.type === "RESEPSI")?.type ?? "RESEPSI")}
-              churchVenueName={client.events.find((e) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
-              receptionVenueName={client.events.find((e) => e.type === "RESEPSI")?.venueName || "Resepsi"}
-              primaryColor={primaryColor}
-              bgColor={bgColor}
-              fontHeading={fontHeading}
-            />
+            <FadeInSection>
+              <BarcodeSection
+                barcodeChurch={guest.barcodeChurch}
+                barcodeReception={guest.barcodeReception ?? null}
+                invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
+                churchLabel={getEventLabel(client.events.find((e) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.type ?? client.events[0]?.type ?? "ACARA")}
+                receptionLabel={getEventLabel(client.events.find((e) => e.type === "RESEPSI")?.type ?? "RESEPSI")}
+                churchVenueName={client.events.find((e) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
+                receptionVenueName={client.events.find((e) => e.type === "RESEPSI")?.venueName || "Resepsi"}
+                primaryColor={primaryColor}
+                bgColor={bgColor}
+                fontHeading={fontHeading}
+              />
+            </FadeInSection>
           )}
 
           {sectionKeys.includes("WISHES") && (
-            <WishesSection
-              clientId={client.id}
-              initialWishes={client.wishes}
-              guestName={guest?.name}
-              guestId={guest?.id}
-            />
+            <FadeInSection>
+              <WishesSection
+                clientId={client.id}
+                initialWishes={client.wishes}
+                guestName={guest?.name}
+                guestId={guest?.id}
+                lang={lang}
+              />
+            </FadeInSection>
           )}
 
-          {sectionKeys.includes("GIFT") && <GiftSection gifts={client.gifts} />}
+          {sectionKeys.includes("GIFT") && <FadeInSection><GiftSection gifts={client.gifts} lang={lang} /></FadeInSection>}
 
-          <footer className="py-10 text-center text-xs" style={{ color: `${textColor}66` }}>
-            <p
-              className="text-2xl mb-2"
-              style={{ fontFamily: `'${fontHeading}', Georgia, serif`, color: textColor, opacity: 0.7 }}
-            >
-              {profile?.groomNickname} &amp; {profile?.brideNickname}
-            </p>
-            <p>Terima kasih atas doa dan kehadirannya</p>
-            <p className="mt-4 opacity-40">Made with Mengundang</p>
-          </footer>
+          <FadeInSection>
+            <footer className="py-10 text-center text-xs" style={{ color: `${textColor}66` }}>
+              <p
+                className="text-2xl mb-2"
+                style={{ fontFamily: `'${fontHeading}', Georgia, serif`, color: textColor, opacity: 0.7 }}
+              >
+                {profile?.groomNickname} &amp; {profile?.brideNickname}
+              </p>
+              <p>{t.closingText}</p>
+              <p className="mt-4 opacity-40">{t.madeWith}</p>
+            </footer>
+          </FadeInSection>
         </div>
       </div>
     </>

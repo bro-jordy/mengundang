@@ -41,13 +41,43 @@
       "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r-pooler.c-8.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx prisma migrate dev --name add_new_invitation_categories)",
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require\" npx prisma migrate dev --name add_new_invitation_categories)",
-      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r-pooler.c-8.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx prisma generate)"
+      "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r-pooler.c-8.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx prisma generate)",
+      "Bash(cp src/components/invitation/templates/envelope/index.tsx src/components/invitation/templates/lucky-jackpot/index.tsx && wc -l src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(sed -i '' '553,986d' src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(sed -n '549,560p' src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(sed -i '' '511,551d' src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(sed -n '506,516p' src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(sed -i '' 511,551d /Users/dieudonnejordy/Documents/udangan-kami/src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(sed -n 505,514p /Users/dieudonnejordy/Documents/udangan-kami/src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(echo \"---exit $?---\")",
+      "Bash(sed -i '' 412,455d /Users/dieudonnejordy/Documents/udangan-kami/src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(sed -n 408,416p /Users/dieudonnejordy/Documents/udangan-kami/src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(grep -v \"no-img-element\\\\|slower LCP\\\\|next/image\\\\|additional usage\\\\|^$\")",
+      "Bash(echo \"exit $?\")",
+      "Bash(git checkout *)",
+      "Bash(cp /tmp/inspect_client.mjs ./inspect_client.mjs)",
+      "Bash(node --env-file=.env ./inspect_client.mjs)",
+      "Bash(node --env-file=.env.local ./inspect_client.mjs)",
+      "Bash(node --env-file=.env.local ./count_clients.mjs)",
+      "Bash(node --env-file=.env.local ./q.mjs)",
+      "Read(//private/tmp/**)",
+      "Bash(break)",
+      "Bash(curl -s \"http://localhost:3939/invite/jordy-rea\" -o /tmp/inv.html -w \"HTTP %{http_code}\\\\n\")",
+      "Read(//tmp/**)",
+      "Bash(python3 -)",
+      "Bash(sed -n '1,200p' \"src/app/\\(public\\)/invite/[slug]/page.tsx\")",
+      "Bash(sed -n '1,200p' \"src/app/invite/[slug]/page.tsx\")",
+      "Bash(xargs kill -9)",
+      "Bash(nc -zv ep-cool-dawn-aqe41z6r.c-8.us-east-1.aws.neon.tech 5432)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(curl -s http://localhost:3000 -o /dev/null -w \"%{http_code}\")"
     ],
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/users",
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]",
-      "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]/sections"
+      "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]/sections",
+      "/Users/dieudonnejordy/Documents/udangan-kami/src/components/invitation/templates/envelope"
     ]
   }
 }

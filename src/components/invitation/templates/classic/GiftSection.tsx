@@ -16,6 +16,7 @@ interface GiftItem {
 
 interface Props {
   gifts: GiftItem[];
+  lang?: "EN" | "ID";
 }
 
 const BANK_THEMES: Record<string, { from: string; via: string; to: string }> = {
@@ -76,7 +77,37 @@ function ContactlessIcon() {
   );
 }
 
-export function GiftSection({ gifts }: Props) {
+const GIFT_T = {
+  EN: {
+    eyebrow: "Wedding Gift",
+    title: "Digital Envelope",
+    desc: "Your blessing is the greatest gift. But if you wish to give, here is the information.",
+    bankTransfer: "Bank Transfer",
+    accountName: "Account Name",
+    copied: "Copied",
+    copy: "Copy",
+    scanToTransfer: "Scan to transfer",
+    close: "Close",
+    viewQR: "View QR",
+    footer: "Thank you for your kindness and love",
+  },
+  ID: {
+    eyebrow: "Hadiah Pernikahan",
+    title: "Amplop Digital",
+    desc: "Doa restu Anda adalah hadiah terbaik bagi kami. Namun jika berkenan memberikan hadiah, berikut informasinya.",
+    bankTransfer: "Transfer Bank",
+    accountName: "Atas Nama",
+    copied: "Tersalin",
+    copy: "Salin",
+    scanToTransfer: "Scan untuk transfer",
+    close: "Tutup",
+    viewQR: "Lihat QR",
+    footer: "Terima kasih atas perhatian dan kasih sayang Anda",
+  },
+} as const;
+
+export function GiftSection({ gifts, lang = "ID" }: Props) {
+  const t = GIFT_T[lang];
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [qrisOpen, setQrisOpen] = useState<string | null>(null);
 
@@ -99,13 +130,12 @@ export function GiftSection({ gifts }: Props) {
       <div className="max-w-sm mx-auto">
         <div className="text-center mb-10">
           <p className="text-xs tracking-widest uppercase text-stone-400 mb-3">
-            Hadiah Pernikahan
+            {t.eyebrow}
           </p>
-          <h2 className="font-heading text-3xl text-stone-800">Amplop Digital</h2>
+          <h2 className="font-heading text-3xl text-stone-800">{t.title}</h2>
           <div className="w-12 h-px bg-stone-300 mx-auto mt-4" />
           <p className="text-sm text-stone-500 mt-4 max-w-xs mx-auto">
-            Doa restu Anda adalah hadiah terbaik bagi kami. Namun jika berkenan
-            memberikan hadiah, berikut informasinya.
+            {t.desc}
           </p>
         </div>
 
@@ -158,7 +188,7 @@ export function GiftSection({ gifts }: Props) {
                     <div className="flex items-center gap-3">
                       <ChipSVG />
                       <span className="text-white/50 text-xs uppercase tracking-widest">
-                        Transfer Bank
+                        {t.bankTransfer}
                       </span>
                     </div>
 
@@ -173,7 +203,7 @@ export function GiftSection({ gifts }: Props) {
                     <div className="flex items-end justify-between">
                       <div>
                         <p className="text-white/50 text-[10px] uppercase tracking-widest mb-0.5">
-                          Atas Nama
+                          {t.accountName}
                         </p>
                         <p className="text-white font-medium text-sm uppercase tracking-wide">
                           {gift.accountName}
@@ -183,7 +213,7 @@ export function GiftSection({ gifts }: Props) {
                         onClick={() => copy(copyKey, gift.accountNumber || "")}
                         className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 active:bg-white/35 transition-colors rounded-lg px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm border border-white/20"
                       >
-                        {isCopied ? <><Check size={11} /> Tersalin</> : <><Copy size={11} /> Salin</>}
+                        {isCopied ? <><Check size={11} /> {t.copied}</> : <><Copy size={11} /> {t.copy}</>}
                       </button>
                     </div>
                   </div>
@@ -236,7 +266,7 @@ export function GiftSection({ gifts }: Props) {
                   onClick={() => setQrisOpen(qrisOpen === gift.id ? null : gift.id)}
                   className="text-xs font-medium text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-full transition-colors"
                 >
-                  {qrisOpen === gift.id ? "Tutup" : "Lihat QR"}
+                  {qrisOpen === gift.id ? t.close : t.viewQR}
                 </button>
               </div>
               {qrisOpen === gift.id && (
@@ -246,7 +276,7 @@ export function GiftSection({ gifts }: Props) {
                     alt="QRIS"
                     className="max-w-[200px] w-full rounded-xl border border-stone-200"
                   />
-                  <p className="text-xs text-stone-400 mt-2">Scan untuk transfer</p>
+                  <p className="text-xs text-stone-400 mt-2">{t.scanToTransfer}</p>
                 </div>
               )}
             </div>
@@ -256,7 +286,7 @@ export function GiftSection({ gifts }: Props) {
         <div className="text-center mt-10">
           <Gift size={20} className="text-stone-300 mx-auto mb-2" />
           <p className="text-xs text-stone-400">
-            Terima kasih atas perhatian dan kasih sayang Anda
+            {t.footer}
           </p>
         </div>
       </div>
