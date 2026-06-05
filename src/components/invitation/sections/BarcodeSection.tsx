@@ -107,11 +107,11 @@ export function BarcodeSection({
             <div
               key={item.code}
               className="flex flex-col items-center gap-4 bg-white rounded-2xl px-6 py-8 shadow-sm border"
-              style={{ borderColor: `${primaryColor}30` }}
+              style={{ borderColor: `${primaryColor}30`, width: "220px" }}
             >
               <p
-                className="text-xs tracking-[0.2em] uppercase font-medium"
-                style={{ color: primaryColor }}
+                className="text-xs tracking-[0.2em] uppercase font-medium text-center"
+                style={{ color: primaryColor, minHeight: "2.5em" }}
               >
                 {item.label}
               </p>
@@ -126,10 +126,7 @@ export function BarcodeSection({
                 />
               </div>
 
-              <div className="text-center">
-                <p className="text-sm font-medium text-stone-700">{item.sublabel}</p>
-                <p className="text-xs text-stone-400 mt-1 font-mono">{item.code.slice(0, 8)}…</p>
-              </div>
+              <p className="text-sm font-medium text-stone-700 text-center">{item.sublabel}</p>
             </div>
           ))}
         </div>
