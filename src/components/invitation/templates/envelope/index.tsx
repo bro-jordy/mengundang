@@ -3599,6 +3599,7 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
                   primaryColor={gold}
                   bgColor={ivory}
                   fontHeading={fontH}
+                  lang={lang}
                 />
               )}
 

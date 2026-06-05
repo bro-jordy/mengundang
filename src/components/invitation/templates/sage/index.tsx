@@ -73,8 +73,10 @@ const TR = {
     viewQr: "Lihat QR", closeQr: "Tutup", scanToTransfer: "Scan untuk transfer",
     giftThanks: "Terima kasih atas kasih sayang Anda",
     // Footer
-    footerThanks: "Terima kasih atas doa dan kehadirannya",
-    madeWith: "Made with love",
+    // footerThanks: "Terima kasih atas doa dan kehadirannya",
+    footerThanks: "Dibuat dengan ❤️",
+    // madeWith: "Made with love",
+    madeWith: " ",
     // Story
     storyDefault: "Cerita Singkat Pasangan",
   },
@@ -474,6 +476,7 @@ export function SageTemplate({ guest, client, token }: Props) {
                 primaryColor={accent}
                 bgColor={cream}
                 fontHeading={fontH}
+                lang={lang}
               />
             )}
 

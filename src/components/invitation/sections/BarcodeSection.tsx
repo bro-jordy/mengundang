@@ -21,6 +21,7 @@ interface Props {
   primaryColor?: string;
   bgColor?: string;
   fontHeading?: string;
+  lang?: "id" | "en";
 }
 
 const EVENT_TYPE_LABEL: Record<string, string> = {
@@ -31,6 +32,21 @@ const EVENT_TYPE_LABEL: Record<string, string> = {
   SANGJIT: "Sangjit",
   LAMARAN: "Lamaran",
 };
+
+const TR = {
+  id: {
+    eyebrow: "E-Tiket",
+    heading: "Tiket Undangan",
+    ticketPrefix: "Tiket Masuk",
+    footer: "Tunjukkan tiket ini kepada petugas saat tiba di venue.",
+  },
+  en: {
+    eyebrow: "E-Ticket",
+    heading: "Invitation Ticket",
+    ticketPrefix: "Entrance Ticket",
+    footer: "Please show this ticket to the staff upon arrival at the venue.",
+  },
+} as const;
 
 /** Convert an EventType enum value to a display label. */
 export function getEventLabel(eventType: string): string {
@@ -48,13 +64,16 @@ export function BarcodeSection({
   primaryColor = "#b8860b",
   bgColor = "#fffdf7",
   fontHeading = "Playfair Display",
+  lang = "en",
 }: Props) {
   if (!barcodeChurch) return null;
+
+  const t = TR[lang];
 
   const items: BarcodeItem[] = [
     {
       code: barcodeChurch,
-      label: `Entrance Ticket – ${churchLabel}`,
+      label: `${t.ticketPrefix} – ${churchLabel}`,
       sublabel: churchVenueName,
     },
   ];
@@ -62,7 +81,7 @@ export function BarcodeSection({
   if (invitationCategory === "GEREJA_RESEPSI" && barcodeReception) {
     items.push({
       code: barcodeReception,
-      label: `Entrance Ticket – ${receptionLabel}`,
+      label: `${t.ticketPrefix} – ${receptionLabel}`,
       sublabel: receptionVenueName,
     });
   }
@@ -74,13 +93,13 @@ export function BarcodeSection({
           className="text-xs tracking-[0.28em] uppercase mb-3"
           style={{ color: primaryColor }}
         >
-          E-Ticket
+          {t.eyebrow}
         </p>
         <h2
           className="text-3xl mb-10"
           style={{ fontFamily: `'${fontHeading}', Georgia, serif`, color: primaryColor }}
         >
-          Invitation Ticket
+          {t.heading}
         </h2>
 
         <div className={`flex ${items.length > 1 ? "gap-8 justify-center flex-wrap" : "justify-center"}`}>
@@ -116,7 +135,7 @@ export function BarcodeSection({
         </div>
 
         <p className="text-xs text-stone-400 mt-8">
-          Please show this ticket to the staff upon arrival at the venue.
+          {t.footer}
         </p>
       </div>
     </section>
