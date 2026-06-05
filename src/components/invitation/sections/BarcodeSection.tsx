@@ -54,7 +54,7 @@ export function BarcodeSection({
   const items: BarcodeItem[] = [
     {
       code: barcodeChurch,
-      label: `Tiket Masuk ${churchLabel}`,
+      label: `Entrance Ticket – ${churchLabel}`,
       sublabel: churchVenueName,
     },
   ];
@@ -62,7 +62,7 @@ export function BarcodeSection({
   if (invitationCategory === "GEREJA_RESEPSI" && barcodeReception) {
     items.push({
       code: barcodeReception,
-      label: `Tiket Masuk ${receptionLabel}`,
+      label: `Entrance Ticket – ${receptionLabel}`,
       sublabel: receptionVenueName,
     });
   }
@@ -116,7 +116,7 @@ export function BarcodeSection({
         </div>
 
         <p className="text-xs text-stone-400 mt-8">
-          Tunjukkan tiket ini kepada petugas saat tiba di venue.
+          Please show this ticket to the staff upon arrival at the venue.
         </p>
       </div>
     </section>

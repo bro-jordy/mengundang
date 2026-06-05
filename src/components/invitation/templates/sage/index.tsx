@@ -680,28 +680,6 @@ function EventSection({ events, accent, cream, ivory, text, fontH, fontB, showMa
           ))}
         </div>
 
-        {/* Dress code & on-time note */}
-        {(t.dresscodeValue || t.ontimeLabel) && (
-          <Reveal delay={0.1}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1.5rem", padding: "1.25rem 1.5rem", background: cream, borderRadius: "8px", border: `1px solid ${SAGE.sand}` }}>
-              {t.dresscodeValue && (
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                  <Shirt size={15} color={accent} style={{ flexShrink: 0 }} />
-                  <p style={{ fontSize: "0.82rem", color: text }}>
-                    <span style={{ opacity: 0.55 }}>{t.dresscodeLabel}: </span>
-                    <span style={{ fontWeight: 600 }}>{t.dresscodeValue}</span>
-                  </p>
-                </div>
-              )}
-              {t.ontimeLabel && (
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                  <AlarmClock size={15} color={accent} style={{ flexShrink: 0 }} />
-                  <p style={{ fontSize: "0.82rem", color: text, fontWeight: 600 }}>{t.ontimeLabel}</p>
-                </div>
-              )}
-            </div>
-          </Reveal>
-        )}
       </div>
     </section>
   );
@@ -893,6 +871,21 @@ function RSVPSection({ clientId, guest, token, accent, cream, ivory, text, fontH
               <Heart size={24} color={accent} style={{ margin: "0 auto 1rem" }} />
               <p style={{ fontFamily: `'${fontH}',Playfair Display,Georgia,serif`, fontSize: "1.2rem", color: text }}>{t.thankYou}</p>
               <p style={{ fontSize: "0.82rem", color: text, opacity: 0.5, marginTop: "0.25rem" }}>{t.confirmed}</p>
+              {status === "HADIR" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginTop: "1.5rem", paddingTop: "1.25rem", borderTop: `1px solid ${SAGE.sand}` }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+                    <Shirt size={14} color={accent} />
+                    <p style={{ fontSize: "0.8rem", color: text }}>
+                      <span style={{ opacity: 0.55 }}>{t.dresscodeLabel}: </span>
+                      <span style={{ fontWeight: 600 }}>{t.dresscodeValue}</span>
+                    </p>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+                    <AlarmClock size={14} color={accent} />
+                    <p style={{ fontSize: "0.8rem", color: text, fontWeight: 600 }}>{t.ontimeLabel}</p>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ background: cream, borderRadius: "8px", border: `1px solid ${SAGE.sand}`, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
