@@ -107,7 +107,7 @@ export function BarcodeSection({
             <div
               key={item.code}
               className="flex flex-col items-center gap-4 bg-white rounded-2xl px-6 py-8 shadow-sm border"
-              style={{ borderColor: `${primaryColor}30`, width: "220px" }}
+              style={{ borderColor: `${primaryColor}30`, width: "365px" }}
             >
               <p
                 className="text-xs tracking-[0.2em] uppercase font-medium text-center"
