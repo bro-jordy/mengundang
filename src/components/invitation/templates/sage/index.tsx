@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Clock, Calendar, Copy, Check, Wallet, QrCode, Gift, Send, Heart, LockKeyhole, X } from "lucide-react";
+import { MapPin, Clock, Calendar, Copy, Check, Wallet, QrCode, Gift, Send, Heart, LockKeyhole, X, Shirt, AlarmClock } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
 import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import type { Rsvp } from "@/types/prisma.types";
@@ -45,6 +45,9 @@ const TR = {
     // Events
     eyebrow_event: "Jadwal", title_event: "Detail Acara",
     viewLocation: "Lihat Lokasi",
+    // Dress code & note — ubah di sini untuk kustomisasi per undangan
+    dresscodeLabel: "Dress Code", dresscodeValue: "Batik",
+    ontimeLabel: "Mohon hadir tepat waktu",
     // Gallery
     eyebrow_gallery: "Galeri", title_gallery: "Momen Berharga",
     swipe: "Geser untuk lihat lebih →",
@@ -86,6 +89,9 @@ const TR = {
     // Events
     eyebrow_event: "Schedule", title_event: "Event Details",
     viewLocation: "View Location",
+    // Dress code & note — edit here to customize per invitation
+    dresscodeLabel: "Dress Code", dresscodeValue: "Batik",
+    ontimeLabel: "Please be on time",
     // Gallery
     eyebrow_gallery: "Gallery", title_gallery: "Precious Moments",
     swipe: "Swipe for more →",
@@ -111,8 +117,10 @@ const TR = {
     viewQr: "View QR", closeQr: "Close", scanToTransfer: "Scan to transfer",
     giftThanks: "Thank you for your love and generosity",
     // Footer
-    footerThanks: "Thank you for your prayers and presence",
-    madeWith: "Made with love",
+    // footerThanks: "Thank you for your prayers and presence",
+    footerThanks: "Made with ❤️",
+    // madeWith: "Made with love",
+    madeWith: " ",
     // Story
     storyDefault: "Our Story",
   },
@@ -671,6 +679,29 @@ function EventSection({ events, accent, cream, ivory, text, fontH, fontB, showMa
             </Reveal>
           ))}
         </div>
+
+        {/* Dress code & on-time note */}
+        {(t.dresscodeValue || t.ontimeLabel) && (
+          <Reveal delay={0.1}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1.5rem", padding: "1.25rem 1.5rem", background: cream, borderRadius: "8px", border: `1px solid ${SAGE.sand}` }}>
+              {t.dresscodeValue && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                  <Shirt size={15} color={accent} style={{ flexShrink: 0 }} />
+                  <p style={{ fontSize: "0.82rem", color: text }}>
+                    <span style={{ opacity: 0.55 }}>{t.dresscodeLabel}: </span>
+                    <span style={{ fontWeight: 600 }}>{t.dresscodeValue}</span>
+                  </p>
+                </div>
+              )}
+              {t.ontimeLabel && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                  <AlarmClock size={15} color={accent} style={{ flexShrink: 0 }} />
+                  <p style={{ fontSize: "0.82rem", color: text, fontWeight: 600 }}>{t.ontimeLabel}</p>
+                </div>
+              )}
+            </div>
+          </Reveal>
+        )}
       </div>
     </section>
   );
