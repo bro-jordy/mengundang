@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { JackpotMachine, type JackpotPhase } from "./JackpotMachine";
+import { KenBurns } from "./JackpotAnimations";
 
 interface Props {
   groomNickname: string;
@@ -24,13 +25,13 @@ const COVER_T = {
     dearGuest: "Dear",
     tapToOpen: "Tap to Open Invitation",
     revealing: "Revealing your fortune…",
-    jackpotText: "The Ultimate Jackpot",
+    jackpotText: "Against All Odds, We Found Each Other",
   },
   ID: {
     dearGuest: "Kepada Yth.",
     tapToOpen: "Buka Undangan",
     revealing: "Mengungkap keberuntungan Anda…",
-    jackpotText: "Keberuntungan Terbesar",
+    jackpotText: "Melawan Segala Kemungkinan, Kita Menemukan Satu Sama Lain",
   },
 };
 
@@ -176,19 +177,15 @@ export function JackpotCover({
               borderRadius: 14,
               overflow: "hidden",
               border: `1.5px solid ${gold}44`,
-              background: groomPhoto
-                ? undefined
-                : "linear-gradient(160deg, #f5e9c2, #eddaa2)",
+              background: groomPhoto ? undefined : "linear-gradient(160deg, #f5e9c2, #eddaa2)",
               flexShrink: 0,
             }}
           >
-            {groomPhoto && (
-              <img
-                src={groomPhoto}
-                alt={groomNickname}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            )}
+            {groomPhoto ? (
+              <KenBurns>
+                <img src={groomPhoto} alt={groomNickname} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </KenBurns>
+            ) : null}
           </motion.div>
 
           <motion.div
@@ -209,19 +206,15 @@ export function JackpotCover({
               borderRadius: 14,
               overflow: "hidden",
               border: `1.5px solid ${gold}44`,
-              background: bridePhoto
-                ? undefined
-                : "linear-gradient(160deg, #f5e9c2, #eddaa2)",
+              background: bridePhoto ? undefined : "linear-gradient(160deg, #f5e9c2, #eddaa2)",
               flexShrink: 0,
             }}
           >
-            {bridePhoto && (
-              <img
-                src={bridePhoto}
-                alt={brideNickname}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            )}
+            {bridePhoto ? (
+              <KenBurns>
+                <img src={bridePhoto} alt={brideNickname} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </KenBurns>
+            ) : null}
           </motion.div>
         </div>
 

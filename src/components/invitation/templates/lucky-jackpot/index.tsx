@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { motion, useInView } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { JackpotCover } from "./JackpotCover";
-import { CoupleSection } from "../classic/CoupleSection";
-import { EventSection } from "../classic/EventSection";
+import { JackpotCoupleSection } from "./JackpotCoupleSection";
+import { JackpotEventSection } from "./JackpotEventSection";
 import { GallerySection } from "../classic/GallerySection";
 import { WishesSection } from "../classic/WishesSection";
 import { GiftSection } from "../classic/GiftSection";
+import { FloatingOrnaments, RevealSection, StaggerItem, StaggerWrap } from "./JackpotAnimations";
 import { MusicPlayer } from "../../sections/MusicPlayer";
 import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import { Heart, LockKeyhole } from "lucide-react";
@@ -167,6 +168,7 @@ interface Props {
       fontBody: string;
       showCountdown?: boolean | null;
       showMap?: boolean | null;
+      barcodeVisibility?: string | null;
     } | null;
   };
   token: string | null;
@@ -328,23 +330,6 @@ function JackpotRSVPPlaceholder({ primaryColor, bgColor, secondaryColor, textCol
   );
 }
 
-// ─── Scroll animation wrapper ─────────────────────────────────────────────────
-
-function FadeInSection({ children }: { children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: false, amount: 0.15 });
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 28 }}
-      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 28 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
 // ─── Main Template ─────────────────────────────────────────────────────────────
 
 export function LuckyJackpotTemplate({ guest, client, token }: Props) {
@@ -378,6 +363,7 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
 
   const showCountdown = !!theme?.showCountdown;
   const showMap = theme?.showMap !== false;
+  const barcodeVisibility = theme?.barcodeVisibility ?? "AFTER_RSVP";
   const countdownTarget = showCountdown
     ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
     : null;
@@ -443,71 +429,82 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
       )}
 
       {/* Hero page — shown after jackpot, dismissed on scroll */}
-      {showHero && (
-        <div
-          className="fixed inset-0 z-40 flex flex-col items-center justify-center text-center px-6"
-          style={{ backgroundColor: bgColor }}
-        >
-          <div className="flex flex-col items-center w-full max-w-sm">
-            <p
-              className="text-xs tracking-[0.28em] uppercase mb-6"
-              style={{ color: `${primaryColor}88`, fontFamily: "Georgia, serif" }}
-            >
-              {invitationLabel}
-            </p>
-
-            <h1 style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "clamp(2.5rem,10vw,4rem)", color: textColor, lineHeight: 1.1, marginBottom: 4 }}>
-              {profile?.groomNickname || "Groom"}
-            </h1>
-            <p style={{ fontFamily: "Georgia, serif", fontSize: "1.5rem", color: primaryColor, margin: "6px 0" }}>&amp;</p>
-            <h1 style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "clamp(2.5rem,10vw,4rem)", color: textColor, lineHeight: 1.1 }}>
-              {profile?.brideNickname || "Bride"}
-            </h1>
-
-            <div className="mt-6 h-px w-16" style={{ background: `linear-gradient(90deg, transparent, ${primaryColor}, transparent)` }} />
-
-            {profile?.openingQuote && (
-              <div className="mt-6 text-center px-2">
-                <p style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "0.78rem", fontStyle: "italic", lineHeight: 1.9, color: textColor, opacity: 0.55 }}>
-                  &ldquo;{profile.openingQuote}&rdquo;
+      <AnimatePresence>
+        {showHero && (
+          <motion.div
+            key="hero-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="fixed inset-0 z-40 flex flex-col items-center justify-center text-center px-6"
+            style={{ backgroundColor: bgColor }}
+          >
+            <StaggerWrap once className="flex flex-col items-center w-full max-w-sm">
+              <StaggerItem>
+                <p className="text-xs tracking-[0.28em] uppercase mb-6" style={{ color: `${primaryColor}88`, fontFamily: "Georgia, serif" }}>
+                  {invitationLabel}
                 </p>
-                {profile.openingQuoteBy && (
-                  <p className="text-xs mt-1" style={{ color: primaryColor, fontFamily: "Georgia, serif", opacity: 0.7, letterSpacing: "0.1em" }}>
-                    — {profile.openingQuoteBy}
+              </StaggerItem>
+              <StaggerItem>
+                <h1 style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "clamp(2.5rem,10vw,4rem)", color: textColor, lineHeight: 1.1, marginBottom: 4 }}>
+                  {profile?.groomNickname || "Groom"}
+                </h1>
+              </StaggerItem>
+              <StaggerItem>
+                <p style={{ fontFamily: "Georgia, serif", fontSize: "1.5rem", color: primaryColor, margin: "6px 0" }}>&amp;</p>
+              </StaggerItem>
+              <StaggerItem>
+                <h1 style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "clamp(2.5rem,10vw,4rem)", color: textColor, lineHeight: 1.1 }}>
+                  {profile?.brideNickname || "Bride"}
+                </h1>
+              </StaggerItem>
+              <StaggerItem>
+                <div className="mt-6 h-px w-16" style={{ background: `linear-gradient(90deg, transparent, ${primaryColor}, transparent)` }} />
+              </StaggerItem>
+              {profile?.openingQuote && (
+                <StaggerItem>
+                  <div className="mt-6 text-center px-2">
+                    <p style={{ fontFamily: `'${fontHeading}', Georgia, serif`, fontSize: "0.78rem", fontStyle: "italic", lineHeight: 1.9, color: textColor, opacity: 0.55 }}>
+                      &ldquo;{profile.openingQuote}&rdquo;
+                    </p>
+                    {profile.openingQuoteBy && (
+                      <p className="text-xs mt-1" style={{ color: primaryColor, fontFamily: "Georgia, serif", opacity: 0.7, letterSpacing: "0.1em" }}>
+                        — {profile.openingQuoteBy}
+                      </p>
+                    )}
+                  </div>
+                </StaggerItem>
+              )}
+              {guest?.name && (
+                <StaggerItem>
+                  <div className="mt-5">
+                    <p className="text-xs tracking-widest uppercase" style={{ color: `${primaryColor}77`, fontFamily: "Georgia, serif", marginBottom: 4 }}>
+                      {t.dearGuest}
+                    </p>
+                    <p style={{ fontFamily: "Georgia, serif", fontSize: "1rem", color: textColor }}>
+                      {guest.name}
+                    </p>
+                  </div>
+                </StaggerItem>
+              )}
+              {firstEvent?.date && (
+                <StaggerItem>
+                  <p className="mt-4 text-xs" style={{ color: `${primaryColor}88`, fontFamily: "Georgia, serif", letterSpacing: "0.08em" }}>
+                    {formatDate(firstEvent.date)} · {firstEvent.venueName}
                   </p>
-                )}
-              </div>
-            )}
-
-            {/* Guest name */}
-            {guest?.name && (
-              <div className="mt-5">
-                <p className="text-xs tracking-widest uppercase" style={{ color: `${primaryColor}77`, fontFamily: "Georgia, serif", marginBottom: 4 }}>
-                  {t.dearGuest}
+                </StaggerItem>
+              )}
+              <StaggerItem>
+                <p className="mt-8 text-xs tracking-widest uppercase" style={{ color: `${primaryColor}55`, fontFamily: "Georgia, serif", animation: "jackpot-bounce 1.8s ease-in-out infinite" }}>
+                  {t.scrollHint}
                 </p>
-                <p style={{ fontFamily: "Georgia, serif", fontSize: "1rem", color: textColor }}>
-                  {guest.name}
-                </p>
-              </div>
-            )}
-
-            {/* First event teaser */}
-            {firstEvent?.date && (
-              <p className="mt-4 text-xs" style={{ color: `${primaryColor}88`, fontFamily: "Georgia, serif", letterSpacing: "0.08em" }}>
-                {formatDate(firstEvent.date)} · {firstEvent.venueName}
-              </p>
-            )}
-
-            <p
-              className="mt-8 text-xs tracking-widest uppercase"
-              style={{ color: `${primaryColor}55`, fontFamily: "Georgia, serif", animation: "jackpot-bounce 1.8s ease-in-out infinite" }}
-            >
-              {t.scrollHint}
-            </p>
-          </div>
-          <style>{`@keyframes jackpot-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }`}</style>
-        </div>
-      )}
+              </StaggerItem>
+            </StaggerWrap>
+            <style>{`@keyframes jackpot-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }`}</style>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Persistent lang toggle (visible after opened) */}
       {opened && (
@@ -549,6 +546,8 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
         </div>
       )}
 
+      {opened && <FloatingOrnaments color={primaryColor} />}
+
       {/* Main invitation content */}
       <div
         className={`min-h-screen transition-opacity duration-700 ${opened ? "opacity-100" : "opacity-0 pointer-events-none"}`}
@@ -565,7 +564,7 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
         <div className="relative z-10">
           {/* Countdown */}
           {showCountdown && countdownTimeLeft && (
-            <FadeInSection>
+            <RevealSection>
               <section className="py-12 text-center" style={{ background: secondaryColor }}>
                 <p className="text-xs tracking-[0.28em] uppercase mb-4" style={{ color: primaryColor, fontFamily: "Georgia, serif" }}>
                   {t.countdownLabel}
@@ -591,24 +590,24 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
                   ))}
                 </div>
               </section>
-            </FadeInSection>
+            </RevealSection>
           )}
 
-          {sectionKeys.includes("COUPLE") && <FadeInSection><CoupleSection profile={profile} lang={lang} /></FadeInSection>}
-          {sectionKeys.includes("EVENT") && <FadeInSection><EventSection events={client.events} showMap={showMap} lang={lang} /></FadeInSection>}
-          {sectionKeys.includes("GALLERY") && <FadeInSection><GallerySection galleries={client.galleries} /></FadeInSection>}
+          {sectionKeys.includes("COUPLE") && <JackpotCoupleSection profile={profile} lang={lang} />}
+          {sectionKeys.includes("EVENT") && <JackpotEventSection events={client.events} showMap={showMap} lang={lang} />}
+          {sectionKeys.includes("GALLERY") && <RevealSection><GallerySection galleries={client.galleries} /></RevealSection>}
 
           {sectionKeys.includes("RSVP") && (
-            <FadeInSection>
+            <RevealSection>
               {token && guest
                 ? <JackpotRSVP clientId={client.id} guest={guest} token={token} primaryColor={primaryColor} bgColor={bgColor} secondaryColor={secondaryColor} textColor={textColor} fontHeading={fontHeading} t={t} onConfirmed={setConfirmedRsvpStatus} />
                 : <JackpotRSVPPlaceholder primaryColor={primaryColor} bgColor={bgColor} secondaryColor={secondaryColor} textColor={textColor} fontHeading={fontHeading} t={t} />
               }
-            </FadeInSection>
+            </RevealSection>
           )}
 
-          {guest?.barcodeChurch && confirmedRsvpStatus === "HADIR" && (
-            <FadeInSection>
+          {guest?.barcodeChurch && (barcodeVisibility === "ALWAYS" || (barcodeVisibility === "AFTER_RSVP" && confirmedRsvpStatus === "HADIR")) && (
+            <RevealSection>
               <BarcodeSection
                 barcodeChurch={guest.barcodeChurch}
                 barcodeReception={guest.barcodeReception ?? null}
@@ -621,11 +620,11 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
                 bgColor={bgColor}
                 fontHeading={fontHeading}
               />
-            </FadeInSection>
+            </RevealSection>
           )}
 
           {sectionKeys.includes("WISHES") && (
-            <FadeInSection>
+            <RevealSection>
               <WishesSection
                 clientId={client.id}
                 initialWishes={client.wishes}
@@ -633,12 +632,12 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
                 guestId={guest?.id}
                 lang={lang}
               />
-            </FadeInSection>
+            </RevealSection>
           )}
 
-          {sectionKeys.includes("GIFT") && <FadeInSection><GiftSection gifts={client.gifts} lang={lang} /></FadeInSection>}
+          {sectionKeys.includes("GIFT") && <RevealSection><GiftSection gifts={client.gifts} lang={lang} /></RevealSection>}
 
-          <FadeInSection>
+          <RevealSection>
             <footer className="py-10 text-center text-xs" style={{ color: `${textColor}66` }}>
               <p
                 className="text-2xl mb-2"
@@ -649,7 +648,7 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
               <p>{t.closingText}</p>
               <p className="mt-4 opacity-40">{t.madeWith}</p>
             </footer>
-          </FadeInSection>
+          </RevealSection>
         </div>
       </div>
     </>

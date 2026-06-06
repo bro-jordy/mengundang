@@ -16,6 +16,7 @@ const DEFAULT_THEME = {
   fontHeading: "Cormorant",
   fontBody: "IBM Plex Sans",
   showMap: true,
+  barcodeVisibility: "AFTER_RSVP" as const,
 };
 
 export default async function ThemePage({ params }: Props) {
@@ -36,6 +37,7 @@ export default async function ThemePage({ params }: Props) {
         fontHeading: theme.fontHeading,
         fontBody: theme.fontBody,
         showMap: theme.showMap ?? true,
+        barcodeVisibility: (theme.barcodeVisibility ?? "AFTER_RSVP") as "ALWAYS" | "AFTER_RSVP" | "HIDDEN",
       }
     : DEFAULT_THEME;
 

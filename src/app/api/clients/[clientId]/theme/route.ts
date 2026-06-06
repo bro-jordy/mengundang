@@ -15,6 +15,7 @@ const themeSchema = z.object({
   customCss: z.string().optional(),
   showCountdown: z.boolean().optional(),
   showMap: z.boolean().optional(),
+  barcodeVisibility: z.enum(["ALWAYS", "AFTER_RSVP", "HIDDEN"]).optional(),
 });
 
 interface Params {

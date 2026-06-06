@@ -185,6 +185,7 @@ interface Theme {
   fontHeading: string;
   fontBody: string;
   showMap: boolean;
+  barcodeVisibility: "ALWAYS" | "AFTER_RSVP" | "HIDDEN";
 }
 
 interface Props {
@@ -340,23 +341,41 @@ export function ThemeEditor({ clientId, initialTheme }: Props) {
           <div className="bg-white rounded-2xl border border-stone-200 p-6">
             <h2 className="font-semibold text-stone-800 mb-1">Pengaturan Tampilan</h2>
             <p className="text-xs text-stone-400 mb-4">Pilih elemen yang ingin ditampilkan di undangan</p>
-            <label className="flex items-center justify-between cursor-pointer">
-              <div>
-                <p className="text-sm font-medium text-stone-700">Tampilkan Peta Lokasi</p>
-                <p className="text-xs text-stone-400 mt-0.5">Tampilkan Google Maps interaktif di setiap lokasi acara</p>
+            <div className="space-y-4">
+              <label className="flex items-center justify-between cursor-pointer">
+                <div>
+                  <p className="text-sm font-medium text-stone-700">Tampilkan Peta Lokasi</p>
+                  <p className="text-xs text-stone-400 mt-0.5">Tampilkan Google Maps interaktif di setiap lokasi acara</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => update("showMap", !theme.showMap)}
+                  className="relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ml-4"
+                  style={{ background: theme.showMap ? "#292524" : "#d6d3d1" }}
+                >
+                  <span
+                    className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"
+                    style={{ transform: theme.showMap ? "translateX(20px)" : "translateX(0)" }}
+                  />
+                </button>
+              </label>
+
+              <div className="border-t border-stone-100 pt-4">
+                <div className="mb-2">
+                  <p className="text-sm font-medium text-stone-700">Kapan Barcode Tiket Ditampilkan</p>
+                  <p className="text-xs text-stone-400 mt-0.5">Atur kapan QR code e-tiket muncul di undangan tamu</p>
+                </div>
+                <select
+                  value={theme.barcodeVisibility}
+                  onChange={(e) => update("barcodeVisibility", e.target.value as Theme["barcodeVisibility"])}
+                  className={inputClass}
+                >
+                  <option value="AFTER_RSVP">Muncul setelah tamu konfirmasi kehadiran (RSVP)</option>
+                  <option value="ALWAYS">Selalu tampil tanpa perlu RSVP terlebih dahulu</option>
+                  <option value="HIDDEN">Tidak tampilkan barcode sama sekali</option>
+                </select>
               </div>
-              <button
-                type="button"
-                onClick={() => update("showMap", !theme.showMap)}
-                className="relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ml-4"
-                style={{ background: theme.showMap ? "#292524" : "#d6d3d1" }}
-              >
-                <span
-                  className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"
-                  style={{ transform: theme.showMap ? "translateX(20px)" : "translateX(0)" }}
-                />
-              </button>
-            </label>
+            </div>
           </div>
 
           {error && (

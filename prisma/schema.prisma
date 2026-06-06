@@ -131,10 +131,11 @@ model Theme {
   fontHeading    String   @default("Playfair Display")
   fontBody       String   @default("Lato")
   customCss      String?
-  showCountdown  Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  showMap        Boolean  @default(true)
+  showCountdown      Boolean  @default(false)
+  barcodeVisibility  String   @default("AFTER_RSVP")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  showMap            Boolean  @default(true)
   client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@map("themes")

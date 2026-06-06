@@ -62,7 +62,7 @@ interface Props {
     galleries: { id: string; url: string; type: string; sortOrder: number }[];
     gifts: { id: string; bankName: string | null; accountNumber: string | null; accountName: string | null; ewalletType: string | null; ewalletNumber: string | null; qrisImage: string | null; isActive: boolean }[];
     wishes: { id: string; name: string; message: string; reply: string | null; createdAt: Date }[];
-    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null; showMap?: boolean | null } | null;
+    theme: { primaryColor: string; secondaryColor: string; bgColor: string; textColor: string; fontHeading: string; fontBody: string; showCountdown?: boolean | null; showMap?: boolean | null; barcodeVisibility?: string | null } | null;
   };
   token: string | null;
 }
@@ -111,6 +111,7 @@ export function DarkTemplate({ guest, client, token }: Props) {
 
   const showCountdown = !!client.theme?.showCountdown;
   const showMap = client.theme?.showMap !== false;
+  const barcodeVisibility = client.theme?.barcodeVisibility ?? "AFTER_RSVP";
   const countdownTarget = showCountdown
     ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
     : null;
@@ -340,7 +341,7 @@ export function DarkTemplate({ guest, client, token }: Props) {
                   textColor={textColor} bgColor={bgColor} secondaryColor={secondaryColor} />
           )}
 
-          {guest?.barcodeChurch && confirmedRsvpStatus === "HADIR" && (
+          {guest?.barcodeChurch && (barcodeVisibility === "ALWAYS" || (barcodeVisibility === "AFTER_RSVP" && confirmedRsvpStatus === "HADIR")) && (
             <BarcodeSection
               barcodeChurch={guest.barcodeChurch}
               barcodeReception={guest.barcodeReception ?? null}

@@ -135,6 +135,7 @@ interface Props {
       fontBody: string;
       showCountdown?: boolean | null;
       showMap?: boolean | null;
+      barcodeVisibility?: string | null;
     } | null;
   };
   token: string | null;
@@ -3263,6 +3264,7 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
 
   const showCountdown = !!client.theme?.showCountdown;
   const showMap = client.theme?.showMap !== false;
+  const barcodeVisibility = client.theme?.barcodeVisibility ?? "AFTER_RSVP";
   const countdownTarget = showCountdown
     ? (client.events.filter((e) => e.date).map((e) => new Date(e.date!)).filter((d) => d > new Date()).sort((a, b) => a.getTime() - b.getTime())[0] ?? null)
     : null;
@@ -3587,7 +3589,7 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
                   />
                 ))}
 
-              {guest?.barcodeChurch && confirmedRsvpStatus === "HADIR" && (
+              {guest?.barcodeChurch && (barcodeVisibility === "ALWAYS" || (barcodeVisibility === "AFTER_RSVP" && confirmedRsvpStatus === "HADIR")) && (
                 <BarcodeSection
                   barcodeChurch={guest.barcodeChurch}
                   barcodeReception={guest.barcodeReception ?? null}
