@@ -17,6 +17,8 @@ export const weddingProfileSchema = z.object({
   showStoryTitle: z.boolean().default(true),
   openingQuote: z.string().optional().nullable(),
   openingQuoteBy: z.string().optional().nullable(),
+  attentionTitle: z.string().optional().nullable(),
+  attentionContent: z.string().optional().nullable(),
 });
 
 export const eventSchema = z.object({

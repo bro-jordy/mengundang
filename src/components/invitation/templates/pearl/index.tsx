@@ -7,6 +7,7 @@ import {
 import { MapPin, Clock, Calendar, Copy, Check, Wallet, QrCode, Gift, Send, Heart, LockKeyhole } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
 import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
+import { AttentionSection } from "../../sections/AttentionSection";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
 
@@ -51,6 +52,7 @@ type Profile = {
   heroImage: string | null;
   groomPhoto: string | null; bridePhoto: string | null;
   showGroomPhoto: boolean; showBridePhoto: boolean;
+  attentionTitle: string | null; attentionContent: string | null;
 } | null;
 
 interface Props {
@@ -322,6 +324,17 @@ export function PearlTemplate({ guest, client, token }: Props) {
               {/* ── Couple ── */}
               {sectionKeys.includes("COUPLE") && profile && (
                 <CoupleSection profile={profile} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} />
+              )}
+
+              {profile?.attentionContent && (
+                <AttentionSection
+                  title={profile.attentionTitle}
+                  content={profile.attentionContent}
+                  primaryColor={gold}
+                  bgColor={ivory}
+                  textColor={text}
+                  fontBody={fontB}
+                />
               )}
 
               {/* ── Events ── */}

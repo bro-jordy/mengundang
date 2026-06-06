@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Calendar, Copy, Check, Wallet, QrCode, Gift, Send, Heart, LockKeyhole, X, Shirt, AlarmClock } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
 import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
+import { AttentionSection } from "../../sections/AttentionSection";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
 
@@ -149,6 +150,7 @@ type Profile = {
   heroImage: string | null;
   groomPhoto: string | null; bridePhoto: string | null;
   showGroomPhoto: boolean; showBridePhoto: boolean;
+  attentionTitle: string | null; attentionContent: string | null;
 } | null;
 
 interface Props {
@@ -446,6 +448,18 @@ export function SageTemplate({ guest, client, token }: Props) {
             {/* Couple */}
             {sectionKeys.includes("COUPLE") && profile && (
               <CoupleSection profile={profile} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} t={t} />
+            )}
+
+            {/* Attention */}
+            {profile?.attentionContent && (
+              <AttentionSection
+                title={profile.attentionTitle}
+                content={profile.attentionContent}
+                primaryColor={accent}
+                bgColor={cream}
+                textColor={text}
+                fontBody={fontB}
+              />
             )}
 
             {/* Events */}

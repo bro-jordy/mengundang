@@ -10,6 +10,7 @@ import { GallerySection } from "./GallerySection";
 import { GiftSection } from "./GiftSection";
 import { MusicPlayer } from "../../sections/MusicPlayer";
 import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
+import { AttentionSection } from "../../sections/AttentionSection";
 import type { Rsvp } from "@/types/prisma.types";
 
 function useCountdown(target: Date | null) {
@@ -63,6 +64,8 @@ interface Props {
       bridePhoto: string | null;
       showGroomPhoto: boolean;
       showBridePhoto: boolean;
+      attentionTitle: string | null;
+      attentionContent: string | null;
     } | null;
     events: {
       id: string;
@@ -273,6 +276,15 @@ export function ClassicTemplate({ guest, client, token }: Props) {
           )}
 
           {sectionKeys.includes("COUPLE") && <CoupleSection profile={profile} />}
+          {profile?.attentionContent && (
+            <AttentionSection
+              title={profile.attentionTitle}
+              content={profile.attentionContent}
+              primaryColor={primaryColor}
+              bgColor={bgColor}
+              textColor={textColor}
+            />
+          )}
           {sectionKeys.includes("EVENT") && <EventSection events={client.events} showMap={showMap} />}
           {sectionKeys.includes("GALLERY") && <GallerySection galleries={client.galleries} />}
 

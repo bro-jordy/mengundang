@@ -11,6 +11,7 @@ import { GiftSection } from "../classic/GiftSection";
 import { FloatingOrnaments, RevealSection, StaggerItem, StaggerWrap } from "./JackpotAnimations";
 import { MusicPlayer } from "../../sections/MusicPlayer";
 import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
+import { AttentionSection } from "../../sections/AttentionSection";
 import { Heart, LockKeyhole } from "lucide-react";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
@@ -122,6 +123,8 @@ interface Props {
       bridePhoto: string | null;
       showGroomPhoto: boolean;
       showBridePhoto: boolean;
+      attentionTitle: string | null;
+      attentionContent: string | null;
     } | null;
     events: {
       id: string;
@@ -594,6 +597,15 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
           )}
 
           {sectionKeys.includes("COUPLE") && <JackpotCoupleSection profile={profile} lang={lang} />}
+          {profile?.attentionContent && (
+            <AttentionSection
+              title={profile.attentionTitle}
+              content={profile.attentionContent}
+              primaryColor={primaryColor}
+              bgColor={bgColor}
+              textColor={textColor}
+            />
+          )}
           {sectionKeys.includes("EVENT") && <JackpotEventSection events={client.events} showMap={showMap} lang={lang} />}
           {sectionKeys.includes("GALLERY") && <RevealSection><GallerySection galleries={client.galleries} /></RevealSection>}
 

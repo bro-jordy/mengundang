@@ -75,11 +75,13 @@ model WeddingProfile {
   showGroomPhoto Boolean  @default(true)
   showBridePhoto Boolean  @default(true)
   heroImage      String?
-  story          String?
-  storyTitle     String?
-  showStoryTitle Boolean  @default(true)
-  openingQuote   String?
-  openingQuoteBy String?
+  story           String?
+  storyTitle      String?
+  showStoryTitle  Boolean  @default(true)
+  openingQuote    String?
+  openingQuoteBy  String?
+  attentionTitle  String?
+  attentionContent String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)

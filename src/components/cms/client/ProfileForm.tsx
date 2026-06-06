@@ -42,6 +42,8 @@ export function ProfileForm({ clientId, initialData }: Props) {
         showStoryTitle: (initialData as any)?.showStoryTitle ?? true,
         openingQuote: initialData?.openingQuote ?? "",
         openingQuoteBy: initialData?.openingQuoteBy ?? "",
+        attentionTitle: (initialData as any)?.attentionTitle ?? "",
+        attentionContent: (initialData as any)?.attentionContent ?? "",
       },
     });
 
@@ -195,6 +197,30 @@ export function ProfileForm({ clientId, initialData }: Props) {
             </Field>
           )}
         </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-stone-200 p-5 space-y-4">
+        <div>
+          <h3 className="font-medium text-stone-700 text-sm">Rules / Perhatian</h3>
+          <p className="text-xs text-stone-400 mt-0.5">Tampil sebagai section &ldquo;ATTENTION&rdquo; di undangan. Kosongkan jika tidak ingin ditampilkan.</p>
+        </div>
+        <Field label="Judul Section" error={undefined}>
+          <input
+            {...register("attentionTitle")}
+            placeholder="ATTENTION"
+            className={inputClass}
+          />
+          <p className="text-xs text-stone-400 mt-1">Kosongkan untuk menggunakan judul default &ldquo;Attention&rdquo;</p>
+        </Field>
+        <Field label="Isi Rules / Perhatian" error={undefined}>
+          <RichTextEditor
+            value={watch("attentionContent") ?? ""}
+            onChange={(html) => setValue("attentionContent" as any, html, { shouldDirty: true })}
+            placeholder="✦ Dress Code: Batik Attire&#10;✦ Adults Only (No Children, Please)"
+            rows={5}
+          />
+          <p className="text-xs text-stone-400 mt-1">Gunakan toolbar Bold untuk menebalkan teks penting.</p>
+        </Field>
       </div>
 
       <div className="flex justify-end">

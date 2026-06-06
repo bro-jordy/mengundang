@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
 import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
+import { AttentionSection } from "../../sections/AttentionSection";
 import { formatDate } from "@/lib/utils";
 import type { Rsvp } from "@/types/prisma.types";
 
@@ -85,6 +86,8 @@ type Profile = {
   bridePhoto: string | null;
   showGroomPhoto: boolean;
   showBridePhoto: boolean;
+  attentionTitle: string | null;
+  attentionContent: string | null;
 } | null;
 
 interface Props {
@@ -3531,6 +3534,17 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
                   fontH={fontH}
                   fontB={fontB}
                   t={t}
+                />
+              )}
+
+              {profile?.attentionContent && (
+                <AttentionSection
+                  title={profile.attentionTitle}
+                  content={profile.attentionContent}
+                  primaryColor={gold}
+                  bgColor={ivory}
+                  textColor={text}
+                  fontBody={fontB}
                 />
               )}
 
