@@ -270,8 +270,6 @@ const DEF = {
 // ─── Global CSS ───────────────────────────────────────────────────────────────
 
 const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;500&display=swap');
-
   html {
     scroll-behavior: smooth;
   }
@@ -412,7 +410,7 @@ function AnimInView({
 function Particles() {
   const items = useMemo(
     () =>
-      Array.from({ length: 28 }, (_, i) => ({
+      Array.from({ length: 14 }, (_, i) => ({
         id: i,
         left: `${6 + ((i * 41 + 7) % 88)}%`,
         size: 2 + (i % 3),
@@ -3354,7 +3352,6 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;500&display=swap');
         body {
           background-color: ${ivory};
           color: ${text};

@@ -272,7 +272,6 @@ export function SageTemplate({ guest, client, token }: Props) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap');
         body { background-color:${cream}; color:${text}; margin:0; -webkit-font-smoothing:antialiased; font-family:'${fontB}',Lato,sans-serif; }
         ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:${accent}44;border-radius:9999px;}
         .sage-snap-x { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }

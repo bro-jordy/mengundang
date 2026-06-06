@@ -137,7 +137,6 @@ export function DarkTemplate({ guest, client, token }: Props) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
         body { background-color: #ffffff; color: #1a1a1a; margin: 0; -webkit-font-smoothing: antialiased; font-family: '${fontBody}', 'IBM Plex Sans', sans-serif; }
         .story-html ul { list-style: disc; padding-left: 1.4em; margin: 0.4em 0; }
         .story-html li { margin: 0.15em 0; }

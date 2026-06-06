@@ -6,6 +6,15 @@ import { TemplateRenderer } from "@/components/invitation/TemplateRenderer";
 
 export const dynamic = "force-dynamic";
 
+const THEME_FONTS: Record<string, string> = {
+  envelope:
+    "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;500&display=swap",
+  pearl:
+    "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap",
+  dark: "https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap",
+  sage: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap",
+};
+
 interface Props {
   params: Promise<{ slug: string; token: string }>;
 }
@@ -22,20 +31,31 @@ export default async function GuestInvitationPage({ params }: Props) {
   const ua = headersList.get("user-agent") || "";
   markGuestOpened(guest.id, ip, ua, getDeviceType(ua)).catch(() => {});
 
+  const fontUrl = THEME_FONTS[guest.client.theme?.templateSlug ?? ""] ?? null;
+
   return (
-    <TemplateRenderer
-      guest={{
-        id: guest.id,
-        name: guest.name,
-        maxPax: guest.maxPax,
-        rsvp: guest.rsvp,
-        invitationCategory: guest.invitationCategory as "GEREJA_SAJA" | "GEREJA_RESEPSI",
-        barcodeChurch: guest.barcodeChurch,
-        barcodeReception: guest.barcodeReception,
-      }}
-      client={guest.client as any}
-      token={token}
-    />
+    <>
+      {fontUrl && (
+        <>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href={fontUrl} rel="stylesheet" />
+        </>
+      )}
+      <TemplateRenderer
+        guest={{
+          id: guest.id,
+          name: guest.name,
+          maxPax: guest.maxPax,
+          rsvp: guest.rsvp,
+          invitationCategory: guest.invitationCategory as "GEREJA_SAJA" | "GEREJA_RESEPSI",
+          barcodeChurch: guest.barcodeChurch,
+          barcodeReception: guest.barcodeReception,
+        }}
+        client={guest.client as any}
+        token={token}
+      />
+    </>
   );
 }
 

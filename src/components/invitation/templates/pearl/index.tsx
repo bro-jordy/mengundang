@@ -167,7 +167,6 @@ export function PearlTemplate({ guest, client, token }: Props) {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap');
         body { background-color: ${ivory}; color: ${text}; margin:0; -webkit-font-smoothing:antialiased; font-family:'${fontB}',Lato,sans-serif; }
         ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:${gold}44;border-radius:9999px;}
         .story-html ul { list-style: disc; padding-left: 1.4em; margin: 0.4em 0; }
