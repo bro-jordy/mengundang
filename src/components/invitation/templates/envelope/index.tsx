@@ -3347,35 +3347,8 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
       }
     }
 
-    let touchStartY = 0;
-    function onTouchStart(e: TouchEvent) {
-      touchStartY = e.touches[0]?.clientY ?? 0;
-    }
-    function onTouchMove(e: TouchEvent) {
-      const minY = anchorRef.current?.offsetTop ?? 0;
-      const movingUp = (e.touches[0]?.clientY ?? 0) > touchStartY;
-      if (window.scrollY <= minY && movingUp) {
-        e.preventDefault();
-      }
-    }
-    function onWheel(e: WheelEvent) {
-      const minY = anchorRef.current?.offsetTop ?? 0;
-      if (window.scrollY <= minY && e.deltaY < 0) {
-        e.preventDefault();
-      }
-    }
-
     window.addEventListener("scroll", lockUpScroll, { passive: true });
-    window.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: false });
-
-    return () => {
-      window.removeEventListener("scroll", lockUpScroll);
-      window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-    };
+    return () => window.removeEventListener("scroll", lockUpScroll);
   }, [heroPassed]);
 
   return (
@@ -3468,7 +3441,6 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
           position: "relative",
           background: bgGallery ? undefined : ivory,
           backgroundImage: bgGallery ? `url('${bgGallery.url}')` : undefined,
-          backgroundAttachment: bgGallery ? "fixed" : undefined,
           backgroundSize: bgGallery ? "cover" : undefined,
           backgroundPosition: bgGallery ? "center" : undefined,
         }}

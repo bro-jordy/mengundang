@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/database/prisma";
 import { generateGuestToken, generateInvitationUrl } from "@/lib/token";
 import { randomBytes } from "crypto";
@@ -25,7 +26,7 @@ export async function getGuests(clientId: string) {
   });
 }
 
-export async function getGuestByToken(token: string) {
+export const getGuestByToken = cache(async function getGuestByToken(token: string) {
   return prisma.guest.findUnique({
     where: { guestToken: token },
     include: {
@@ -44,7 +45,7 @@ export async function getGuestByToken(token: string) {
       },
     },
   });
-}
+});
 
 export async function createGuest(
   clientId: string,
