@@ -72,7 +72,9 @@
       "Bash(echo \"exit: $?\")",
       "Bash(curl -s http://localhost:3000 -o /dev/null -w \"%{http_code}\")",
       "Bash(DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require\" npx prisma db push)",
-      "Bash(DATABASE_URL_UNPOOLED=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require\" DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r-pooler.c-8.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx prisma db push)"
+      "Bash(DATABASE_URL_UNPOOLED=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require\" DATABASE_URL=\"postgresql://neondb_owner:npg_c9SwU1qyalgT@ep-cool-dawn-aqe41z6r-pooler.c-8.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require\" npx prisma db push)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
