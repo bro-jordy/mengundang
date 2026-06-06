@@ -33,11 +33,11 @@ export function RevealSection({
     <motion.div
       ref={ref}
       className={className}
-      initial={{ opacity: 0, y: 36, filter: "blur(10px)" }}
+      initial={{ opacity: 0, y: 36 }}
       animate={
         inView
-          ? { opacity: 1, y: 0, filter: "blur(0px)" }
-          : { opacity: 0, y: 36, filter: "blur(10px)" }
+          ? { opacity: 1, y: 0 }
+          : { opacity: 0, y: 36 }
       }
       transition={{ duration: 0.9, ease: EASE_OUT_EXPO, delay }}
     >
@@ -55,11 +55,10 @@ export const staggerContainer = {
 };
 
 export const staggerItemVariant = {
-  hidden: { opacity: 0, y: 22, filter: "blur(6px)" },
+  hidden: { opacity: 0, y: 22 },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: { duration: 0.75, ease: EASE_OUT_EXPO },
   },
 };
@@ -195,8 +194,7 @@ function GlowOrb({
         height: size,
         borderRadius: "50%",
         background: color,
-        opacity: 0.03,
-        filter: "blur(28px)",
+        opacity: 0.04,
         pointerEvents: "none",
       }}
       animate={{ y: [0, -18, 0], x: [0, 6, 0], scale: [1, 1.12, 1] }}
@@ -289,11 +287,11 @@ export function SlideReveal({
     <motion.div
       ref={ref}
       className={className}
-      initial={{ opacity: 0, x, filter: "blur(8px)" }}
+      initial={{ opacity: 0, x }}
       animate={
         inView
-          ? { opacity: 1, x: 0, filter: "blur(0px)" }
-          : { opacity: 0, x, filter: "blur(8px)" }
+          ? { opacity: 1, x: 0 }
+          : { opacity: 0, x }
       }
       transition={{ duration: 0.9, ease: EASE_OUT_EXPO, delay }}
     >

@@ -556,7 +556,7 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
         className={`min-h-screen transition-opacity duration-700 ${opened ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         style={
           bgImage
-            ? { backgroundImage: `url('${bgImage.url}')`, backgroundAttachment: "fixed", backgroundSize: "cover", backgroundPosition: "center" }
+            ? { backgroundImage: `url('${bgImage.url}')`, backgroundSize: "cover", backgroundPosition: "center" }
             : undefined
         }
       >
