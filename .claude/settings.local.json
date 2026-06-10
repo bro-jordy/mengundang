@@ -80,7 +80,8 @@
       "Bash(nc -w 5 -zv aws-1-ap-southeast-1.pooler.supabase.com 5432)",
       "Bash(timeout 8 bash -c \"echo > /dev/tcp/aws-1-ap-southeast-1.pooler.supabase.com/5432\")",
       "Bash(gtimeout 8 bash -c \"echo > /dev/tcp/aws-1-ap-southeast-1.pooler.supabase.com/5432\")",
-      "Bash(gtimeout 8 bash -c \"echo > /dev/tcp/aws-1-ap-southeast-1.pooler.supabase.com/6543\")"
+      "Bash(gtimeout 8 bash -c \"echo > /dev/tcp/aws-1-ap-southeast-1.pooler.supabase.com/6543\")",
+      "Bash(node_modules/.bin/next build *)"
     ],
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
