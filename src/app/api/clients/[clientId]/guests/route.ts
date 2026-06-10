@@ -11,6 +11,7 @@ import {
 } from "@/modules/guests/guests.service";
 import { prisma } from "@/lib/database/prisma";
 import { apiError, apiSuccess } from "@/lib/utils";
+import { generateInvitationUrl } from "@/lib/token";
 
 interface Params {
   params: Promise<{ clientId: string }>;
@@ -41,7 +42,7 @@ export async function POST(req: Request, { params }: Params) {
 
     const client = await prisma.client.findUnique({
       where: { id: clientId },
-      select: { slug: true },
+      select: { slug: true, clientType: true },
     });
     if (!client) return apiError("Client tidak ditemukan", 404);
 
@@ -49,7 +50,7 @@ export async function POST(req: Request, { params }: Params) {
     if (Array.isArray(body)) {
       const parsed = importGuestsSchema.safeParse(body);
       if (!parsed.success) return apiError(parsed.error.issues[0]?.message || "Validasi gagal");
-      const result = await importGuests(clientId, parsed.data as any, client.slug);
+      const result = await importGuests(clientId, parsed.data as any, client.slug, client.clientType);
       return apiSuccess({ count: result.count }, 201);
     }
 
@@ -57,7 +58,7 @@ export async function POST(req: Request, { params }: Params) {
     const parsed = createGuestSchema.safeParse(body);
     if (!parsed.success) return apiError(parsed.error.issues[0]?.message || "Validasi gagal");
 
-    const guest = await createGuest(clientId, parsed.data, client.slug);
+    const guest = await createGuest(clientId, parsed.data, client.slug, client.clientType);
     return apiSuccess(guest, 201);
   } catch {
     return apiError("Terjadi kesalahan server", 500);
@@ -86,7 +87,7 @@ export async function PATCH(req: Request, { params }: Params) {
 
     const client = await prisma.client.findUnique({
       where: { id: clientId },
-      select: { slug: true },
+      select: { slug: true, clientType: true },
     });
     if (!client) return apiError("Client tidak ditemukan", 404);
 
@@ -95,7 +96,7 @@ export async function PATCH(req: Request, { params }: Params) {
       await prisma.guest.update({
         where: { id: guest.id },
         data: {
-          invitationUrl: `${appUrl}/invite/${client.slug}/g/${guest.guestToken}`,
+          invitationUrl: generateInvitationUrl(appUrl, client.slug, guest.guestToken, client.clientType),
         },
       });
       updated++;

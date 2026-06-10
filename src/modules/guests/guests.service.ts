@@ -50,10 +50,11 @@ export const getGuestByToken = cache(async function getGuestByToken(token: strin
 export async function createGuest(
   clientId: string,
   data: CreateGuestInput,
-  clientSlug: string
+  clientSlug: string,
+  clientType?: string
 ) {
   const token = generateGuestToken();
-  const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token);
+  const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token, clientType);
   const barcodeChurch = generateBarcode();
   const barcodeReception = needsBarcodeReception(data.invitationCategory) ? generateBarcode() : null;
 
@@ -75,11 +76,12 @@ export async function createGuest(
 export async function importGuests(
   clientId: string,
   guests: Array<{ name: string; phone?: string; invitationCategory?: InvitationCategoryValue; maxPax?: number }>,
-  clientSlug: string
+  clientSlug: string,
+  clientType?: string
 ) {
   const rows = guests.map((g) => {
     const token = generateGuestToken();
-    const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token);
+    const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token, clientType);
     const category = g.invitationCategory ?? "AKAD_RESEPSI";
     return {
       clientId,
@@ -105,9 +107,9 @@ export async function deleteGuest(id: string) {
   return prisma.guest.delete({ where: { id } });
 }
 
-export async function regenerateGuestToken(id: string, clientSlug: string) {
+export async function regenerateGuestToken(id: string, clientSlug: string, clientType?: string) {
   const token = generateGuestToken();
-  const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token);
+  const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token, clientType);
   return prisma.guest.update({
     where: { id },
     data: { guestToken: token, invitationUrl, isOpened: false, openedAt: null },

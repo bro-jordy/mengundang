@@ -174,6 +174,33 @@ const TEMPLATES: Template[] = [
       </div>
     ),
   },
+  {
+    slug: "lucky-envelope",
+    name: "Lucky Envelope",
+    description: "Pembukaan mesin fortune Lucky Jackpot dilanjutkan perjalanan amplop mewah 3D — dua pengalaman premium dalam satu undangan",
+    tag: "Fusion ✦✦✦",
+    tagColor: "#c4954a",
+    defaultColors: { primaryColor: "#c4954a", secondaryColor: "#f4ece0", bgColor: "#faf8f4", textColor: "#332820" },
+    defaultFonts: { fontHeading: "Cormorant Garamond", fontBody: "Jost" },
+    preview: (
+      <div style={{ background: "radial-gradient(ellipse at 50% 40%, #fdf9f0 0%, #f4ece0 100%)", borderRadius: "12px", padding: "1rem", minHeight: "130px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", border: "1px solid #c4954a33" }}>
+        <div style={{ display: "flex", gap: "3px", alignItems: "center", marginBottom: "2px" }}>
+          {["8", "8", "8"].map((d, i) => (
+            <div key={i} style={{ width: "18px", height: "22px", background: "linear-gradient(135deg,#fef9ed,#fdf3d0)", border: "1.5px solid #c4954a", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontFamily: "Georgia,serif", fontSize: "11px", fontWeight: "bold", color: "#8b6914" }}>{d}</span>
+            </div>
+          ))}
+        </div>
+        <p style={{ color: "#c4954a", fontSize: "7px", letterSpacing: "0.18em", fontFamily: "Georgia,serif" }}>→</p>
+        <div style={{ position: "relative", width: "52px", height: "36px" }}>
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(155deg, #f4e9d3, #e9d9b8)", borderRadius: "2px", boxShadow: "0 3px 8px rgba(61,40,20,0.18)" }} />
+          <div style={{ position: "absolute", inset: 0, clipPath: "polygon(0 0, 100% 0, 50% 55%)", background: "linear-gradient(to bottom, #f6eedb, #e8d7b4)" }} />
+          <div style={{ position: "absolute", top: "8%", left: "50%", transform: "translateX(-50%)", width: "7px", height: "7px", borderRadius: "50%", background: "radial-gradient(circle at 38% 35%, #d4a843, #9e6d26)" }} />
+        </div>
+        <p style={{ color: "#332820", fontFamily: "Georgia, serif", fontSize: "12px", fontWeight: 300 }}>Groom &amp; Bride</p>
+      </div>
+    ),
+  },
 ];
 
 interface Theme {

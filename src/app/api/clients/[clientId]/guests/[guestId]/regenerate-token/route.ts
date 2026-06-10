@@ -16,11 +16,11 @@ export async function POST(_req: Request, { params }: Params) {
 
     const client = await prisma.client.findUnique({
       where: { id: clientId },
-      select: { slug: true },
+      select: { slug: true, clientType: true },
     });
     if (!client) return apiError("Client tidak ditemukan", 404);
 
-    const guest = await regenerateGuestToken(guestId, client.slug);
+    const guest = await regenerateGuestToken(guestId, client.slug, client.clientType);
     return apiSuccess(guest);
   } catch {
     return apiError("Terjadi kesalahan server", 500);
