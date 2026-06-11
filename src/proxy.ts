@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const MAIN_DOMAIN = "jordyrea.my.id";
 
 export default auth((req) => {
-  const hostname = req.nextUrl.hostname;
+  const hostname = req.headers.get("host") || req.nextUrl.hostname;
   const isSubdomain =
     hostname !== MAIN_DOMAIN && hostname.endsWith(`.${MAIN_DOMAIN}`);
 
