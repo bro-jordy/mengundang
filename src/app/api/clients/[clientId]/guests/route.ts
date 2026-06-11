@@ -93,7 +93,7 @@ export async function PATCH(req: Request, { params }: Params) {
       await prisma.guest.update({
         where: { id: guest.id },
         data: {
-          invitationUrl: generateInvitationUrl(appUrl, client.slug, guest.guestToken, client.clientType),
+          invitationUrl: generateInvitationUrl(appUrl ?? "", client.slug, guest.guestToken, client.clientType),
         },
       });
       updated++;
