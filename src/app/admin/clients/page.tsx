@@ -4,7 +4,19 @@ import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { ClientStatusBadge } from "@/components/cms/client/ClientStatusBadge";
 import { ClientTypeSelect } from "@/components/cms/client/ClientTypeSelect";
+import { DeleteClientButton } from "@/components/cms/client/DeleteClientButton";
 import { ExternalLink, Users } from "lucide-react";
+
+const SUBDOMAIN: Record<string, string> = {
+  WEDDING: "pernikahan",
+  SANGJIT: "sangjit",
+  LAMARAN: "lamaran",
+};
+
+function invitationUrl(clientType: string, slug: string) {
+  const sub = SUBDOMAIN[clientType] ?? clientType.toLowerCase();
+  return `https://${sub}.jordyrea.my.id/${slug}`;
+}
 
 const CLIENT_TYPE_LABELS: Record<string, { label: string; cls: string }> = {
   WEDDING:  { label: "Pernikahan", cls: "bg-rose-50 text-rose-700" },
@@ -44,7 +56,6 @@ export default async function ClientsPage() {
               <tr className="border-b border-stone-100">
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Nama Client</th>
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Jenis Acara</th>
-                <th className="text-left px-4 py-3 text-stone-500 font-medium">Slug / URL</th>
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Tamu</th>
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Status</th>
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Dibuat</th>
@@ -75,17 +86,6 @@ export default async function ClientsPage() {
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
-                        <span className="text-stone-600 font-mono text-xs">/invite/{client.slug}</span>
-                        {client.status === "ACTIVE" && (
-                          <a href={`/invite/${client.slug}`} target="_blank" rel="noopener noreferrer"
-                            className="text-stone-400 hover:text-stone-600">
-                            <ExternalLink size={12} />
-                          </a>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
                       <div className="flex items-center gap-1 text-stone-600">
                         <Users size={12} />
                         {client._count.guests}
@@ -94,10 +94,24 @@ export default async function ClientsPage() {
                     <td className="px-4 py-3"><ClientStatusBadge status={client.status} /></td>
                     <td className="px-4 py-3 text-stone-500 text-xs">{formatDate(client.createdAt)}</td>
                     <td className="px-4 py-3">
-                      <Link href={`/admin/clients/${client.id}`}
-                        className="text-stone-600 hover:text-stone-900 text-xs underline">
-                        Kelola
-                      </Link>
+                      <div className="flex items-center gap-3">
+                        {client.status === "ACTIVE" && (
+                          <a
+                            href={invitationUrl((client as any).clientType, client.slug)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-stone-400 hover:text-stone-600"
+                            title="Buka undangan"
+                          >
+                            <ExternalLink size={14} />
+                          </a>
+                        )}
+                        <Link href={`/admin/clients/${client.id}`}
+                          className="text-stone-600 hover:text-stone-900 text-xs underline">
+                          Kelola
+                        </Link>
+                        <DeleteClientButton clientId={client.id} clientName={client.name} />
+                      </div>
                     </td>
                   </tr>
                 );
