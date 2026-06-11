@@ -42,13 +42,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!client) return {};
 
   const profile = client.weddingProfile;
-  const eventLabel = getEventLabel(client.clientType);
   const coupleNames = profile
     ? `${profile.groomName} & ${profile.brideName}`
     : client.name;
 
   return {
-    title: `Undangan ${eventLabel} ${coupleNames}`,
-    description: `Anda diundang ke acara ${eventLabel.toLowerCase()} ${coupleNames}`,
+    title: coupleNames,
+    description: null,
+    openGraph: {
+      title: coupleNames,
+      description: "",
+    },
   };
 }

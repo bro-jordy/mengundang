@@ -3,8 +3,11 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  title: "Mengundang",
-  description: "Platform undangan wedding online",
+  title: {
+    default: "Mengundang",
+    template: "%s",
+  },
+  description: null,
 };
 
 export const viewport: Viewport = {
