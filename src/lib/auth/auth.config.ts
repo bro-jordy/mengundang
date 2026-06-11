@@ -55,4 +55,5 @@ export const authConfig: NextAuthConfig = {
     signIn: "/login",
   },
   session: { strategy: "jwt" },
+  trustHost: true,
 };
