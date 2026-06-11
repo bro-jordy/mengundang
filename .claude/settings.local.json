@@ -81,7 +81,9 @@
       "Bash(timeout 8 bash -c \"echo > /dev/tcp/aws-1-ap-southeast-1.pooler.supabase.com/5432\")",
       "Bash(gtimeout 8 bash -c \"echo > /dev/tcp/aws-1-ap-southeast-1.pooler.supabase.com/5432\")",
       "Bash(gtimeout 8 bash -c \"echo > /dev/tcp/aws-1-ap-southeast-1.pooler.supabase.com/6543\")",
-      "Bash(node_modules/.bin/next build *)"
+      "Bash(node_modules/.bin/next build *)",
+      "Bash(DATABASE_URL_UNPOOLED=\"postgresql://postgres.vejtcmzpuaaukydgdyrl:Di3ud0nn3!!@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres\" npx prisma db execute --url \"postgresql://postgres.vejtcmzpuaaukydgdyrl:Di3ud0nn3\\\\!\\\\!@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres\" --stdin)",
+      "Bash(node scripts/delete-all-clients.mjs)"
     ],
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
