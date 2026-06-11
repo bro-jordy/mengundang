@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const EVENT_SUBDOMAINS = new Set(["pernikahan", "lamaran", "sangjit"]);
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const subdomain = hostname.split(".")[0];
 
