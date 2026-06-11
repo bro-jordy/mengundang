@@ -309,11 +309,11 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[760px]">
               <thead>
                 <tr className="border-b border-stone-100 text-left bg-stone-50">
+                  <th className="px-4 py-3 text-stone-500 font-medium sticky left-0 bg-stone-50 z-10 border-r border-stone-100">Nama Tamu</th>
                   <th className="px-4 py-3 text-stone-500 font-medium">No</th>
-                  <th className="px-4 py-3 text-stone-500 font-medium">Nama Tamu</th>
                   <th className="px-4 py-3 text-stone-500 font-medium">Jenis Scan</th>
                   <th className="px-4 py-3 text-stone-500 font-medium">WhatsApp</th>
                   <th className="px-4 py-3 text-stone-500 font-medium">Waktu Kedatangan</th>
@@ -323,12 +323,12 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
               </thead>
               <tbody className="divide-y divide-stone-50">
                 {attendances.map((att, i) => (
-                  <tr key={att.id} className="hover:bg-stone-50">
-                    <td className="px-4 py-3 text-stone-400">{i + 1}</td>
-                    <td className="px-4 py-3">
+                  <tr key={att.id} className="hover:bg-stone-50 group">
+                    <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-stone-50 z-10 border-r border-stone-100">
                       <p className="font-medium text-stone-800">{att.guest.name}</p>
                       <p className="text-xs text-stone-400">{CATEGORY_LABEL[att.guest.invitationCategory]}</p>
                     </td>
+                    <td className="px-4 py-3 text-stone-400">{i + 1}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                         att.barcodeType === "CHURCH"

@@ -51,10 +51,11 @@ export default async function ClientsPage() {
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[680px]">
             <thead>
               <tr className="border-b border-stone-100">
-                <th className="text-left px-4 py-3 text-stone-500 font-medium">Nama Client</th>
+                <th className="text-left px-4 py-3 text-stone-500 font-medium sticky left-0 bg-white z-10 border-r border-stone-100">Nama Client</th>
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Jenis Acara</th>
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Tamu</th>
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Status</th>
@@ -66,8 +67,8 @@ export default async function ClientsPage() {
               {clients.map((client) => {
                 const typeInfo = CLIENT_TYPE_LABELS[(client as any).clientType] ?? { label: (client as any).clientType, cls: "bg-stone-100 text-stone-600" };
                 return (
-                  <tr key={client.id} className="hover:bg-stone-50">
-                    <td className="px-4 py-3">
+                  <tr key={client.id} className="hover:bg-stone-50 group">
+                    <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-stone-50 z-10 border-r border-stone-100">
                       <div>
                         <p className="font-medium text-stone-800">{client.name}</p>
                         {client.weddingProfile && (
@@ -118,6 +119,7 @@ export default async function ClientsPage() {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

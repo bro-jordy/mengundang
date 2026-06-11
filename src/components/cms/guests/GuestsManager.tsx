@@ -413,10 +413,11 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[680px]">
             <thead>
               <tr className="border-b border-stone-100 text-left">
-                <th className="px-4 py-3 text-stone-500 font-medium">Nama</th>
+                <th className="px-4 py-3 text-stone-500 font-medium sticky left-0 bg-white z-10 border-r border-stone-100">Nama</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">Kategori</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">RSVP</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">Pax</th>
@@ -432,8 +433,8 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                   : null;
 
                 return (
-                  <tr key={guest.id} className="hover:bg-stone-50">
-                    <td className="px-4 py-3">
+                  <tr key={guest.id} className="hover:bg-stone-50 group">
+                    <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-stone-50 z-10 border-r border-stone-100">
                       <p className="font-medium text-stone-800">{guest.name}</p>
                       {guest.phone && (
                         <p className="text-xs text-stone-400">{guest.phone}</p>
@@ -541,6 +542,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>
