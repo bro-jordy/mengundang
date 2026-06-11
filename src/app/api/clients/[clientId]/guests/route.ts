@@ -76,12 +76,9 @@ export async function PATCH(req: Request, { params }: Params) {
     if (!body.fixUrls) return apiError("Parameter tidak valid");
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (!appUrl || appUrl.includes("localhost")) {
-      return apiError("NEXT_PUBLIC_APP_URL belum dikonfigurasi dengan benar di server");
-    }
 
     const guests = await prisma.guest.findMany({
-      where: { clientId, invitationUrl: { contains: "localhost" } },
+      where: { clientId },
       select: { id: true, guestToken: true },
     });
 

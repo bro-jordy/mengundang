@@ -12,6 +12,19 @@ interface Client {
   name: string;
   slug: string;
   status: ClientStatus;
+  clientType?: string;
+}
+
+const SUBDOMAIN: Record<string, string> = {
+  WEDDING: "pernikahan",
+  SANGJIT: "sangjit",
+  LAMARAN: "lamaran",
+};
+
+function getInvitationUrl(clientType: string | undefined, slug: string) {
+  const sub = SUBDOMAIN[clientType ?? ""] ?? "pernikahan";
+  const domain = process.env.NEXT_PUBLIC_INVITATION_DOMAIN ?? "jordyrea.my.id";
+  return `https://${sub}.${domain}/${slug}`;
 }
 
 const BASE_TABS = [
@@ -52,7 +65,7 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
               <h1 className="text-base md:text-lg font-bold text-stone-800 truncate">{client.name}</h1>
               <ClientStatusBadge status={client.status} />
             </div>
-            <p className="text-stone-400 text-xs font-mono truncate">/invite/{client.slug}</p>
+            <p className="text-stone-400 text-xs font-mono truncate">{client.slug}</p>
           </div>
         </div>
 

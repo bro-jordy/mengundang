@@ -3,6 +3,19 @@ import { prisma } from "@/lib/database/prisma";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { ClientStatusToggle } from "@/components/cms/client/ClientStatusToggle";
+import { ExternalLink } from "lucide-react";
+
+const SUBDOMAIN: Record<string, string> = {
+  WEDDING: "pernikahan",
+  SANGJIT: "sangjit",
+  LAMARAN: "lamaran",
+};
+
+function getInvitationUrl(clientType: string, slug: string) {
+  const sub = SUBDOMAIN[clientType] ?? clientType.toLowerCase();
+  const domain = process.env.NEXT_PUBLIC_INVITATION_DOMAIN ?? "jordyrea.my.id";
+  return `https://${sub}.${domain}/${slug}`;
+}
 
 interface Props {
   params: Promise<{ clientId: string }>;
@@ -80,7 +93,18 @@ export default async function ClientOverviewPage({ params }: Props) {
               />
             </div>
             <div className="border-t border-stone-100 pt-3 space-y-2">
-              <Row label="Slug" value={`/invite/${client.slug}`} mono />
+              <div className="flex justify-between items-center">
+                <span className="text-stone-500">Link Undangan</span>
+                <a
+                  href={getInvitationUrl((client as any).clientType, client.slug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-xs text-stone-600 hover:text-stone-900 flex items-center gap-1"
+                >
+                  {client.slug}
+                  <ExternalLink size={10} />
+                </a>
+              </div>
               <Row label="Dibuat" value={formatDate(client.createdAt)} />
               <Row label="Diperbarui" value={formatDate(client.updatedAt)} />
             </div>

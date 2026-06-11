@@ -32,7 +32,7 @@ export function generateInvitationUrl(
   const domain = process.env.NEXT_PUBLIC_INVITATION_DOMAIN;
   if (domain && clientType) {
     const subdomain = CLIENT_TYPE_SUBDOMAIN[clientType] ?? "pernikahan";
-    return `https://${subdomain}.${domain}/${token}`;
+    return `https://${subdomain}.${domain}/${clientSlug}/g/${token}`;
   }
   return `${appUrl}/invite/${clientSlug}/g/${token}`;
 }
