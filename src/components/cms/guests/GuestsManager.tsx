@@ -110,6 +110,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
   const [guests, setGuests] = useState<GuestWithRsvp[]>(initialGuests);
   const [showAddForm, setShowAddForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fixingUrls, setFixingUrls] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -237,6 +238,24 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
     }
   }
 
+  async function fixUrls() {
+    if (!confirm("Perbaiki semua link undangan tamu? Ini akan regenerasi URL untuk semua tamu.")) return;
+    setFixingUrls(true);
+    const res = await fetch(`/api/clients/${clientId}/guests`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fixUrls: true }),
+    });
+    setFixingUrls(false);
+    if (res.ok) {
+      const data = await res.json();
+      alert(data.message || "URL berhasil diperbaiki. Halaman akan di-refresh.");
+      window.location.reload();
+    } else {
+      alert("Gagal memperbaiki URL.");
+    }
+  }
+
   function exportCSV() {
     const rows = [
       ["Nama", "Telepon", "Kategori", "Maks Tamu", "Link Undangan", "Status RSVP", "Sudah Dibuka"],
@@ -289,6 +308,14 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
           className="flex items-center gap-1.5 border border-stone-300 text-stone-600 px-3 py-2 rounded-lg text-sm hover:bg-stone-50"
         >
           <Download size={14} /> Export CSV
+        </button>
+        <button
+          onClick={fixUrls}
+          disabled={fixingUrls}
+          className="flex items-center gap-1.5 border border-amber-300 text-amber-700 px-3 py-2 rounded-lg text-sm hover:bg-amber-50 disabled:opacity-40"
+          title="Perbaiki semua link undangan yang rusak"
+        >
+          <RefreshCw size={14} className={fixingUrls ? "animate-spin" : ""} /> Perbaiki URL
         </button>
         <input
           ref={fileRef}
