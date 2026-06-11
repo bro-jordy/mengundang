@@ -53,7 +53,7 @@ export async function createGuest(
   clientSlug: string,
   clientType?: string
 ) {
-  const token = generateGuestToken();
+  const token = generateGuestToken(data.name);
   const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token, clientType);
   const barcodeChurch = generateBarcode();
   const barcodeReception = needsBarcodeReception(data.invitationCategory) ? generateBarcode() : null;
@@ -80,7 +80,7 @@ export async function importGuests(
   clientType?: string
 ) {
   const rows = guests.map((g) => {
-    const token = generateGuestToken();
+    const token = generateGuestToken(g.name);
     const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token, clientType);
     const category = g.invitationCategory ?? "AKAD_RESEPSI";
     return {
@@ -108,7 +108,8 @@ export async function deleteGuest(id: string) {
 }
 
 export async function regenerateGuestToken(id: string, clientSlug: string, clientType?: string) {
-  const token = generateGuestToken();
+  const existing = await prisma.guest.findUnique({ where: { id }, select: { name: true } });
+  const token = generateGuestToken(existing?.name);
   const invitationUrl = generateInvitationUrl(APP_URL, clientSlug, token, clientType);
   return prisma.guest.update({
     where: { id },
