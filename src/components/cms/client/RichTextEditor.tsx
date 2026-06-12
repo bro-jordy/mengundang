@@ -65,7 +65,7 @@ export function RichTextEditor({ value, onChange, placeholder, rows = 4 }: Props
   const minH = `${rows * 1.6}rem`;
 
   return (
-    <div className="border border-stone-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-stone-400">
+    <div className="border border-stone-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-400">
       {/* Toolbar */}
       <div className="flex items-center gap-0.5 px-2 py-1.5 bg-stone-50 border-b border-stone-200 flex-wrap">
         <ToolBtn onClick={() => execCmd("bold")} title="Bold (Ctrl+B)">

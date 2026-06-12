@@ -42,7 +42,7 @@ export default async function ClientsPage() {
           <p className="text-stone-500 text-sm mt-1">{clients.length} client terdaftar</p>
         </div>
         <Link href="/admin/clients/new"
-          className="bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 transition-colors">
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">
           + Buat Client Baru
         </Link>
       </div>

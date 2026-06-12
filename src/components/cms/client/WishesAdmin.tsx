@@ -134,14 +134,14 @@ function WishCard({
                 onChange={(e) => setReplyText(e.target.value)}
                 rows={3}
                 placeholder="Tulis balasan..."
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400 resize-none"
+                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
                 autoFocus
               />
               <div className="flex gap-2">
                 <button
                   onClick={handleSaveReply}
                   disabled={saving}
-                  className="flex items-center gap-1.5 bg-stone-800 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-stone-700 disabled:opacity-50 transition-colors"
+                  className="flex items-center gap-1.5 bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
                 >
                   <Check size={12} /> {saving ? "Menyimpan..." : "Simpan"}
                 </button>

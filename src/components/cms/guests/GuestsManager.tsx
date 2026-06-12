@@ -289,11 +289,11 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
           placeholder="Cari nama tamu..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border border-stone-300 rounded-lg px-3 py-2 text-sm flex-1 min-w-48 focus:outline-none focus:ring-2 focus:ring-stone-400"
+          className="border border-stone-300 rounded-lg px-3 py-2 text-sm flex-1 min-w-48 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-1.5 bg-stone-800 text-white px-3 py-2 rounded-lg text-sm hover:bg-stone-700"
+          className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700"
         >
           <Plus size={14} /> Tambah Tamu
         </button>
@@ -377,7 +377,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
             >
               {loading ? "Menyimpan..." : "Simpan"}
             </button>
@@ -550,5 +550,5 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 }
 
 const inputClass =
-  "w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400";
+  "w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400";
 const labelClass = "block text-sm font-medium text-stone-700 mb-1";

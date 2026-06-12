@@ -227,7 +227,7 @@ export function ProfileForm({ clientId, initialData }: Props) {
         <button
           type="submit"
           disabled={saving}
-          className="bg-stone-800 text-white px-6 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors"
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
         >
           {saving ? "Menyimpan..." : "Simpan Profil"}
         </button>
@@ -355,4 +355,4 @@ function Field({
 }
 
 const inputClass =
-  "w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400";
+  "w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400";

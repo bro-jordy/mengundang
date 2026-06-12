@@ -114,7 +114,7 @@ export function UsersManager({ currentUserId, initialUsers }: Props) {
             {error && <p className="text-red-500 text-xs">{error}</p>}
             <div className="flex gap-2">
               <button onClick={handleCreate} disabled={saving}
-                className="bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors">
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors">
                 {saving ? "Menyimpan..." : "Buat Pengguna"}
               </button>
               <button onClick={() => { setShowForm(false); setError(""); }}

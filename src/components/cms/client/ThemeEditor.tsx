@@ -412,7 +412,7 @@ export function ThemeEditor({ clientId, initialTheme }: Props) {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full bg-stone-800 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-stone-700 disabled:opacity-50 transition-colors"
+            className="w-full bg-blue-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
             {saving ? "Menyimpan..." : success ? "✓ Tersimpan!" : "Simpan Tema"}
           </button>

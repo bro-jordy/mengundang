@@ -133,7 +133,7 @@ export default function NewClientPage() {
                 }`}
               >
                 <div className={`p-2.5 rounded-xl shrink-0 ${
-                  selectedType === opt.value ? "bg-stone-800 text-white" : "bg-stone-100 text-stone-500"
+                  selectedType === opt.value ? "bg-blue-600 text-white" : "bg-stone-100 text-stone-500"
                 }`}>
                   {opt.icon}
                 </div>
@@ -187,7 +187,7 @@ export default function NewClientPage() {
                     ? "Contoh: Sangjit William & Lisa"
                     : "Contoh: Lamaran Dito & Rina"
                 }
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
               {errors.name && (
                 <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
@@ -198,7 +198,7 @@ export default function NewClientPage() {
               <label className="block text-sm font-medium text-stone-700 mb-1">
                 Slug URL
               </label>
-              <div className="flex items-center border border-stone-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-stone-400">
+              <div className="flex items-center border border-stone-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-400">
                 <span className="px-3 py-2 bg-stone-50 text-stone-500 text-sm border-r border-stone-300">
                   /invite/
                 </span>
@@ -222,7 +222,7 @@ export default function NewClientPage() {
               </label>
               <select
                 {...register("status")}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 <option value="DRAFT">Draft (belum publik)</option>
                 <option value="ACTIVE">Aktif (publik)</option>
@@ -233,7 +233,7 @@ export default function NewClientPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-stone-800 text-white px-5 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors"
+                className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
                 {loading ? "Menyimpan..." : "Buat Client"}
               </button>

@@ -8,9 +8,13 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Lato', Arial, sans-serif;
+  font-family: 'IBM Plex Sans', 'Lato', Arial, sans-serif;
 }
 
 .font-heading {
   font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-mono {
+  font-family: 'IBM Plex Mono', monospace;
 }

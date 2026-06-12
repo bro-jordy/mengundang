@@ -130,13 +130,13 @@ export function GalleryManager({ clientId, initialGalleries }: Props) {
         <div className="flex gap-2 mb-4">
           <button onClick={() => setMode("upload")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              mode === "upload" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+              mode === "upload" ? "bg-blue-600 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}>
             <Upload size={12} /> Upload dari Laptop
           </button>
           <button onClick={() => setMode("url")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              mode === "url" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+              mode === "url" ? "bg-blue-600 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}>
             <Link size={12} /> Dari URL
           </button>
@@ -175,7 +175,7 @@ export function GalleryManager({ clientId, initialGalleries }: Props) {
                 onKeyDown={(e) => e.key === "Enter" && handleAddUrl()}
                 className={inputClass} />
               <button onClick={handleAddUrl} disabled={isBusy || !url.trim()}
-                className="shrink-0 flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors">
+                className="shrink-0 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors">
                 <Plus size={14} />
                 {saving ? "..." : "Tambah"}
               </button>
@@ -204,7 +204,7 @@ export function GalleryManager({ clientId, initialGalleries }: Props) {
                   onDragStart={() => onDragStart(item.id)}
                   onDragOver={onDragOver}
                   onDrop={() => onDrop(item.id)}
-                  className="relative group aspect-square rounded-lg overflow-hidden border border-stone-200 bg-stone-50 cursor-grab active:cursor-grabbing active:ring-2 active:ring-stone-400 transition-all"
+                  className="relative group aspect-square rounded-lg overflow-hidden border border-stone-200 bg-stone-50 cursor-grab active:cursor-grabbing active:ring-2 active:ring-blue-400 transition-all"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={item.url} alt="" className="w-full h-full object-cover pointer-events-none" />

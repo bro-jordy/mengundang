@@ -196,7 +196,7 @@ export function WhatsAppBlast({
                 onClick={() => setActiveLang(l)}
                 className={`px-4 py-1.5 text-xs font-medium transition-colors ${
                   activeLang === l
-                    ? "bg-stone-800 text-white"
+                    ? "bg-blue-600 text-white"
                     : "text-stone-500 hover:bg-stone-50"
                 }`}
               >
@@ -232,7 +232,7 @@ export function WhatsAppBlast({
           <button
             onClick={handleSaveTemplate}
             disabled={savingTemplate}
-            className="flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
           >
             <MessageSquare size={14} />
             {savingTemplate ? "Menyimpan..." : templateSaved ? "✓ Tersimpan!" : "Simpan Kedua Template"}
@@ -264,7 +264,7 @@ export function WhatsAppBlast({
                 onClick={() => setActiveLang(l)}
                 className={`px-3 py-1 text-xs font-medium transition-colors ${
                   activeLang === l
-                    ? "bg-stone-800 text-white"
+                    ? "bg-blue-600 text-white"
                     : "text-stone-500 hover:bg-stone-50"
                 }`}
               >
@@ -296,7 +296,7 @@ export function WhatsAppBlast({
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   filter === f
-                    ? "bg-stone-800 text-white"
+                    ? "bg-blue-600 text-white"
                     : "border border-stone-200 text-stone-600 hover:bg-stone-50"
                 }`}
               >
@@ -315,7 +315,7 @@ export function WhatsAppBlast({
                   title={`Kirim dalam ${l === "id" ? "Bahasa Indonesia" : "English"}`}
                   className={`px-2.5 py-1 text-xs font-medium transition-colors ${
                     sendLang === l
-                      ? "bg-stone-800 text-white"
+                      ? "bg-blue-600 text-white"
                       : "text-stone-500 hover:bg-stone-50"
                   }`}
                 >

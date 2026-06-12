@@ -84,7 +84,7 @@ export function SectionsManager({ clientId, initialSections, showCountdown: init
           <button
             onClick={() => toggleCountdown(!showCountdown)}
             disabled={countdownSaving}
-            className={`relative shrink-0 w-11 h-6 rounded-full transition-colors focus:outline-none disabled:opacity-50 ${showCountdown ? "bg-stone-800" : "bg-stone-300"}`}
+            className={`relative shrink-0 w-11 h-6 rounded-full transition-colors focus:outline-none disabled:opacity-50 ${showCountdown ? "bg-blue-600" : "bg-stone-300"}`}
             title={showCountdown ? "Nonaktifkan countdown" : "Aktifkan countdown"}
           >
             <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${showCountdown ? "left-5" : "left-0.5"}`} />
@@ -151,7 +151,7 @@ function SectionRow({ section, loading, onToggle }: {
       <button
         onClick={() => onToggle(section.sectionKey, section.isActive)}
         disabled={loading}
-        className={`relative shrink-0 w-11 h-6 rounded-full transition-colors focus:outline-none disabled:opacity-50 ${section.isActive ? "bg-stone-800" : "bg-stone-300"}`}
+        className={`relative shrink-0 w-11 h-6 rounded-full transition-colors focus:outline-none disabled:opacity-50 ${section.isActive ? "bg-blue-600" : "bg-stone-300"}`}
         title={section.isActive ? "Nonaktifkan section" : "Aktifkan section"}
       >
         <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${section.isActive ? "left-5" : "left-0.5"}`} />

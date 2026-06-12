@@ -248,7 +248,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
         {!scanning && (
           <button
             onClick={() => { setScanResult(null); setScanning(true); }}
-            className="flex items-center gap-2 bg-stone-800 text-white px-4 py-2.5 rounded-xl text-sm hover:bg-stone-700 transition-colors"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm hover:bg-blue-700 transition-colors"
           >
             <Camera size={16} />
             Open Camera
@@ -377,7 +377,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
                         value={att.actualPax}
                         onChange={(e) => updateActualPax(att.id, Number(e.target.value))}
                         disabled={loadingPax === att.id}
-                        className="border border-stone-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400 disabled:opacity-50"
+                        className="border border-stone-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
                       >
                         {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
                           <option key={n} value={n}>{n}</option>

@@ -239,13 +239,13 @@ export function MusicManager({ clientId, initialMusics }: Props) {
         <div className="flex gap-2 mb-4">
           <button onClick={() => setMode("upload")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              mode === "upload" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+              mode === "upload" ? "bg-blue-600 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}>
             <Upload size={12} /> Upload File
           </button>
           <button onClick={() => setMode("url")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              mode === "url" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+              mode === "url" ? "bg-blue-600 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}>
             <Link size={12} /> Dari URL
           </button>
@@ -295,7 +295,7 @@ export function MusicManager({ clientId, initialMusics }: Props) {
 
         {mode === "url" && (
           <button onClick={handleAddUrl} disabled={saving}
-            className="mt-4 flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors">
+            className="mt-4 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors">
             <Plus size={14} />
             {saving ? "Menyimpan..." : "Tambah Lagu"}
           </button>
@@ -331,7 +331,7 @@ export function MusicManager({ clientId, initialMusics }: Props) {
                   onClick={() => handlePreview(music)}
                   className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors ${
                     playingId === music.id
-                      ? "bg-stone-800 text-white"
+                      ? "bg-blue-600 text-white"
                       : "bg-stone-100 hover:bg-stone-200 text-stone-600"
                   }`}
                 >

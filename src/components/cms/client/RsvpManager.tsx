@@ -127,7 +127,7 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
               onClick={() => setFilter(f)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 filter === f
-                  ? "bg-stone-800 text-white"
+                  ? "bg-blue-600 text-white"
                   : "border border-stone-200 text-stone-600 hover:bg-stone-50"
               }`}
             >
@@ -200,7 +200,7 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
                         <button
                           onClick={() => handleSave(guest.id)}
                           disabled={saving}
-                          className="bg-stone-800 text-white px-4 py-1.5 rounded-lg text-xs hover:bg-stone-700 disabled:opacity-50 transition-colors"
+                          className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs hover:bg-blue-700 disabled:opacity-50 transition-colors"
                         >
                           {saving ? "Menyimpan..." : "Simpan"}
                         </button>

@@ -15,7 +15,7 @@ export function AdminShell({ role, user, children }: Props) {
   const isSuperAdmin = role === "SUPERADMIN";
 
   return (
-    <div className="flex h-screen bg-stone-50 overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: "#f1f5f9", fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}>
       {isSuperAdmin && sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-20 lg:hidden"

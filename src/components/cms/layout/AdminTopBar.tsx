@@ -1,8 +1,7 @@
 "use client";
 
 import { signOut } from "next-auth/react";
-import { LogOut, ChevronDown, Menu } from "lucide-react";
-import { useState } from "react";
+import { LogOut, Menu } from "lucide-react";
 
 interface Props {
   user: {
@@ -13,14 +12,20 @@ interface Props {
 }
 
 export function AdminTopBar({ user, onMenuToggle }: Props) {
-  const [open, setOpen] = useState(false);
-
   return (
-    <header className="h-14 bg-white border-b border-stone-200 flex items-center justify-between px-4 md:px-6 shrink-0">
+    <header
+      className="h-14 flex items-center justify-between px-4 md:px-6 shrink-0"
+      style={{
+        background: "#ffffff",
+        borderBottom: "1px solid #e2e8f0",
+        fontFamily: "'IBM Plex Sans', Arial, sans-serif",
+      }}
+    >
       {onMenuToggle ? (
         <button
           onClick={onMenuToggle}
-          className="lg:hidden p-2 rounded text-stone-500 hover:text-stone-800 hover:bg-stone-100"
+          className="lg:hidden p-2 rounded transition-colors"
+          style={{ color: "#64748b" }}
           aria-label="Toggle menu"
         >
           <Menu size={20} />
@@ -29,32 +34,37 @@ export function AdminTopBar({ user, onMenuToggle }: Props) {
         <div />
       )}
 
-      <div className="relative">
-        <button
-          onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 text-sm text-stone-700 hover:text-stone-900"
-        >
-          <div className="w-7 h-7 rounded-full bg-stone-800 text-white flex items-center justify-center text-xs font-bold">
+      <div className="flex items-center gap-3 ml-auto">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+            style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}
+          >
             {user.name?.[0]?.toUpperCase() ?? "A"}
           </div>
-          <span className="hidden sm:inline">{user.name}</span>
-          <ChevronDown size={14} />
-        </button>
+          <span className="hidden sm:inline text-sm font-medium" style={{ color: "#374151" }}>
+            {user.name}
+          </span>
+        </div>
 
-        {open && (
-          <div className="absolute right-0 top-10 bg-white border border-stone-200 rounded-lg shadow-lg w-44 py-1 z-50">
-            <div className="px-3 py-2 border-b border-stone-100">
-              <p className="text-xs text-stone-500 truncate">{user.email}</p>
-            </div>
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-            >
-              <LogOut size={14} />
-              Keluar
-            </button>
-          </div>
-        )}
+        <div style={{ width: "1px", height: "20px", background: "#e2e8f0" }} />
+
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex items-center gap-1.5 text-sm rounded-lg px-3 py-1.5 transition-colors"
+          style={{ color: "#64748b" }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.color = "#ef4444";
+            (e.currentTarget as HTMLElement).style.background = "#fef2f2";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.color = "#64748b";
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+          }}
+        >
+          <LogOut size={15} />
+          <span className="hidden sm:inline">Keluar</span>
+        </button>
       </div>
     </header>
   );

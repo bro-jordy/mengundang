@@ -136,7 +136,7 @@ export function ClientUsersManager({ clientId, initialUsers, allUsers }: Props) 
                     {roleInfo.label}
                   </span>
                   <button onClick={() => handleAdd(user.id)}
-                    className="shrink-0 text-xs bg-stone-800 text-white px-3 py-1.5 rounded-lg hover:bg-stone-700 transition-colors">
+                    className="shrink-0 text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors">
                     Tambah
                   </button>
                 </div>

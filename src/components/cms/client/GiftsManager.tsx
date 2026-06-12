@@ -156,7 +156,7 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
           <button
             onClick={() => setMode("bank")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              mode === "bank" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+              mode === "bank" ? "bg-blue-600 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}
           >
             <CreditCard size={14} /> Transfer Bank
@@ -164,7 +164,7 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
           <button
             onClick={() => setMode("ewallet")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              mode === "ewallet" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+              mode === "ewallet" ? "bg-blue-600 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}
           >
             <Wallet size={14} /> E-Wallet
@@ -172,7 +172,7 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
           <button
             onClick={() => setMode("qris")}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              mode === "qris" ? "bg-stone-800 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+              mode === "qris" ? "bg-blue-600 text-white" : "border border-stone-200 text-stone-600 hover:bg-stone-50"
             }`}
           >
             <QrCode size={14} /> QRIS
@@ -296,7 +296,7 @@ export function GiftsManager({ clientId, initialGifts }: Props) {
         <button
           onClick={handleAdd}
           disabled={saving || uploading}
-          className="mt-4 flex items-center gap-2 bg-stone-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-stone-700 disabled:opacity-50 transition-colors"
+          className="mt-4 flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
         >
           <Plus size={14} />
           {saving ? "Menyimpan..." : "Tambah"}
