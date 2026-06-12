@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Image from "next/image";
 
 const schema = z.object({
   email: z.string().email("Email tidak valid"),
@@ -54,15 +55,9 @@ export default function LoginPage() {
       }}
     >
       <div className="w-full max-w-sm">
-        {/* Monogram logo */}
         <div className="flex flex-col items-center mb-10">
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-md"
-            style={{ background: "linear-gradient(135deg, #2563eb, #1d4ed8)" }}
-          >
-            <span className="text-white text-2xl font-semibold tracking-tight select-none">
-              JR
-            </span>
+          <div className="mb-4 rounded-2xl overflow-hidden shadow-xl" style={{ width: 88, height: 88 }}>
+            <Image src="/logo.png" alt="Logo" width={88} height={88} className="w-full h-full object-cover" priority />
           </div>
           <p className="text-slate-400 text-sm tracking-wide">Admin Panel</p>
         </div>

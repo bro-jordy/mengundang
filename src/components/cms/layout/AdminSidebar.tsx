@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Users, LayoutDashboard, Heart, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,11 +25,8 @@ export function AdminSidebar({ role, onClose }: Props) {
     <aside className="w-64 h-full flex flex-col shrink-0" style={{ background: "#0f172a", fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}>
       <div className="h-14 flex items-center justify-between px-4" style={{ borderBottom: "1px solid #1e293b" }}>
         <div className="flex items-center gap-2.5">
-          <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-semibold"
-            style={{ background: "linear-gradient(135deg, #3b82f6, #2563eb)" }}
-          >
-            JR
+          <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0">
+            <Image src="/logo.png" alt="Logo" width={28} height={28} className="w-full h-full object-cover" />
           </div>
           <span className="font-semibold text-sm" style={{ color: "#e2e8f0" }}>Mengundang</span>
         </div>
