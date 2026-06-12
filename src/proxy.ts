@@ -18,8 +18,9 @@ export default auth((req) => {
   }
 
   const isLoggedIn = !!req.auth;
-  const isAdminRoute = req.nextUrl.pathname.startsWith("/admin");
-  const isLoginPage = req.nextUrl.pathname === "/login";
+  const { pathname } = req.nextUrl;
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isLoginPage = pathname === "/login";
 
   if (isAdminRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url));
@@ -27,6 +28,21 @@ export default auth((req) => {
 
   if (isLoginPage && isLoggedIn) {
     return NextResponse.redirect(new URL("/admin", req.url));
+  }
+
+  // STAFF: only allowed on client overview and attendance sub-routes
+  const role = (req.auth?.user as any)?.role as string | undefined;
+  if (role === "STAFF" && isAdminRoute) {
+    const clientMatch = pathname.match(/^\/admin\/clients\/([^/]+)(\/.*)?$/);
+    if (clientMatch) {
+      const clientId = clientMatch[1];
+      const subPath = clientMatch[2] || "";
+      if (subPath !== "" && !subPath.startsWith("/attendance")) {
+        return NextResponse.redirect(
+          new URL(`/admin/clients/${clientId}/attendance`, req.url)
+        );
+      }
+    }
   }
 
   return NextResponse.next();
