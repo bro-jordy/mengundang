@@ -51,12 +51,13 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
   const pathname = usePathname();
   const base = `/admin/clients/${client.id}`;
   const isStaff = role === "STAFF";
+  const isSuperAdmin = role === "SUPERADMIN";
 
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-3 min-w-0">
-          {!isStaff && (
+          {isSuperAdmin && (
             <Link href="/admin/clients" className="text-stone-400 hover:text-stone-600 shrink-0">
               <ArrowLeft size={16} />
             </Link>
@@ -97,11 +98,19 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
               key={tab.path}
               href={href}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-2 text-sm rounded-t-lg whitespace-nowrap transition-colors",
-                active
-                  ? "text-blue-700 border-b-2 border-blue-600 font-medium"
-                  : "text-slate-500 hover:text-slate-700"
+                "flex items-center gap-1.5 px-3 py-2 text-sm rounded-t-lg whitespace-nowrap transition-colors"
               )}
+              style={
+                active
+                  ? { color: "#B8892A", borderBottom: "2px solid #D4A85C", fontWeight: 500, marginBottom: "-1px" }
+                  : { color: "#64748b" }
+              }
+              onMouseEnter={(e) => {
+                if (!active) (e.currentTarget as HTMLElement).style.color = "#374151";
+              }}
+              onMouseLeave={(e) => {
+                if (!active) (e.currentTarget as HTMLElement).style.color = "#64748b";
+              }}
             >
               {Icon && <Icon size={14} />}
               {tab.label}

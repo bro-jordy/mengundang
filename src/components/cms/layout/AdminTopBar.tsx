@@ -16,8 +16,8 @@ export function AdminTopBar({ user, onMenuToggle }: Props) {
     <header
       className="h-14 flex items-center justify-between px-4 md:px-6 shrink-0"
       style={{
-        background: "#060606",
-        borderBottom: "1px solid rgba(212,168,92,0.18)",
+        background: "#ffffff",
+        borderBottom: "1px solid #e2e8f0",
         fontFamily: "'IBM Plex Sans', Arial, sans-serif",
       }}
     >
@@ -25,7 +25,7 @@ export function AdminTopBar({ user, onMenuToggle }: Props) {
         <button
           onClick={onMenuToggle}
           className="lg:hidden p-2 rounded transition-colors"
-          style={{ color: "rgba(212,168,92,0.6)" }}
+          style={{ color: "#64748b" }}
           aria-label="Toggle menu"
         >
           <Menu size={20} />
@@ -35,7 +35,7 @@ export function AdminTopBar({ user, onMenuToggle }: Props) {
       )}
 
       <div className="flex items-center gap-3 ml-auto">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <div
             className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold"
             style={{
@@ -45,23 +45,23 @@ export function AdminTopBar({ user, onMenuToggle }: Props) {
           >
             {user.name?.[0]?.toUpperCase() ?? "A"}
           </div>
-          <span className="hidden sm:inline text-sm font-medium" style={{ color: "#c9a86c" }}>
+          <span className="hidden sm:inline text-sm font-medium" style={{ color: "#374151" }}>
             {user.name}
           </span>
         </div>
 
-        <div style={{ width: "1px", height: "20px", background: "rgba(212,168,92,0.2)" }} />
+        <div style={{ width: "1px", height: "20px", background: "#e2e8f0" }} />
 
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="flex items-center gap-1.5 text-sm rounded-lg px-3 py-1.5 transition-colors"
-          style={{ color: "rgba(212,168,92,0.5)" }}
+          style={{ color: "#64748b" }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "#D4A85C";
-            (e.currentTarget as HTMLElement).style.background = "rgba(212,168,92,0.08)";
+            (e.currentTarget as HTMLElement).style.color = "#ef4444";
+            (e.currentTarget as HTMLElement).style.background = "#fef2f2";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = "rgba(212,168,92,0.5)";
+            (e.currentTarget as HTMLElement).style.color = "#64748b";
             (e.currentTarget as HTMLElement).style.background = "transparent";
           }}
         >

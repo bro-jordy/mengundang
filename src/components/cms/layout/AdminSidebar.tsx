@@ -24,27 +24,20 @@ export function AdminSidebar({ role, onClose }: Props) {
   return (
     <aside
       className="w-64 h-full flex flex-col shrink-0"
-      style={{
-        background: "#060606",
-        borderRight: "1px solid rgba(212,168,92,0.15)",
-        fontFamily: "'IBM Plex Sans', Arial, sans-serif",
-      }}
+      style={{ background: "#0f172a", fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}
     >
-      <div
-        className="h-14 flex items-center justify-between px-4"
-        style={{ borderBottom: "1px solid rgba(212,168,92,0.12)" }}
-      >
+      <div className="h-14 flex items-center justify-between px-4" style={{ borderBottom: "1px solid #1e293b" }}>
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0">
             <Image src="/logo.png" alt="Logo" width={28} height={28} className="w-full h-full object-cover" />
           </div>
-          <span className="font-semibold text-sm" style={{ color: "#D4A85C" }}>Mengundang</span>
+          <span className="font-semibold text-sm" style={{ color: "#e2e8f0" }}>Mengundang</span>
         </div>
         {onClose && (
           <button
             onClick={onClose}
             className="lg:hidden p-1 rounded"
-            style={{ color: "rgba(212,168,92,0.4)" }}
+            style={{ color: "#64748b" }}
           >
             <X size={18} />
           </button>
@@ -68,7 +61,7 @@ export function AdminSidebar({ role, onClose }: Props) {
                       borderLeft: "2px solid #D4A85C",
                       paddingLeft: "10px",
                     }
-                  : { color: "rgba(212,168,92,0.5)", borderLeft: "2px solid transparent", paddingLeft: "10px" }
+                  : { color: "#94a3b8", borderLeft: "2px solid transparent", paddingLeft: "10px" }
               }
               onMouseEnter={(e) => {
                 if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(212,168,92,0.06)";
@@ -84,8 +77,8 @@ export function AdminSidebar({ role, onClose }: Props) {
         })}
       </nav>
 
-      <div className="p-3" style={{ borderTop: "1px solid rgba(212,168,92,0.1)" }}>
-        <p className="text-xs text-center" style={{ color: "rgba(212,168,92,0.25)" }}>v1.0.0</p>
+      <div className="p-3" style={{ borderTop: "1px solid #1e293b" }}>
+        <p className="text-xs text-center" style={{ color: "#334155" }}>v1.0.0</p>
       </div>
     </aside>
   );

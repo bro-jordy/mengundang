@@ -35,11 +35,11 @@ export default async function ClientsPage() {
   }
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold" style={{ color: "#e8e4d8" }}>Client</h1>
-          <p className="text-sm mt-1" style={{ color: "rgba(212,168,92,0.6)" }}>{clients.length} client terdaftar</p>
+          <h1 className="text-xl font-bold text-stone-800">Client</h1>
+          <p className="text-stone-500 text-sm mt-1">{clients.length} client terdaftar</p>
         </div>
         <Link href="/admin/clients/new"
           className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors">

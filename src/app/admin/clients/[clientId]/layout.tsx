@@ -21,9 +21,10 @@ export default async function ClientLayout({ children, params }: Props) {
   if (!client) notFound();
 
   const user = session.user as { role?: string };
+  const isSuperAdmin = user.role === "SUPERADMIN";
 
   return (
-    <div className="w-full max-w-5xl">
+    <div className={`w-full mx-auto ${isSuperAdmin ? "max-w-5xl" : "max-w-7xl"}`}>
       <ClientNav client={client} role={user.role} />
       <div className="mt-4 md:mt-6">{children}</div>
     </div>
