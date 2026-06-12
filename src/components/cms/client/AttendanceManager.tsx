@@ -219,7 +219,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
               </div>
             ))}
           </div>
-          {categoryCards.length > 0 && (
+          {categoryCards.length > 1 && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {categoryCards.map((s) => (
                 <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
