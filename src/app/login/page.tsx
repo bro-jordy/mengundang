@@ -50,8 +50,8 @@ export default function LoginPage() {
       className="min-h-screen flex flex-col overflow-hidden"
       style={{ background: "#000", fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}
     >
-      {/* Logo section — fills remaining space above form */}
-      <div className="relative flex-1 min-h-0 flex items-center justify-center overflow-hidden">
+      {/* Logo section */}
+      <div className="relative shrink-0 h-[58vh] flex items-center justify-center overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/logo.png"
