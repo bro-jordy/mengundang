@@ -33,7 +33,7 @@ export default async function GuestInvitationByTokenPage({ params }: Props) {
   const headersList = await headers();
   const ip = headersList.get("x-forwarded-for")?.split(",")[0] || "";
   const ua = headersList.get("user-agent") || "";
-  markGuestOpened(guest.id, ip, ua, getDeviceType(ua)).catch(() => {});
+  markGuestOpened(guest.id, guest.client.id, ip, ua, getDeviceType(ua)).catch(() => {});
 
   const fontUrl = THEME_FONTS[guest.client.theme?.templateSlug ?? ""] ?? null;
 

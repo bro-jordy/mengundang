@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { prisma } from "@/lib/database/prisma";
 import { DEFAULT_SECTIONS } from "@/constants/sections";
 import { DEFAULT_TEMPLATE } from "@/lib/whatsapp";
@@ -39,7 +40,7 @@ export async function getClientById(id: string) {
   });
 }
 
-export async function getClientBySlug(slug: string) {
+export const getClientBySlug = cache(async function getClientBySlug(slug: string) {
   return prisma.client.findUnique({
     where: { slug },
     include: {
@@ -54,7 +55,7 @@ export async function getClientBySlug(slug: string) {
       wishes: { where: { isApproved: true }, orderBy: { createdAt: "desc" }, take: 20 },
     },
   });
-}
+});
 
 export async function createClient(data: CreateClientInput, userId: string) {
   const client = await prisma.client.create({

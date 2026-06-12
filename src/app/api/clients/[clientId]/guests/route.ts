@@ -88,18 +88,18 @@ export async function PATCH(req: Request, { params }: Params) {
     });
     if (!client) return apiError("Client tidak ditemukan", 404);
 
-    let updated = 0;
-    for (const guest of guests) {
-      await prisma.guest.update({
-        where: { id: guest.id },
-        data: {
-          invitationUrl: generateInvitationUrl(appUrl ?? "", client.slug, guest.guestToken, client.clientType),
-        },
-      });
-      updated++;
-    }
+    await Promise.all(
+      guests.map((guest) =>
+        prisma.guest.update({
+          where: { id: guest.id },
+          data: {
+            invitationUrl: generateInvitationUrl(appUrl ?? "", client.slug, guest.guestToken, client.clientType),
+          },
+        })
+      )
+    );
 
-    return apiSuccess({ updated, message: `${updated} URL undangan berhasil diperbarui` });
+    return apiSuccess({ updated: guests.length, message: `${guests.length} URL undangan berhasil diperbarui` });
   } catch {
     return apiError("Terjadi kesalahan server", 500);
   }

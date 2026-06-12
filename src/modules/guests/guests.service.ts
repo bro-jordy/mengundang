@@ -132,24 +132,20 @@ export async function regenerateGuestBarcodes(id: string) {
 
 export async function markGuestOpened(
   guestId: string,
+  clientId: string,
   ip?: string,
   userAgent?: string,
   device?: string
 ) {
-  await prisma.guest.update({
-    where: { id: guestId },
-    data: { isOpened: true, openedAt: new Date() },
-  });
-
-  await prisma.guestVisit.create({
-    data: {
-      guestId,
-      clientId: (await prisma.guest.findUnique({ where: { id: guestId }, select: { clientId: true } }))!.clientId,
-      ipAddress: ip,
-      userAgent,
-      device,
-    },
-  });
+  await Promise.all([
+    prisma.guest.update({
+      where: { id: guestId },
+      data: { isOpened: true, openedAt: new Date() },
+    }),
+    prisma.guestVisit.create({
+      data: { guestId, clientId, ipAddress: ip, userAgent, device },
+    }),
+  ]);
 }
 
 export async function updateGuestSendStatus(id: string) {
