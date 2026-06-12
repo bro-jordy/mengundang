@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ClientStatusBadge } from "./ClientStatusBadge";
 import type { ClientStatus } from "@/types/prisma.types";
-import { ExternalLink, ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, Camera } from "lucide-react";
 
 interface Client {
   id: string;
@@ -50,7 +50,6 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
   const tabs = getTabs(role);
   const pathname = usePathname();
   const base = `/admin/clients/${client.id}`;
-  const isStaff = role === "STAFF";
   const isSuperAdmin = role === "SUPERADMIN";
 
   return (
@@ -71,17 +70,6 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
           </div>
         </div>
 
-        {!isStaff && (
-          <a
-            href={`/invite/${client.slug}?preview=1`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 flex items-center gap-1.5 border border-stone-300 text-stone-600 text-xs px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
-          >
-            <ExternalLink size={12} />
-            <span className="hidden sm:inline">Preview</span>
-          </a>
-        )}
       </div>
 
       <div className="flex gap-1 overflow-x-auto pb-1 border-b border-stone-200">
