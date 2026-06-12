@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import Image from "next/image";
 
 const schema = z.object({
   email: z.string().email("Email tidak valid"),
@@ -48,33 +47,41 @@ export default function LoginPage() {
 
   return (
     <div
-      className="relative min-h-screen flex flex-col justify-end pb-12 px-4 overflow-hidden"
-      style={{ fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}
+      className="min-h-screen flex flex-col overflow-hidden"
+      style={{ background: "#000", fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}
     >
-      <Image
-        src="/logo.png"
-        alt=""
-        fill
-        className="object-cover object-center"
-        priority
-      />
-      <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.52)" }} />
+      {/* Logo section — fills remaining space above form */}
+      <div className="relative flex-1 min-h-0 flex items-center justify-center overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt=""
+          draggable={false}
+          style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center" }}
+        />
+        {/* Fade into form */}
+        <div
+          className="absolute inset-x-0 bottom-0 pointer-events-none"
+          style={{ height: "120px", background: "linear-gradient(to bottom, transparent, #000)" }}
+        />
+      </div>
 
-      <div className="relative z-10 w-full max-w-sm mx-auto">
+      {/* Form section */}
+      <div className="shrink-0 w-full max-w-sm mx-auto px-4 pb-10">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="rounded-2xl p-7 space-y-5 backdrop-blur-md"
           style={{
-            background: "rgba(0,0,0,0.48)",
+            background: "rgba(0,0,0,0.55)",
             border: "1px solid rgba(212,168,92,0.3)",
             boxShadow: "0 8px 40px rgba(0,0,0,0.5)",
           }}
         >
           <p
-            className="text-center text-sm tracking-widest uppercase font-medium mb-1"
+            className="text-center text-sm font-medium"
             style={{ color: "#D4A85C", letterSpacing: "0.2em" }}
           >
-            Admin Panel
+            ADMIN PANEL
           </p>
 
           {error && (
@@ -99,10 +106,7 @@ export default function LoginPage() {
               type="email"
               placeholder="admin@example.com"
               className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors placeholder-slate-500 text-white"
-              style={{
-                background: "rgba(255,255,255,0.07)",
-                border: "1px solid rgba(212,168,92,0.22)",
-              }}
+              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(212,168,92,0.22)" }}
               onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(212,168,92,0.6)")}
               onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(212,168,92,0.22)")}
             />
@@ -120,10 +124,7 @@ export default function LoginPage() {
               type="password"
               placeholder="••••••••"
               className="w-full rounded-lg px-3 py-2.5 text-sm focus:outline-none transition-colors placeholder-slate-500 text-white"
-              style={{
-                background: "rgba(255,255,255,0.07)",
-                border: "1px solid rgba(212,168,92,0.22)",
-              }}
+              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(212,168,92,0.22)" }}
               onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(212,168,92,0.6)")}
               onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(212,168,92,0.22)")}
             />
