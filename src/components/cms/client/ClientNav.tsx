@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ClientStatusBadge } from "./ClientStatusBadge";
 import type { ClientStatus } from "@/types/prisma.types";
-import { ExternalLink, ArrowLeft } from "lucide-react";
+import { ExternalLink, ArrowLeft, Camera } from "lucide-react";
 
 interface Client {
   id: string;
@@ -13,18 +13,6 @@ interface Client {
   slug: string;
   status: ClientStatus;
   clientType?: string;
-}
-
-const SUBDOMAIN: Record<string, string> = {
-  WEDDING: "pernikahan",
-  SANGJIT: "sangjit",
-  LAMARAN: "lamaran",
-};
-
-function getInvitationUrl(clientType: string | undefined, slug: string) {
-  const sub = SUBDOMAIN[clientType ?? ""] ?? "pernikahan";
-  const domain = process.env.NEXT_PUBLIC_INVITATION_DOMAIN ?? "jordyrea.my.id";
-  return `https://${sub}.${domain}/${slug}`;
 }
 
 const BASE_TABS = [
@@ -48,18 +36,31 @@ const SUPERADMIN_TABS = [
   { label: "Pengguna", path: "/users" },
 ];
 
+const STAFF_TABS = [
+  { label: "Camera", path: "/attendance", icon: Camera },
+];
+
+function getTabs(role?: string) {
+  if (role === "SUPERADMIN") return SUPERADMIN_TABS;
+  if (role === "STAFF") return STAFF_TABS;
+  return BASE_TABS;
+}
+
 export function ClientNav({ client, role }: { client: Client; role?: string }) {
-  const tabs = role === "SUPERADMIN" ? SUPERADMIN_TABS : BASE_TABS;
+  const tabs = getTabs(role);
   const pathname = usePathname();
   const base = `/admin/clients/${client.id}`;
+  const isStaff = role === "STAFF";
 
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href="/admin/clients" className="text-stone-400 hover:text-stone-600 shrink-0">
-            <ArrowLeft size={16} />
-          </Link>
+          {!isStaff && (
+            <Link href="/admin/clients" className="text-stone-400 hover:text-stone-600 shrink-0">
+              <ArrowLeft size={16} />
+            </Link>
+          )}
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-base md:text-lg font-bold text-stone-800 truncate">{client.name}</h1>
@@ -69,15 +70,17 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
           </div>
         </div>
 
-        <a
-          href={`/invite/${client.slug}?preview=1`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 flex items-center gap-1.5 border border-stone-300 text-stone-600 text-xs px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
-        >
-          <ExternalLink size={12} />
-          <span className="hidden sm:inline">Preview</span>
-        </a>
+        {!isStaff && (
+          <a
+            href={`/invite/${client.slug}?preview=1`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 flex items-center gap-1.5 border border-stone-300 text-stone-600 text-xs px-3 py-1.5 rounded-lg hover:bg-stone-50 transition-colors"
+          >
+            <ExternalLink size={12} />
+            <span className="hidden sm:inline">Preview</span>
+          </a>
+        )}
       </div>
 
       <div className="flex gap-1 overflow-x-auto pb-1 border-b border-stone-200">
@@ -87,18 +90,20 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
             tab.path === ""
               ? pathname === base
               : pathname.startsWith(href);
+          const Icon = (tab as any).icon;
 
           return (
             <Link
               key={tab.path}
               href={href}
               className={cn(
-                "px-3 py-2 text-sm rounded-t-lg whitespace-nowrap transition-colors",
+                "flex items-center gap-1.5 px-3 py-2 text-sm rounded-t-lg whitespace-nowrap transition-colors",
                 active
                   ? "text-stone-800 border-b-2 border-stone-800 font-medium"
                   : "text-stone-500 hover:text-stone-700"
               )}
             >
+              {Icon && <Icon size={14} />}
               {tab.label}
             </Link>
           );

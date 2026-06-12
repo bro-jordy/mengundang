@@ -1,5 +1,6 @@
 import { getClientById } from "@/modules/clients/clients.service";
 import { prisma } from "@/lib/database/prisma";
+import { auth } from "@/lib/auth/auth";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { ClientStatusToggle } from "@/components/cms/client/ClientStatusToggle";
@@ -23,6 +24,10 @@ interface Props {
 
 export default async function ClientOverviewPage({ params }: Props) {
   const { clientId } = await params;
+  const session = await auth();
+  const role = (session?.user as any)?.role as string | undefined;
+  const isStaff = role === "STAFF";
+
   const client = await getClientById(clientId);
   if (!client) return null;
 
@@ -50,67 +55,74 @@ export default async function ClientOverviewPage({ params }: Props) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-4 gap-4">
-        {stats.map((s) => (
-          <Link
-            key={s.label}
-            href={`/admin/clients/${clientId}/${s.href}`}
-            className="bg-white rounded-xl border border-stone-200 p-4 hover:border-stone-300 transition-colors"
-          >
-            <p className="text-xs text-stone-500 mb-1">{s.label}</p>
-            <p className="text-2xl font-bold text-stone-800">{s.value}</p>
-          </Link>
-        ))}
+        {stats.map((s) => {
+          const card = (
+            <div className="bg-white rounded-xl border border-stone-200 p-4 hover:border-stone-300 transition-colors">
+              <p className="text-xs text-stone-500 mb-1">{s.label}</p>
+              <p className="text-2xl font-bold text-stone-800">{s.value}</p>
+            </div>
+          );
+          return isStaff ? (
+            <div key={s.label}>{card}</div>
+          ) : (
+            <Link key={s.label} href={`/admin/clients/${clientId}/${s.href}`}>
+              {card}
+            </Link>
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-stone-200 p-5">
-          <h3 className="font-semibold text-stone-800 mb-3 text-sm">
-            Menu Pengaturan
-          </h3>
-          <div className="space-y-2">
-            {quickLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={`/admin/clients/${clientId}/${l.href}`}
-                className="block text-sm text-stone-600 hover:text-stone-900 hover:underline"
-              >
-                → {l.label}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-stone-200 p-5">
-          <h3 className="font-semibold text-stone-800 mb-3 text-sm">
-            Info Client
-          </h3>
-          <div className="space-y-3 text-sm">
-            <div>
-              <p className="text-stone-500 text-xs mb-2">Status Undangan</p>
-              <ClientStatusToggle
-                clientId={client.id}
-                currentStatus={client.status}
-              />
-            </div>
-            <div className="border-t border-stone-100 pt-3 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-stone-500">Link Undangan</span>
-                <a
-                  href={getInvitationUrl((client as any).clientType, client.slug)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono text-xs text-stone-600 hover:text-stone-900 flex items-center gap-1"
+      {!isStaff && (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-xl border border-stone-200 p-5">
+            <h3 className="font-semibold text-stone-800 mb-3 text-sm">
+              Menu Pengaturan
+            </h3>
+            <div className="space-y-2">
+              {quickLinks.map((l) => (
+                <Link
+                  key={l.href}
+                  href={`/admin/clients/${clientId}/${l.href}`}
+                  className="block text-sm text-stone-600 hover:text-stone-900 hover:underline"
                 >
-                  {client.slug}
-                  <ExternalLink size={10} />
-                </a>
+                  → {l.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-stone-200 p-5">
+            <h3 className="font-semibold text-stone-800 mb-3 text-sm">
+              Info Client
+            </h3>
+            <div className="space-y-3 text-sm">
+              <div>
+                <p className="text-stone-500 text-xs mb-2">Status Undangan</p>
+                <ClientStatusToggle
+                  clientId={client.id}
+                  currentStatus={client.status}
+                />
               </div>
-              <Row label="Dibuat" value={formatDate(client.createdAt)} />
-              <Row label="Diperbarui" value={formatDate(client.updatedAt)} />
+              <div className="border-t border-stone-100 pt-3 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-stone-500">Link Undangan</span>
+                  <a
+                    href={getInvitationUrl((client as any).clientType, client.slug)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs text-stone-600 hover:text-stone-900 flex items-center gap-1"
+                  >
+                    {client.slug}
+                    <ExternalLink size={10} />
+                  </a>
+                </div>
+                <Row label="Dibuat" value={formatDate(client.createdAt)} />
+                <Row label="Diperbarui" value={formatDate(client.updatedAt)} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { getAttendances, getAttendanceStats } from "@/modules/attendance/attendance.service";
 import { AttendanceManager } from "@/components/cms/client/AttendanceManager";
+import { auth } from "@/lib/auth/auth";
 
 interface Props {
   params: Promise<{ clientId: string }>;
@@ -7,6 +8,9 @@ interface Props {
 
 export default async function AttendancePage({ params }: Props) {
   const { clientId } = await params;
+  const session = await auth();
+  const role = (session?.user as any)?.role as string | undefined;
+  const isStaff = role === "STAFF";
 
   const [attendances, stats] = await Promise.all([
     getAttendances(clientId),
@@ -27,11 +31,12 @@ export default async function AttendancePage({ params }: Props) {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-stone-800 mb-4">Kehadiran Tamu</h2>
+      {!isStaff && <h2 className="text-lg font-semibold text-stone-800 mb-4">Kehadiran Tamu</h2>}
       <AttendanceManager
         clientId={clientId}
         initialAttendances={serialized as any}
         initialStats={stats}
+        staffMode={isStaff}
       />
     </div>
   );

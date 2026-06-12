@@ -9,8 +9,13 @@ export default async function AdminDashboard() {
   const session = await auth();
   const user = session!.user as { id: string; role: string; name: string };
 
-  // Non-SUPERADMIN → redirect to their first client
-  if (user.role !== "SUPERADMIN") {
+  if (user.role === "STAFF") {
+    const clients = await getAllClients(user.id, user.role);
+    if (clients.length > 0) redirect(`/admin/clients/${clients[0].id}/attendance`);
+    else redirect("/admin/clients");
+  }
+
+  if (user.role === "ADMIN") {
     const clients = await getAllClients(user.id, user.role);
     if (clients.length > 0) redirect(`/admin/clients/${clients[0].id}`);
     else redirect("/admin/clients");

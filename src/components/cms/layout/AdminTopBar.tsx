@@ -17,15 +17,17 @@ export function AdminTopBar({ user, onMenuToggle }: Props) {
 
   return (
     <header className="h-14 bg-white border-b border-stone-200 flex items-center justify-between px-4 md:px-6 shrink-0">
-      <button
-        onClick={onMenuToggle}
-        className="lg:hidden p-2 rounded text-stone-500 hover:text-stone-800 hover:bg-stone-100"
-        aria-label="Toggle menu"
-      >
-        <Menu size={20} />
-      </button>
-
-      <div className="hidden lg:block" />
+      {onMenuToggle ? (
+        <button
+          onClick={onMenuToggle}
+          className="lg:hidden p-2 rounded text-stone-500 hover:text-stone-800 hover:bg-stone-100"
+          aria-label="Toggle menu"
+        >
+          <Menu size={20} />
+        </button>
+      ) : (
+        <div />
+      )}
 
       <div className="relative">
         <button

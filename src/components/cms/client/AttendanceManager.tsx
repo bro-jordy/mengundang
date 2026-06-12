@@ -33,6 +33,7 @@ interface Props {
   clientId: string;
   initialAttendances: AttendanceRow[];
   initialStats: Stats;
+  staffMode?: boolean;
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -68,7 +69,7 @@ type ScanResult =
   | { type: "outsideWindow"; message: string }
   | { type: "error"; message: string };
 
-export function AttendanceManager({ clientId, initialAttendances, initialStats }: Props) {
+export function AttendanceManager({ clientId, initialAttendances, initialStats, staffMode = false }: Props) {
   const [attendances, setAttendances] = useState<AttendanceRow[]>(initialAttendances);
   const [stats, setStats] = useState<Stats>(initialStats);
   const [scanning, setScanning] = useState(false);
@@ -193,15 +194,17 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
 
   return (
     <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {statCards.map((s) => (
-          <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
-            <p className="text-xs font-medium opacity-70">{s.label}</p>
-            <p className="text-3xl font-bold mt-1">{s.value}</p>
-          </div>
-        ))}
-      </div>
+      {/* Stats — hidden in staffMode */}
+      {!staffMode && (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {statCards.map((s) => (
+            <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
+              <p className="text-xs font-medium opacity-70">{s.label}</p>
+              <p className="text-3xl font-bold mt-1">{s.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Scanner area */}
       <div className="bg-white rounded-2xl border border-stone-200 p-5">
@@ -294,8 +297,8 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
         )}
       </div>
 
-      {/* Attendance table */}
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+      {/* Attendance table — hidden in staffMode */}
+      {!staffMode && <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
         <div className="px-5 py-4 border-b border-stone-100 flex items-center gap-2">
           <Users size={16} className="text-stone-500" />
           <h3 className="font-medium text-stone-800 text-sm">
@@ -361,7 +364,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats }
             </table>
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 }

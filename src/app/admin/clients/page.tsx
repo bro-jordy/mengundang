@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth/auth";
+import { redirect } from "next/navigation";
 import { getAllClients } from "@/modules/clients/clients.service";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
@@ -28,6 +29,10 @@ export default async function ClientsPage() {
   const session = await auth();
   const user = session!.user as { id: string; role: string };
   const clients = await getAllClients(user.id, user.role);
+
+  if (user.role === "STAFF") {
+    if (clients.length > 0) redirect(`/admin/clients/${clients[0].id}/attendance`);
+  }
 
   return (
     <div className="max-w-5xl">
