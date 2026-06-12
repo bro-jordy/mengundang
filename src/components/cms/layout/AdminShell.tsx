@@ -15,10 +15,27 @@ export function AdminShell({ role, user, children }: Props) {
   const isSuperAdmin = role === "SUPERADMIN";
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: "#f1f5f9", fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}>
+    <div
+      className="flex h-screen overflow-hidden"
+      style={{ background: "#0a0a0a", fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}
+    >
+      {/* Watermark logo */}
+      <div
+        className="fixed inset-0 pointer-events-none select-none flex items-center justify-center overflow-hidden"
+        style={{ zIndex: 0 }}
+      >
+        <img
+          src="/logo.png"
+          alt=""
+          draggable={false}
+          style={{ width: 560, height: 560, opacity: 0.07 }}
+        />
+      </div>
+
       {isSuperAdmin && sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/40 z-20 lg:hidden"
+          className="fixed inset-0 z-20 lg:hidden"
+          style={{ background: "rgba(0,0,0,0.6)" }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -35,7 +52,7 @@ export function AdminShell({ role, user, children }: Props) {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ position: "relative", zIndex: 1 }}>
         <AdminTopBar
           user={user}
           onMenuToggle={isSuperAdmin ? () => setSidebarOpen((v) => !v) : undefined}

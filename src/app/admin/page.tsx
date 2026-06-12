@@ -30,10 +30,10 @@ export default async function AdminDashboard() {
   return (
     <div className="max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-stone-800">
+        <h1 className="text-xl font-bold" style={{ color: "#e8e4d8" }}>
           Selamat datang, {user.name} 👋
         </h1>
-        <p className="text-stone-500 text-sm mt-1">
+        <p className="text-sm mt-1" style={{ color: "rgba(212,168,92,0.6)" }}>
           Kelola semua undangan wedding dari sini.
         </p>
       </div>

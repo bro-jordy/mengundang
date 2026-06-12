@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden"
+      className="relative min-h-screen flex flex-col justify-end pb-12 px-4 overflow-hidden"
       style={{ fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}
     >
       <Image
@@ -60,7 +60,7 @@ export default function LoginPage() {
       />
       <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.52)" }} />
 
-      <div className="relative z-10 w-full max-w-sm">
+      <div className="relative z-10 w-full max-w-sm mx-auto">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="rounded-2xl p-7 space-y-5 backdrop-blur-md"

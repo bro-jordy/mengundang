@@ -22,26 +22,36 @@ export function AdminSidebar({ role, onClose }: Props) {
   const navItems = ALL_NAV.filter((item) => !item.superAdminOnly || role === "SUPERADMIN");
 
   return (
-    <aside className="w-64 h-full flex flex-col shrink-0" style={{ background: "#0f172a", fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}>
-      <div className="h-14 flex items-center justify-between px-4" style={{ borderBottom: "1px solid #1e293b" }}>
+    <aside
+      className="w-64 h-full flex flex-col shrink-0"
+      style={{
+        background: "#060606",
+        borderRight: "1px solid rgba(212,168,92,0.15)",
+        fontFamily: "'IBM Plex Sans', Arial, sans-serif",
+      }}
+    >
+      <div
+        className="h-14 flex items-center justify-between px-4"
+        style={{ borderBottom: "1px solid rgba(212,168,92,0.12)" }}
+      >
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg overflow-hidden shrink-0">
             <Image src="/logo.png" alt="Logo" width={28} height={28} className="w-full h-full object-cover" />
           </div>
-          <span className="font-semibold text-sm" style={{ color: "#e2e8f0" }}>Mengundang</span>
+          <span className="font-semibold text-sm" style={{ color: "#D4A85C" }}>Mengundang</span>
         </div>
         {onClose && (
           <button
             onClick={onClose}
             className="lg:hidden p-1 rounded"
-            style={{ color: "#64748b" }}
+            style={{ color: "rgba(212,168,92,0.4)" }}
           >
             <X size={18} />
           </button>
         )}
       </div>
 
-      <nav className="flex-1 p-3 space-y-1">
+      <nav className="flex-1 p-3 space-y-0.5">
         {navItems.map(({ href, label, icon: Icon, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href);
           return (
@@ -49,16 +59,19 @@ export function AdminSidebar({ role, onClose }: Props) {
               key={href}
               href={href}
               onClick={onClose}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors",
-              )}
+              className={cn("flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors")}
               style={
                 active
-                  ? { background: "#2563eb", color: "#ffffff" }
-                  : { color: "#94a3b8" }
+                  ? {
+                      background: "rgba(212,168,92,0.12)",
+                      color: "#D4A85C",
+                      borderLeft: "2px solid #D4A85C",
+                      paddingLeft: "10px",
+                    }
+                  : { color: "rgba(212,168,92,0.5)", borderLeft: "2px solid transparent", paddingLeft: "10px" }
               }
               onMouseEnter={(e) => {
-                if (!active) (e.currentTarget as HTMLElement).style.background = "#1e293b";
+                if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(212,168,92,0.06)";
               }}
               onMouseLeave={(e) => {
                 if (!active) (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -71,8 +84,8 @@ export function AdminSidebar({ role, onClose }: Props) {
         })}
       </nav>
 
-      <div className="p-3" style={{ borderTop: "1px solid #1e293b" }}>
-        <p className="text-xs text-center" style={{ color: "#334155" }}>v1.0.0</p>
+      <div className="p-3" style={{ borderTop: "1px solid rgba(212,168,92,0.1)" }}>
+        <p className="text-xs text-center" style={{ color: "rgba(212,168,92,0.25)" }}>v1.0.0</p>
       </div>
     </aside>
   );
