@@ -52,16 +52,18 @@ export async function getAttendanceStats(clientId: string) {
   const totalHadir = checkedInGuestIds.size;
   const totalActualPax = attendances.reduce((sum, a) => sum + a.actualPax, 0);
 
-  const totalGerejaOnly = guests.filter((g) => g.invitationCategory === "GEREJA_SAJA").length;
-  const totalGerejaResepsi = guests.filter((g) => g.invitationCategory === "GEREJA_RESEPSI").length;
+  const categoryCount: Record<string, number> = {};
+  for (const g of guests) {
+    categoryCount[g.invitationCategory] = (categoryCount[g.invitationCategory] ?? 0) + 1;
+  }
+  const perCategory = Object.entries(categoryCount).map(([category, count]) => ({ category, count }));
 
   return {
     totalGuests,
     totalHadir,
     totalPaxUndangan,
     totalActualPax,
-    totalGerejaOnly,
-    totalGerejaResepsi,
+    perCategory,
   };
 }
 

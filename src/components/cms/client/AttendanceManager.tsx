@@ -25,8 +25,7 @@ interface Stats {
   totalHadir: number;
   totalPaxUndangan: number;
   totalActualPax: number;
-  totalGerejaOnly: number;
-  totalGerejaResepsi: number;
+  perCategory: { category: string; count: number }[];
 }
 
 interface Props {
@@ -183,26 +182,53 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
     setLoadingPax(null);
   }
 
-  const statCards = [
+  const CATEGORY_COLORS: Record<string, string> = {
+    GEREJA_SAJA: "bg-sky-50 text-sky-700",
+    GEREJA_RESEPSI: "bg-purple-50 text-purple-700",
+    AKAD: "bg-sky-50 text-sky-700",
+    AKAD_RESEPSI: "bg-purple-50 text-purple-700",
+    PEMBERKATAN: "bg-sky-50 text-sky-700",
+    PEMBERKATAN_RESEPSI: "bg-purple-50 text-purple-700",
+    SANGJIT: "bg-amber-50 text-amber-700",
+    LAMARAN: "bg-rose-50 text-rose-700",
+  };
+
+  const summaryCards = [
     { label: "Total Undangan", value: stats.totalGuests, color: "bg-stone-50 text-stone-700" },
     { label: "Total Hadir", value: stats.totalHadir, color: "bg-green-50 text-green-700" },
     { label: "Total Pax Undangan", value: stats.totalPaxUndangan, color: "bg-blue-50 text-blue-700" },
     { label: "Total Actual Pax", value: stats.totalActualPax, color: "bg-indigo-50 text-indigo-700" },
-    { label: "Tamu Gereja Saja", value: stats.totalGerejaOnly, color: "bg-sky-50 text-sky-700" },
-    { label: "Tamu Gereja + Resepsi", value: stats.totalGerejaResepsi, color: "bg-purple-50 text-purple-700" },
   ];
+
+  const categoryCards = stats.perCategory.map(({ category, count }) => ({
+    label: CATEGORY_LABEL[category] ?? category,
+    value: count,
+    color: CATEGORY_COLORS[category] ?? "bg-stone-50 text-stone-600",
+  }));
 
   return (
     <div className="space-y-6">
       {/* Stats — hidden in staffMode */}
       {!staffMode && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {statCards.map((s) => (
-            <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
-              <p className="text-xs font-medium opacity-70">{s.label}</p>
-              <p className="text-3xl font-bold mt-1">{s.value}</p>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {summaryCards.map((s) => (
+              <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
+                <p className="text-xs font-medium opacity-70">{s.label}</p>
+                <p className="text-3xl font-bold mt-1">{s.value}</p>
+              </div>
+            ))}
+          </div>
+          {categoryCards.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {categoryCards.map((s) => (
+                <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
+                  <p className="text-xs font-medium opacity-70">{s.label}</p>
+                  <p className="text-3xl font-bold mt-1">{s.value}</p>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
 
