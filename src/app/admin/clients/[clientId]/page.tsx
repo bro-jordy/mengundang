@@ -4,7 +4,6 @@ import { auth } from "@/lib/auth/auth";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { ClientStatusToggle } from "@/components/cms/client/ClientStatusToggle";
-import { ExternalLink } from "lucide-react";
 
 const SUBDOMAIN: Record<string, string> = {
   WEDDING: "pernikahan",
@@ -104,18 +103,6 @@ export default async function ClientOverviewPage({ params }: Props) {
                 />
               </div>
               <div className="border-t border-stone-100 pt-3 space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-stone-500">Link Undangan</span>
-                  <a
-                    href={getInvitationUrl((client as any).clientType, client.slug)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-xs text-stone-600 hover:text-stone-900 flex items-center gap-1"
-                  >
-                    {client.slug}
-                    <ExternalLink size={10} />
-                  </a>
-                </div>
                 <Row label="Dibuat" value={formatDate(client.createdAt)} />
                 <Row label="Diperbarui" value={formatDate(client.updatedAt)} />
               </div>

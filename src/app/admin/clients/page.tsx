@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/utils";
 import { ClientStatusBadge } from "@/components/cms/client/ClientStatusBadge";
 import { ClientTypeSelect } from "@/components/cms/client/ClientTypeSelect";
 import { DeleteClientButton } from "@/components/cms/client/DeleteClientButton";
-import { ExternalLink, Users } from "lucide-react";
+import { Users } from "lucide-react";
 
 const SUBDOMAIN: Record<string, string> = {
   WEDDING: "pernikahan",
@@ -101,17 +101,6 @@ export default async function ClientsPage() {
                     <td className="px-4 py-3 text-stone-500 text-xs">{formatDate(client.createdAt)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {client.status === "ACTIVE" && (
-                          <a
-                            href={invitationUrl((client as any).clientType, client.slug)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-stone-400 hover:text-stone-600"
-                            title="Buka undangan"
-                          >
-                            <ExternalLink size={14} />
-                          </a>
-                        )}
                         <Link href={`/admin/clients/${client.id}`}
                           className="text-stone-600 hover:text-stone-900 text-xs underline">
                           Kelola

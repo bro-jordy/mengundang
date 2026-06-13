@@ -51,7 +51,7 @@ export default function LoginPage() {
       style={{ background: "#000", fontFamily: "'IBM Plex Sans', Arial, sans-serif" }}
     >
       {/* Logo section */}
-      <div className="relative shrink-0 h-[40vh] flex items-center justify-center overflow-hidden">
+      <div className="relative shrink-0 h-[45vh] flex items-center justify-center overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/logo.png"
