@@ -16,6 +16,8 @@ import {
   Download,
   Check,
   QrCode,
+  Pencil,
+  X,
 } from "lucide-react";
 import type { Guest, Rsvp, Attendance } from "@/types/prisma.types";
 
@@ -114,6 +116,9 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
   const [copied, setCopied] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const [editingGuestId, setEditingGuestId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", phone: "", invitationCategory: "", maxPax: 2 });
+  const [saving, setSaving] = useState(false);
 
   const invitationCategories = getInvitationCategories(
     client?.clientType ?? "WEDDING",
@@ -254,6 +259,37 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
     } else {
       alert("Gagal memperbaiki URL.");
     }
+  }
+
+  function startEdit(guest: GuestWithRsvp) {
+    setEditingGuestId(guest.id);
+    setEditForm({
+      name: guest.name,
+      phone: guest.phone ?? "",
+      invitationCategory: guest.invitationCategory,
+      maxPax: guest.maxPax,
+    });
+  }
+
+  async function saveEdit(guestId: string) {
+    if (!editForm.name.trim()) return;
+    setSaving(true);
+    const res = await fetch(`/api/clients/${clientId}/guests/${guestId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: editForm.name.trim(),
+        phone: editForm.phone.trim() || null,
+        invitationCategory: editForm.invitationCategory,
+        maxPax: Number(editForm.maxPax),
+      }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setGuests((prev) => prev.map((g) => (g.id === guestId ? { ...g, ...updated } : g)));
+      setEditingGuestId(null);
+    }
+    setSaving(false);
   }
 
   function exportCSV() {
@@ -431,6 +467,74 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                 const waLink = guest.phone
                   ? buildWhatsappLink(guest.phone, message)
                   : null;
+                const isEditing = editingGuestId === guest.id;
+
+                if (isEditing) {
+                  return (
+                    <tr key={guest.id} className="bg-blue-50">
+                      <td className="px-4 py-3 sticky left-0 bg-blue-50 z-10 border-r border-stone-100">
+                        <input
+                          value={editForm.name}
+                          onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                          className={inputClass}
+                          placeholder="Nama tamu"
+                          autoFocus
+                        />
+                        <input
+                          value={editForm.phone}
+                          onChange={(e) => setEditForm((f) => ({ ...f, phone: e.target.value }))}
+                          className={`${inputClass} mt-1`}
+                          placeholder="No. WhatsApp (opsional)"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={editForm.invitationCategory}
+                          onChange={(e) => setEditForm((f) => ({ ...f, invitationCategory: e.target.value }))}
+                          className={inputClass}
+                        >
+                          {invitationCategories.map((cat) => (
+                            <option key={cat.value} value={cat.value}>{cat.label}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[guest.rsvpStatus]}`}>
+                          {STATUS_LABEL[guest.rsvpStatus]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          value={editForm.maxPax}
+                          onChange={(e) => setEditForm((f) => ({ ...f, maxPax: Number(e.target.value) }))}
+                          className={inputClass}
+                          min={1}
+                          max={20}
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-stone-400 text-xs">—</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => saveEdit(guest.id)}
+                            disabled={saving || !editForm.name.trim()}
+                            className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            {saving ? "..." : "Simpan"}
+                          </button>
+                          <button
+                            onClick={() => setEditingGuestId(null)}
+                            className="text-stone-400 hover:text-stone-700"
+                            title="Batal"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                }
 
                 return (
                   <tr key={guest.id} className="hover:bg-stone-50 group">
@@ -466,7 +570,6 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                               2: <span className="font-mono text-stone-700">{guest.barcodeReception.slice(0, 6)}…</span>
                             </span>
                           )}
-
                         </div>
                       ) : (
                         <span className="text-xs text-stone-400">—</span>
@@ -474,6 +577,14 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
+                        <button
+                          title="Edit tamu"
+                          onClick={() => startEdit(guest)}
+                          className="text-stone-400 hover:text-blue-600"
+                        >
+                          <Pencil size={14} />
+                        </button>
+
                         <button
                           title="Copy link undangan"
                           onClick={() => copyToClipboard(guest.invitationUrl, `link-${guest.id}`)}
