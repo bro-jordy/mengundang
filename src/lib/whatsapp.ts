@@ -118,7 +118,7 @@ export function buildWhatsappLink(phone: string, message: string): string {
   const normalized = cleaned.startsWith("0")
     ? "62" + cleaned.slice(1)
     : cleaned;
-  return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
+  return `https://api.whatsapp.com/send?phone=${normalized}&text=${encodeURIComponent(message)}`;
 }
 
 export { DEFAULT_TEMPLATE };
