@@ -21,6 +21,7 @@ export function ProfileForm({ clientId, initialData }: Props) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [attentionLang, setAttentionLang] = useState<"id" | "en">("id");
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } =
     useForm<WeddingProfileInput>({
@@ -44,6 +45,8 @@ export function ProfileForm({ clientId, initialData }: Props) {
         openingQuoteBy: initialData?.openingQuoteBy ?? "",
         attentionTitle: (initialData as any)?.attentionTitle ?? "",
         attentionContent: (initialData as any)?.attentionContent ?? "",
+        attentionTitleEn: (initialData as any)?.attentionTitleEn ?? "",
+        attentionContentEn: (initialData as any)?.attentionContentEn ?? "",
       },
     });
 
@@ -204,23 +207,63 @@ export function ProfileForm({ clientId, initialData }: Props) {
           <h3 className="font-medium text-stone-700 text-sm">Rules / Perhatian</h3>
           <p className="text-xs text-stone-400 mt-0.5">Tampil sebagai section &ldquo;ATTENTION&rdquo; di undangan. Kosongkan jika tidak ingin ditampilkan.</p>
         </div>
-        <Field label="Judul Section" error={undefined}>
-          <input
-            {...register("attentionTitle")}
-            placeholder="ATTENTION"
-            className={inputClass}
-          />
-          <p className="text-xs text-stone-400 mt-1">Kosongkan untuk menggunakan judul default &ldquo;Attention&rdquo;</p>
-        </Field>
-        <Field label="Isi Rules / Perhatian" error={undefined}>
-          <RichTextEditor
-            value={watch("attentionContent") ?? ""}
-            onChange={(html) => setValue("attentionContent" as any, html, { shouldDirty: true })}
-            placeholder="✦ Dress Code: Batik Attire&#10;✦ Adults Only (No Children, Please)"
-            rows={5}
-          />
-          <p className="text-xs text-stone-400 mt-1">Gunakan toolbar Bold untuk menebalkan teks penting.</p>
-        </Field>
+        <div className="flex gap-1 bg-stone-100 rounded-lg p-1 w-fit">
+          <button
+            type="button"
+            onClick={() => setAttentionLang("id")}
+            className={`px-3 py-1 text-xs rounded-md transition-colors ${attentionLang === "id" ? "bg-white text-stone-800 shadow-sm font-medium" : "text-stone-500 hover:text-stone-700"}`}
+          >
+            Bahasa Indonesia
+          </button>
+          <button
+            type="button"
+            onClick={() => setAttentionLang("en")}
+            className={`px-3 py-1 text-xs rounded-md transition-colors ${attentionLang === "en" ? "bg-white text-stone-800 shadow-sm font-medium" : "text-stone-500 hover:text-stone-700"}`}
+          >
+            English
+          </button>
+        </div>
+        {attentionLang === "id" ? (
+          <>
+            <Field label="Judul Section (ID)" error={undefined}>
+              <input
+                {...register("attentionTitle")}
+                placeholder="ATTENTION"
+                className={inputClass}
+              />
+              <p className="text-xs text-stone-400 mt-1">Kosongkan untuk menggunakan judul default &ldquo;Attention&rdquo;</p>
+            </Field>
+            <Field label="Isi Rules / Perhatian (ID)" error={undefined}>
+              <RichTextEditor
+                value={watch("attentionContent") ?? ""}
+                onChange={(html) => setValue("attentionContent" as any, html, { shouldDirty: true })}
+                placeholder="✦ Dress Code: Batik Attire&#10;✦ Adults Only (No Children, Please)"
+                rows={5}
+              />
+              <p className="text-xs text-stone-400 mt-1">Gunakan toolbar Bold untuk menebalkan teks penting.</p>
+            </Field>
+          </>
+        ) : (
+          <>
+            <Field label="Section Title (EN)" error={undefined}>
+              <input
+                {...register("attentionTitleEn")}
+                placeholder="ATTENTION"
+                className={inputClass}
+              />
+              <p className="text-xs text-stone-400 mt-1">Leave blank to use default &ldquo;Attention&rdquo;</p>
+            </Field>
+            <Field label="Rules / Attention Content (EN)" error={undefined}>
+              <RichTextEditor
+                value={watch("attentionContentEn") ?? ""}
+                onChange={(html) => setValue("attentionContentEn" as any, html, { shouldDirty: true })}
+                placeholder="✦ Dress Code: Batik Attire&#10;✦ Adults Only (No Children, Please)"
+                rows={5}
+              />
+              <p className="text-xs text-stone-400 mt-1">Use Bold toolbar to emphasize important text. Leave blank to fall back to Indonesian version.</p>
+            </Field>
+          </>
+        )}
       </div>
 
       <div className="flex justify-end">

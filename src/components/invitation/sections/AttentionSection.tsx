@@ -1,6 +1,9 @@
 interface Props {
   title: string | null | undefined;
   content: string;
+  titleEn?: string | null;
+  contentEn?: string | null;
+  lang?: "ID" | "EN";
   primaryColor?: string;
   bgColor?: string;
   textColor?: string;
@@ -10,14 +13,20 @@ interface Props {
 export function AttentionSection({
   title,
   content,
+  titleEn,
+  contentEn,
+  lang = "ID",
   primaryColor = "#b8860b",
   bgColor = "#fffdf7",
   textColor = "#3d3d3d",
   fontBody = "Lato",
 }: Props) {
-  if (!content) return null;
+  const resolvedContent = lang === "EN" && contentEn ? contentEn : content;
+  const resolvedTitle = lang === "EN" && titleEn ? titleEn : title;
 
-  const label = title?.trim() || "Attention";
+  if (!resolvedContent) return null;
+
+  const label = resolvedTitle?.trim() || "Attention";
 
   return (
     <section style={{ padding: "2.5rem 1.25rem", background: bgColor }}>
@@ -50,7 +59,7 @@ export function AttentionSection({
               fontSize: "1rem",
               lineHeight: 1.8,
             }}
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{ __html: resolvedContent }}
           />
         </div>
       </div>

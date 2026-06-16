@@ -88,6 +88,8 @@ type Profile = {
   showBridePhoto: boolean;
   attentionTitle: string | null;
   attentionContent: string | null;
+  attentionTitleEn: string | null;
+  attentionContentEn: string | null;
 } | null;
 
 interface Props {
@@ -1328,6 +1330,9 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
                 <AttentionSection
                   title={(profile as any).attentionTitle}
                   content={(profile as any).attentionContent}
+                  titleEn={(profile as any).attentionTitleEn}
+                  contentEn={(profile as any).attentionContentEn}
+                  lang={lang === "en" ? "EN" : "ID"}
                   primaryColor={gold}
                   bgColor={ivory}
                   textColor={text}

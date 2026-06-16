@@ -19,6 +19,8 @@ export const weddingProfileSchema = z.object({
   openingQuoteBy: z.string().optional().nullable(),
   attentionTitle: z.string().optional().nullable(),
   attentionContent: z.string().optional().nullable(),
+  attentionTitleEn: z.string().optional().nullable(),
+  attentionContentEn: z.string().optional().nullable(),
 });
 
 export const eventSchema = z.object({

@@ -80,8 +80,10 @@ model WeddingProfile {
   showStoryTitle  Boolean  @default(true)
   openingQuote    String?
   openingQuoteBy  String?
-  attentionTitle  String?
-  attentionContent String?
+  attentionTitle     String?
+  attentionContent   String?
+  attentionTitleEn   String?
+  attentionContentEn String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   client         Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
