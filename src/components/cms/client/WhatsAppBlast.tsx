@@ -159,6 +159,7 @@ export function WhatsAppBlast({
   }
 
   const sentCount = guests.filter((g) => g.sendStatus === "SENT").length;
+  const totalMaxPax = guests.reduce((sum, g) => sum + g.maxPax, 0);
   const unsentWithPhone = guests.filter((g) => g.sendStatus === "UNSENT" && g.phone).length;
 
   const filtered = guests.filter((g) => {
@@ -170,8 +171,9 @@ export function WhatsAppBlast({
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <StatCard icon={Users} label="Total Tamu" value={guests.length} color="text-stone-600" />
+        <StatCard icon={Users} label="Total Pax" value={totalMaxPax} color="text-blue-600" />
         <StatCard icon={CheckCircle} label="Terkirim" value={sentCount} color="text-green-600" />
         <StatCard icon={Clock} label="Belum Terkirim" value={guests.length - sentCount} color="text-amber-600" />
       </div>

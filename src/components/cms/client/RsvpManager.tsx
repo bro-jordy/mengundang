@@ -55,6 +55,7 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
 
   const hadir = guests.filter((g) => g.rsvpStatus === "HADIR");
   const totalPax = hadir.reduce((sum, g) => sum + (g.rsvp?.paxCount ?? 0), 0);
+  const totalMaxPax = guests.reduce((sum, g) => sum + g.maxPax, 0);
   const tidakHadir = guests.filter((g) => g.rsvpStatus === "TIDAK_HADIR").length;
   const pending = guests.filter((g) => g.rsvpStatus === "PENDING").length;
 
@@ -112,11 +113,12 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard label="Total Tamu" value={guests.length} color="text-stone-800" />
         <StatCard label="Konfirmasi Hadir" value={hadir.length} color="text-green-700" />
         <StatCard label="Tidak Hadir" value={tidakHadir} color="text-red-600" />
         <StatCard label="Total Pax Hadir" value={totalPax} color="text-stone-800" sub="orang" />
+        <StatCard label="Total Max Pax" value={totalMaxPax} color="text-blue-700" sub="slot" />
       </div>
 
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">

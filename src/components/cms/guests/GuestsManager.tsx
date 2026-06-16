@@ -430,7 +430,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
       {/* Stats */}
       <div className="flex gap-4 text-sm text-stone-500 flex-wrap">
-        <span>{guests.length} tamu</span>
+        <span>{guests.length} tamu · {guests.reduce((sum, g) => sum + g.maxPax, 0)} pax</span>
         <span>{guests.filter((g) => g.isOpened).length} sudah buka</span>
         <span>{guests.filter((g) => g.rsvpStatus === "HADIR").length} konfirmasi hadir</span>
         {invitationCategories.map((cat) => (

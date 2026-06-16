@@ -106,14 +106,16 @@
       "Bash(git -C /Users/dieudonnejordy/Documents/undangan add package.json)",
       "Bash(git -C /Users/dieudonnejordy/Documents/undangan add src/components/invitation/templates/sage/index.tsx)",
       "Bash(git -C /Users/dieudonnejordy/Documents/undangan diff --stat HEAD)",
-      "Bash(git -C /Users/dieudonnejordy/Documents/undangan restore src/components/cms/client/ProfileForm.tsx src/components/invitation/sections/AttentionSection.tsx src/components/invitation/templates/lucky-envelope/index.tsx src/components/invitation/templates/lucky-jackpot/index.tsx)"
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan restore src/components/cms/client/ProfileForm.tsx src/components/invitation/sections/AttentionSection.tsx src/components/invitation/templates/lucky-envelope/index.tsx src/components/invitation/templates/lucky-jackpot/index.tsx)",
+      "Bash(rm -rf /Users/dieudonnejordy/Documents/udangan-kami)"
     ],
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/users",
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]",
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]/sections",
-      "/Users/dieudonnejordy/Documents/udangan-kami/src/components/invitation/templates/envelope"
+      "/Users/dieudonnejordy/Documents/udangan-kami/src/components/invitation/templates/envelope",
+      "/Users/dieudonnejordy/Documents/udangan-kami"
     ]
   }
 }
