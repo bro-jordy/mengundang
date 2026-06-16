@@ -151,6 +151,7 @@ type Profile = {
   groomPhoto: string | null; bridePhoto: string | null;
   showGroomPhoto: boolean; showBridePhoto: boolean;
   attentionTitle: string | null; attentionContent: string | null;
+  attentionTitleEn: string | null; attentionContentEn: string | null;
 } | null;
 
 interface Props {
@@ -454,6 +455,9 @@ export function SageTemplate({ guest, client, token }: Props) {
               <AttentionSection
                 title={profile.attentionTitle}
                 content={profile.attentionContent}
+                titleEn={profile.attentionTitleEn}
+                contentEn={profile.attentionContentEn}
+                lang={lang === "en" ? "EN" : "ID"}
                 primaryColor={accent}
                 bgColor={cream}
                 textColor={text}
