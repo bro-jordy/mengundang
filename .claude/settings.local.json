@@ -97,7 +97,13 @@
       "Bash(git -C /Users/dieudonnejordy/Documents/undangan push)",
       "Bash(git -C /Users/dieudonnejordy/Documents/undangan remote -v)",
       "Bash(psql postgresql://dieudonnejordy@localhost:5432/udangan_kami -c \"SELECT \\\\\"attentionContent\\\\\", \\\\\"attentionContentEn\\\\\" FROM wedding_profiles LIMIT 3;\")",
-      "Bash(PGPASSWORD='Di3ud0nn3!!' psql \"postgresql://postgres.vejtcmzpuaaukydgdyrl@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres\" -c 'SELECT \"attentionContent\" IS NOT NULL AS has_id, \"attentionContentEn\" IS NOT NULL AS has_en FROM wedding_profiles LIMIT 5;')"
+      "Bash(PGPASSWORD='Di3ud0nn3!!' psql \"postgresql://postgres.vejtcmzpuaaukydgdyrl@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres\" -c 'SELECT \"attentionContent\" IS NOT NULL AS has_id, \"attentionContentEn\" IS NOT NULL AS has_en FROM wedding_profiles LIMIT 5;')",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan fetch origin)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan log --oneline origin/main -5)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan log --oneline -5)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan show --stat 3d4dc21)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan show --stat b3f9cb4)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan add package.json)"
     ],
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
