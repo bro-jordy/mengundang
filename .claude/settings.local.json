@@ -87,7 +87,15 @@
       "Bash(npm --version)",
       "Bash(echo \"EXIT: $?\")",
       "Bash(node -e \"require\\('next'\\)\")",
-      "Bash(tee /tmp/nextdev.log)"
+      "Bash(tee /tmp/nextdev.log)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan status)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan diff --stat)",
+      "Bash(DATABASE_URL=\"postgresql://postgres.vejtcmzpuaaukydgdyrl:Di3ud0nn3!!@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres\" npx prisma db push)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan log --oneline -3)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan add prisma/schema.prisma src/components/cms/client/ProfileForm.tsx src/components/invitation/sections/AttentionSection.tsx src/components/invitation/templates/lucky-envelope/index.tsx src/components/invitation/templates/lucky-jackpot/index.tsx src/modules/wedding/wedding.schema.ts)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan commit -m ' *)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan push)",
+      "Bash(git -C /Users/dieudonnejordy/Documents/undangan remote -v)"
     ],
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
