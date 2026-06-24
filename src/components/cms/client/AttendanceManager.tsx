@@ -129,6 +129,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
   const [activeTab, setActiveTab] = useState<"CHURCH" | "RECEPTION">("CHURCH");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const scanLabels = buildScanLabels(events);
+  const hasReceptionEvent = events?.some((e) => RECEPTION_TYPES.has(e.type)) ?? false;
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [loadingPax, setLoadingPax] = useState<string | null>(null);
@@ -274,17 +275,19 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
           {/* Grup 2: Kehadiran per lokasi */}
           <div className="px-5 py-4">
             <p className="text-xs text-stone-400 font-medium uppercase tracking-wide mb-3">Kehadiran</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className={`grid gap-3 ${hasReceptionEvent ? "grid-cols-2" : "grid-cols-1"}`}>
               <div className="rounded-xl p-4 bg-blue-50">
                 <p className="text-xs text-blue-600 font-medium">{scanLabels.CHURCH}</p>
                 <p className="text-3xl font-bold text-blue-700 mt-1">{stats.churchActualPax}</p>
                 <p className="text-xs text-blue-400 mt-0.5">orang</p>
               </div>
-              <div className="rounded-xl p-4 bg-indigo-50">
-                <p className="text-xs text-indigo-600 font-medium">{scanLabels.RECEPTION}</p>
-                <p className="text-3xl font-bold text-indigo-700 mt-1">{stats.receptionActualPax}</p>
-                <p className="text-xs text-indigo-400 mt-0.5">orang</p>
-              </div>
+              {hasReceptionEvent && (
+                <div className="rounded-xl p-4 bg-indigo-50">
+                  <p className="text-xs text-indigo-600 font-medium">{scanLabels.RECEPTION}</p>
+                  <p className="text-3xl font-bold text-indigo-700 mt-1">{stats.receptionActualPax}</p>
+                  <p className="text-xs text-indigo-400 mt-0.5">orang</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -398,40 +401,52 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
       {/* Attendance table — hidden in staffMode */}
       {!staffMode && (
         <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-          {/* Tabs */}
+          {/* Tabs — hanya tampil kalau ada 2 event */}
           <div className="flex items-center border-b border-stone-100">
             <div className="flex flex-1">
-              {(["CHURCH", "RECEPTION"] as const).map((tab) => {
-                const count = attendances.filter((a) => a.barcodeType === tab).length;
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => { setActiveTab(tab); setActiveCategory(null); }}
-                    className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors border-b-2 ${
-                      activeTab === tab
-                        ? "border-blue-600 text-blue-700"
-                        : "border-transparent text-stone-500 hover:text-stone-700"
-                    }`}
-                  >
+              {hasReceptionEvent
+                ? (["CHURCH", "RECEPTION"] as const).map((tab) => {
+                    const count = attendances.filter((a) => a.barcodeType === tab).length;
+                    return (
+                      <button
+                        key={tab}
+                        onClick={() => { setActiveTab(tab); setActiveCategory(null); }}
+                        className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors border-b-2 ${
+                          activeTab === tab
+                            ? "border-blue-600 text-blue-700"
+                            : "border-transparent text-stone-500 hover:text-stone-700"
+                        }`}
+                      >
+                        <Users size={14} />
+                        {scanLabels[tab]}
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                          activeTab === tab ? "bg-blue-100 text-blue-700" : "bg-stone-100 text-stone-500"
+                        }`}>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })
+                : (
+                  <div className="flex items-center gap-2 px-5 py-3.5 text-sm font-medium text-blue-700 border-b-2 border-blue-600">
                     <Users size={14} />
-                    {scanLabels[tab]}
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                      activeTab === tab ? "bg-blue-100 text-blue-700" : "bg-stone-100 text-stone-500"
-                    }`}>
-                      {count}
+                    {scanLabels.CHURCH}
+                    <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                      {attendances.filter((a) => a.barcodeType === "CHURCH").length}
                     </span>
-                  </button>
-                );
-              })}
+                  </div>
+                )
+              }
             </div>
             <button
               onClick={() => {
+                const tab = hasReceptionEvent ? activeTab : "CHURCH";
                 const rows = activeCategory
-                  ? attendances.filter((a) => a.barcodeType === activeTab && a.guest.invitationCategory === activeCategory)
-                  : attendances.filter((a) => a.barcodeType === activeTab);
+                  ? attendances.filter((a) => a.barcodeType === tab && a.guest.invitationCategory === activeCategory)
+                  : attendances.filter((a) => a.barcodeType === tab);
                 const isNasiBox = activeCategory === "PEMBERKATAN_NASI_BOX" ||
-                  (activeTab === "CHURCH" && rows.every((r) => r.guest.invitationCategory === "PEMBERKATAN_NASI_BOX"));
-                const label = activeCategory ? (CATEGORY_LABEL[activeCategory] ?? activeCategory) : scanLabels[activeTab];
+                  (tab === "CHURCH" && rows.every((r) => r.guest.invitationCategory === "PEMBERKATAN_NASI_BOX"));
+                const label = activeCategory ? (CATEGORY_LABEL[activeCategory] ?? activeCategory) : scanLabels[tab];
                 exportToXlsx(rows, label, isNasiBox);
               }}
               className="flex items-center gap-1.5 mr-4 px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
@@ -442,13 +457,14 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
           </div>
 
           {(() => {
-            const byTab = attendances.filter((a) => a.barcodeType === activeTab);
+            const currentTab = hasReceptionEvent ? activeTab : "CHURCH";
+            const byTab = attendances.filter((a) => a.barcodeType === currentTab);
             const tabCategories = [...new Set(byTab.map((a) => a.guest.invitationCategory))];
             const filtered = activeCategory ? byTab.filter((a) => a.guest.invitationCategory === activeCategory) : byTab;
             if (byTab.length === 0) {
               return (
                 <div className="p-10 text-center">
-                  <p className="text-stone-400 text-sm">Belum ada tamu yang check-in di {scanLabels[activeTab]}.</p>
+                  <p className="text-stone-400 text-sm">Belum ada tamu yang check-in di {scanLabels[currentTab]}.</p>
                 </div>
               );
             }
