@@ -32,7 +32,7 @@ export function RSVPSection({ clientId, guest, token, onConfirmed }: Props) {
     resolver: zodResolver(schema),
     defaultValues: {
       name: guest.name,
-      paxCount: guest.rsvp?.paxCount ?? 1,
+      paxCount: guest.rsvp?.paxCount ?? guest.maxPax,
       status: (guest.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? "HADIR",
       message: guest.rsvp?.message ?? "",
     },

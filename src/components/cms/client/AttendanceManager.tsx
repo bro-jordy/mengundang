@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Camera, CameraOff, Users, UserCheck, QrCode, RefreshCw, Clock } from "lucide-react";
+import { Camera, CameraOff, Users, UserCheck, QrCode, RefreshCw, Clock, Download } from "lucide-react";
 
 interface Guest {
   id: string;
@@ -24,8 +24,17 @@ interface Stats {
   totalGuests: number;
   totalHadir: number;
   totalPaxUndangan: number;
-  totalActualPax: number;
+  churchActualPax: number;
+  receptionActualPax: number;
+  nasiBoxPax: number;
+  nasiBoxCount: number;
   perCategory: { category: string; count: number }[];
+}
+
+interface EventInfo {
+  type: string;
+  label: string;
+  venueName: string;
 }
 
 interface Props {
@@ -33,6 +42,7 @@ interface Props {
   initialAttendances: AttendanceRow[];
   initialStats: Stats;
   staffMode?: boolean;
+  events?: EventInfo[];
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
@@ -42,14 +52,22 @@ const CATEGORY_LABEL: Record<string, string> = {
   AKAD_RESEPSI: "Akad & Resepsi",
   PEMBERKATAN: "Pemberkatan",
   PEMBERKATAN_RESEPSI: "Pemberkatan & Resepsi",
+  PEMBERKATAN_NASI_BOX: "Pemberkatan & Nasi Box",
   SANGJIT: "Sangjit",
   LAMARAN: "Lamaran",
 };
 
-const BARCODE_TYPE_LABEL: Record<string, string> = {
-  CHURCH: "Upacara",
-  RECEPTION: "Resepsi",
-};
+const RECEPTION_TYPES = new Set(["RESEPSI", "AFTER_PARTY"]);
+
+function buildScanLabels(events?: EventInfo[]): Record<string, string> {
+  if (!events?.length) return { CHURCH: "Upacara", RECEPTION: "Resepsi" };
+  const church = events.find((e) => !RECEPTION_TYPES.has(e.type));
+  const reception = events.find((e) => RECEPTION_TYPES.has(e.type));
+  return {
+    CHURCH: church?.venueName || church?.label || "Upacara",
+    RECEPTION: reception?.venueName || reception?.label || "Resepsi",
+  };
+}
 
 function formatArrivalTime(iso: string): string {
   const d = new Date(iso);
@@ -62,15 +80,55 @@ function formatArrivalTime(iso: string): string {
   return `${day}/${month}/${year} ${hh}:${mm}:${ss}`;
 }
 
+async function exportToXlsx(
+  rows: AttendanceRow[],
+  sheetName: string,
+  isNasiBox: boolean
+) {
+  const { utils, writeFile } = await import("xlsx");
+
+  const header = isNasiBox
+    ? ["No", "Nama Tamu", "Kategori", "WhatsApp", "Waktu Kedatangan", "Pax", "Actual Pax", "Sudah Ambil Nasi Box", "Catatan"]
+    : ["No", "Nama Tamu", "Kategori", "WhatsApp", "Waktu Kedatangan", "Pax", "Actual Pax"];
+
+  const data = rows.map((att, i) => {
+    const base = [
+      i + 1,
+      att.guest.name,
+      CATEGORY_LABEL[att.guest.invitationCategory] ?? att.guest.invitationCategory,
+      att.guest.phone || "",
+      formatArrivalTime(att.arrivedAt),
+      att.guest.maxPax,
+      att.actualPax,
+    ];
+    if (isNasiBox) base.push("", "");
+    return base;
+  });
+
+  const ws = utils.aoa_to_sheet([header, ...data]);
+
+  // Column widths
+  ws["!cols"] = isNasiBox
+    ? [{ wch: 4 }, { wch: 28 }, { wch: 26 }, { wch: 16 }, { wch: 22 }, { wch: 6 }, { wch: 12 }, { wch: 24 }, { wch: 20 }]
+    : [{ wch: 4 }, { wch: 28 }, { wch: 26 }, { wch: 16 }, { wch: 22 }, { wch: 6 }, { wch: 12 }];
+
+  const wb = utils.book_new();
+  utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+  writeFile(wb, `${sheetName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+}
+
 type ScanResult =
   | { type: "success"; guestName: string; barcodeType: string }
   | { type: "already"; guestName: string; arrivedAt: string; barcodeType: string }
   | { type: "outsideWindow"; message: string }
   | { type: "error"; message: string };
 
-export function AttendanceManager({ clientId, initialAttendances, initialStats, staffMode = false }: Props) {
+export function AttendanceManager({ clientId, initialAttendances, initialStats, staffMode = false, events }: Props) {
   const [attendances, setAttendances] = useState<AttendanceRow[]>(initialAttendances);
   const [stats, setStats] = useState<Stats>(initialStats);
+  const [activeTab, setActiveTab] = useState<"CHURCH" | "RECEPTION">("CHURCH");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const scanLabels = buildScanLabels(events);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [loadingPax, setLoadingPax] = useState<string | null>(null);
@@ -108,13 +166,13 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
         type: "already",
         guestName: data.guest?.name || "Tamu",
         arrivedAt: formatArrivalTime(data.arrivedAt),
-        barcodeType: BARCODE_TYPE_LABEL[data.barcodeType] || data.barcodeType,
+        barcodeType: scanLabels[data.barcodeType] || data.barcodeType,
       });
     } else if (data.success) {
       setScanResult({
         type: "success",
         guestName: data.attendance?.guest?.name || "Tamu",
-        barcodeType: BARCODE_TYPE_LABEL[data.barcodeType] || data.barcodeType,
+        barcodeType: scanLabels[data.barcodeType] || data.barcodeType,
       });
       await refreshData();
     }
@@ -177,56 +235,70 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
       setAttendances((prev) =>
         prev.map((a) => (a.id === attendanceId ? { ...a, actualPax } : a))
       );
-      setStats((prev) => ({ ...prev, totalActualPax: prev.totalActualPax - (attendances.find(a => a.id === attendanceId)?.actualPax ?? 0) + actualPax }));
+      const att = attendances.find((a) => a.id === attendanceId);
+      if (att) {
+        const diff = actualPax - att.actualPax;
+        setStats((prev) => ({
+          ...prev,
+          churchActualPax: att.barcodeType === "CHURCH" ? prev.churchActualPax + diff : prev.churchActualPax,
+          receptionActualPax: att.barcodeType === "RECEPTION" ? prev.receptionActualPax + diff : prev.receptionActualPax,
+          nasiBoxPax: att.barcodeType === "CHURCH" && att.guest.invitationCategory === "PEMBERKATAN_NASI_BOX" ? prev.nasiBoxPax + diff : prev.nasiBoxPax,
+        }));
+      }
     }
     setLoadingPax(null);
   }
 
-  const CATEGORY_COLORS: Record<string, string> = {
-    GEREJA_SAJA: "bg-sky-50 text-sky-700",
-    GEREJA_RESEPSI: "bg-purple-50 text-purple-700",
-    AKAD: "bg-sky-50 text-sky-700",
-    AKAD_RESEPSI: "bg-purple-50 text-purple-700",
-    PEMBERKATAN: "bg-sky-50 text-sky-700",
-    PEMBERKATAN_RESEPSI: "bg-purple-50 text-purple-700",
-    SANGJIT: "bg-amber-50 text-amber-700",
-    LAMARAN: "bg-rose-50 text-rose-700",
-  };
 
-  const summaryCards = [
-    { label: "Total Undangan", value: stats.totalGuests, color: "bg-stone-50 text-stone-700" },
-    { label: "Total Hadir", value: stats.totalHadir, color: "bg-green-50 text-green-700" },
-    { label: "Total Pax Undangan", value: stats.totalPaxUndangan, color: "bg-blue-50 text-blue-700" },
-    { label: "Total Actual Pax", value: stats.totalActualPax, color: "bg-indigo-50 text-indigo-700" },
-  ];
-
-  const categoryCards = stats.perCategory.map(({ category, count }) => ({
-    label: CATEGORY_LABEL[category] ?? category,
-    value: count,
-    color: CATEGORY_COLORS[category] ?? "bg-stone-50 text-stone-600",
-  }));
 
   return (
     <div className="space-y-6">
       {/* Stats — hidden in staffMode */}
       {!staffMode && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {summaryCards.map((s) => (
-              <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
-                <p className="text-xs font-medium opacity-70">{s.label}</p>
-                <p className="text-3xl font-bold mt-1">{s.value}</p>
+        <div className="bg-white rounded-2xl border border-stone-200 divide-y divide-stone-100">
+          {/* Grup 1: Tamu */}
+          <div className="px-5 py-4">
+            <p className="text-xs text-stone-400 font-medium uppercase tracking-wide mb-3">Tamu</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl p-4 bg-stone-50">
+                <p className="text-xs text-stone-500 font-medium">Total Tamu</p>
+                <p className="text-3xl font-bold text-stone-800 mt-1">{stats.totalGuests}</p>
               </div>
-            ))}
+              <div className="rounded-xl p-4 bg-green-50">
+                <p className="text-xs text-green-600 font-medium">Sudah Hadir</p>
+                <p className="text-3xl font-bold text-green-700 mt-1">{stats.totalHadir}</p>
+              </div>
+            </div>
           </div>
-          {categoryCards.length > 1 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {categoryCards.map((s) => (
-                <div key={s.label} className={`rounded-xl p-4 ${s.color}`}>
-                  <p className="text-xs font-medium opacity-70">{s.label}</p>
-                  <p className="text-3xl font-bold mt-1">{s.value}</p>
+
+          {/* Grup 2: Kehadiran per lokasi */}
+          <div className="px-5 py-4">
+            <p className="text-xs text-stone-400 font-medium uppercase tracking-wide mb-3">Kehadiran</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl p-4 bg-blue-50">
+                <p className="text-xs text-blue-600 font-medium">{scanLabels.CHURCH}</p>
+                <p className="text-3xl font-bold text-blue-700 mt-1">{stats.churchActualPax}</p>
+                <p className="text-xs text-blue-400 mt-0.5">orang</p>
+              </div>
+              <div className="rounded-xl p-4 bg-indigo-50">
+                <p className="text-xs text-indigo-600 font-medium">{scanLabels.RECEPTION}</p>
+                <p className="text-3xl font-bold text-indigo-700 mt-1">{stats.receptionActualPax}</p>
+                <p className="text-xs text-indigo-400 mt-0.5">orang</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Grup 3: Nasi Box — hanya tampil kalau ada */}
+          {stats.nasiBoxPax > 0 && (
+            <div className="px-5 py-4">
+              <p className="text-xs text-stone-400 font-medium uppercase tracking-wide mb-3">Nasi Box</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl p-4 bg-amber-50">
+                  <p className="text-xs text-amber-600 font-medium">Total Kotak</p>
+                  <p className="text-3xl font-bold text-amber-700 mt-1">{stats.nasiBoxPax}</p>
+                  <p className="text-xs text-amber-400 mt-0.5">kotak</p>
                 </div>
-              ))}
+              </div>
             </div>
           )}
         </div>
@@ -324,73 +396,138 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
       </div>
 
       {/* Attendance table — hidden in staffMode */}
-      {!staffMode && <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
-        <div className="px-5 py-4 border-b border-stone-100 flex items-center gap-2">
-          <Users size={16} className="text-stone-500" />
-          <h3 className="font-medium text-stone-800 text-sm">
-            Daftar Kehadiran ({attendances.length} check-in)
-          </h3>
-        </div>
+      {!staffMode && (
+        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+          {/* Tabs */}
+          <div className="flex items-center border-b border-stone-100">
+            <div className="flex flex-1">
+              {(["CHURCH", "RECEPTION"] as const).map((tab) => {
+                const count = attendances.filter((a) => a.barcodeType === tab).length;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => { setActiveTab(tab); setActiveCategory(null); }}
+                    className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors border-b-2 ${
+                      activeTab === tab
+                        ? "border-blue-600 text-blue-700"
+                        : "border-transparent text-stone-500 hover:text-stone-700"
+                    }`}
+                  >
+                    <Users size={14} />
+                    {scanLabels[tab]}
+                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                      activeTab === tab ? "bg-blue-100 text-blue-700" : "bg-stone-100 text-stone-500"
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => {
+                const rows = activeCategory
+                  ? attendances.filter((a) => a.barcodeType === activeTab && a.guest.invitationCategory === activeCategory)
+                  : attendances.filter((a) => a.barcodeType === activeTab);
+                const isNasiBox = activeCategory === "PEMBERKATAN_NASI_BOX" ||
+                  (activeTab === "CHURCH" && rows.every((r) => r.guest.invitationCategory === "PEMBERKATAN_NASI_BOX"));
+                const label = activeCategory ? (CATEGORY_LABEL[activeCategory] ?? activeCategory) : scanLabels[activeTab];
+                exportToXlsx(rows, label, isNasiBox);
+              }}
+              className="flex items-center gap-1.5 mr-4 px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 rounded-lg hover:bg-stone-50 transition-colors"
+            >
+              <Download size={13} />
+              Export Excel
+            </button>
+          </div>
 
-        {attendances.length === 0 ? (
-          <div className="p-10 text-center">
-            <p className="text-stone-400 text-sm">Belum ada tamu yang check-in.</p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[760px]">
-              <thead>
-                <tr className="border-b border-stone-100 text-left bg-stone-50">
-                  <th className="px-4 py-3 text-stone-500 font-medium sticky left-0 bg-stone-50 z-10 border-r border-stone-100">Nama Tamu</th>
-                  <th className="px-4 py-3 text-stone-500 font-medium">No</th>
-                  <th className="px-4 py-3 text-stone-500 font-medium">Jenis Scan</th>
-                  <th className="px-4 py-3 text-stone-500 font-medium">WhatsApp</th>
-                  <th className="px-4 py-3 text-stone-500 font-medium">Waktu Kedatangan</th>
-                  <th className="px-4 py-3 text-stone-500 font-medium">Pax</th>
-                  <th className="px-4 py-3 text-stone-500 font-medium">Actual Pax</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-50">
-                {attendances.map((att, i) => (
-                  <tr key={att.id} className="hover:bg-stone-50 group">
-                    <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-stone-50 z-10 border-r border-stone-100">
-                      <p className="font-medium text-stone-800">{att.guest.name}</p>
-                      <p className="text-xs text-stone-400">{CATEGORY_LABEL[att.guest.invitationCategory]}</p>
-                    </td>
-                    <td className="px-4 py-3 text-stone-400">{i + 1}</td>
-                    <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                        att.barcodeType === "CHURCH"
-                          ? "bg-blue-50 text-blue-700"
-                          : "bg-green-50 text-green-700"
-                      }`}>
-                        {BARCODE_TYPE_LABEL[att.barcodeType]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-stone-600 text-xs">{att.guest.phone || "—"}</td>
-                    <td className="px-4 py-3 text-stone-600 text-xs font-mono whitespace-nowrap">
-                      {formatArrivalTime(att.arrivedAt)}
-                    </td>
-                    <td className="px-4 py-3 text-stone-600 text-center">{att.guest.maxPax}</td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={att.actualPax}
-                        onChange={(e) => updateActualPax(att.id, Number(e.target.value))}
-                        disabled={loadingPax === att.id}
-                        className="border border-stone-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
+          {(() => {
+            const byTab = attendances.filter((a) => a.barcodeType === activeTab);
+            const tabCategories = [...new Set(byTab.map((a) => a.guest.invitationCategory))];
+            const filtered = activeCategory ? byTab.filter((a) => a.guest.invitationCategory === activeCategory) : byTab;
+            if (byTab.length === 0) {
+              return (
+                <div className="p-10 text-center">
+                  <p className="text-stone-400 text-sm">Belum ada tamu yang check-in di {scanLabels[activeTab]}.</p>
+                </div>
+              );
+            }
+            return (
+              <>
+                {tabCategories.length > 1 && (
+                  <div className="px-4 py-3 flex flex-wrap gap-2 border-b border-stone-100">
+                    <button
+                      onClick={() => setActiveCategory(null)}
+                      className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                        activeCategory === null
+                          ? "bg-stone-800 text-white"
+                          : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                      }`}
+                    >
+                      Semua ({byTab.length})
+                    </button>
+                    {tabCategories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+                        className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                          activeCategory === cat
+                            ? "bg-stone-800 text-white"
+                            : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                        }`}
                       >
-                        {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
-                          <option key={n} value={n}>{n}</option>
-                        ))}
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>}
+                        {CATEGORY_LABEL[cat] ?? cat} ({byTab.filter((a) => a.guest.invitationCategory === cat).length})
+                      </button>
+                    ))}
+                  </div>
+                )}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[700px]">
+                  <thead>
+                    <tr className="border-b border-stone-100 text-left bg-stone-50">
+                      <th className="px-4 py-3 text-stone-500 font-medium sticky left-0 bg-stone-50 z-10 border-r border-stone-100">Nama Tamu</th>
+                      <th className="px-4 py-3 text-stone-500 font-medium">No</th>
+                      <th className="px-4 py-3 text-stone-500 font-medium">WhatsApp</th>
+                      <th className="px-4 py-3 text-stone-500 font-medium">Waktu Kedatangan</th>
+                      <th className="px-4 py-3 text-stone-500 font-medium">Pax</th>
+                      <th className="px-4 py-3 text-stone-500 font-medium">Actual Pax</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-50">
+                    {filtered.map((att, i) => (
+                      <tr key={att.id} className="hover:bg-stone-50 group">
+                        <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-stone-50 z-10 border-r border-stone-100">
+                          <p className="font-medium text-stone-800">{att.guest.name}</p>
+                          <p className="text-xs text-stone-400">{CATEGORY_LABEL[att.guest.invitationCategory]}</p>
+                        </td>
+                        <td className="px-4 py-3 text-stone-400">{i + 1}</td>
+                        <td className="px-4 py-3 text-stone-600 text-xs">{att.guest.phone || "—"}</td>
+                        <td className="px-4 py-3 text-stone-600 text-xs font-mono whitespace-nowrap">
+                          {formatArrivalTime(att.arrivedAt)}
+                        </td>
+                        <td className="px-4 py-3 text-stone-600 text-center">{att.guest.maxPax}</td>
+                        <td className="px-4 py-3">
+                          <select
+                            value={att.actualPax}
+                            onChange={(e) => updateActualPax(att.id, Number(e.target.value))}
+                            disabled={loadingPax === att.id}
+                            className="border border-stone-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:opacity-50"
+                          >
+                            {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => (
+                              <option key={n} value={n}>{n}</option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              </>
+            );
+          })()}
+        </div>
+      )}
     </div>
   );
 }

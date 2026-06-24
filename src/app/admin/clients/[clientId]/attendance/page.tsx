@@ -1,6 +1,7 @@
 import { getAttendances, getAttendanceStats } from "@/modules/attendance/attendance.service";
 import { AttendanceManager } from "@/components/cms/client/AttendanceManager";
 import { auth } from "@/lib/auth/auth";
+import { prisma } from "@/lib/database/prisma";
 
 interface Props {
   params: Promise<{ clientId: string }>;
@@ -12,9 +13,10 @@ export default async function AttendancePage({ params }: Props) {
   const role = (session?.user as any)?.role as string | undefined;
   const isStaff = role === "STAFF";
 
-  const [attendances, stats] = await Promise.all([
+  const [attendances, stats, events] = await Promise.all([
     getAttendances(clientId),
     getAttendanceStats(clientId),
+    prisma.event.findMany({ where: { clientId }, select: { type: true, label: true, venueName: true } }),
   ]);
 
   const serialized = attendances.map((a) => ({
@@ -37,6 +39,7 @@ export default async function AttendancePage({ params }: Props) {
         initialAttendances={serialized as any}
         initialStats={stats}
         staffMode={isStaff}
+        events={events}
       />
     </div>
   );

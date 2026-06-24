@@ -50,7 +50,18 @@ export async function getAttendanceStats(clientId: string) {
 
   const checkedInGuestIds = new Set(attendances.map((a) => a.guestId));
   const totalHadir = checkedInGuestIds.size;
-  const totalActualPax = attendances.reduce((sum, a) => sum + a.actualPax, 0);
+
+  const churchActualPax = attendances
+    .filter((a) => a.barcodeType === "CHURCH")
+    .reduce((sum, a) => sum + a.actualPax, 0);
+  const receptionActualPax = attendances
+    .filter((a) => a.barcodeType === "RECEPTION")
+    .reduce((sum, a) => sum + a.actualPax, 0);
+  const nasiBoxAttendances = attendances.filter(
+    (a) => a.barcodeType === "CHURCH" && a.guest.invitationCategory === "PEMBERKATAN_NASI_BOX"
+  );
+  const nasiBoxPax = nasiBoxAttendances.reduce((sum, a) => sum + a.actualPax, 0);
+  const nasiBoxCount = nasiBoxAttendances.length;
 
   const categoryCount: Record<string, number> = {};
   for (const g of guests) {
@@ -62,7 +73,10 @@ export async function getAttendanceStats(clientId: string) {
     totalGuests,
     totalHadir,
     totalPaxUndangan,
-    totalActualPax,
+    churchActualPax,
+    receptionActualPax,
+    nasiBoxPax,
+    nasiBoxCount,
     perCategory,
   };
 }

@@ -78,7 +78,7 @@ export function BarcodeSection({
     },
   ];
 
-  if (invitationCategory === "GEREJA_RESEPSI" && barcodeReception) {
+  if (barcodeReception) {
     items.push({
       code: barcodeReception,
       label: `${t.ticketPrefix} – ${receptionLabel}`,

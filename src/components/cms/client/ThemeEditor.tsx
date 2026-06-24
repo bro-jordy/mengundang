@@ -201,6 +201,62 @@ const TEMPLATES: Template[] = [
       </div>
     ),
   },
+  {
+    slug: "lucky-hanoi",
+    name: "Lucky Hanoi",
+    description: "Pembukaan mesin slot 8→888 dengan karakter pasangan bergaya Changshan & Cheongsam, dilanjutkan layout undangan elegan bilingual ID/EN",
+    tag: "New ✦",
+    tagColor: "#c4954a",
+    defaultColors: { primaryColor: "#c4954a", secondaryColor: "#f4ece0", bgColor: "#fafaf8", textColor: "#1e1a14" },
+    defaultFonts: { fontHeading: "Cormorant Garamond", fontBody: "Jost" },
+    preview: (
+      <div style={{ background: "radial-gradient(ellipse at 50% 40%, #fafaf8 0%, #f4ece0 100%)", borderRadius: "12px", padding: "1rem", minHeight: "130px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", border: "1px solid #c4954a33" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: "6px", marginBottom: "4px" }}>
+          {/* Woman silhouette */}
+          <div style={{ width: "18px", height: "40px", background: "linear-gradient(to bottom, #5C3319 0%, #5C3319 70%, #F2CA98 100%)", borderRadius: "4px 4px 2px 2px", opacity: 0.85 }} />
+          {/* Man silhouette */}
+          <div style={{ width: "20px", height: "46px", background: "linear-gradient(to bottom, #D4C4A0 0%, #D4C4A0 65%, #C2B08A 100%)", borderRadius: "4px 4px 2px 2px", opacity: 0.85 }} />
+          {/* Machine */}
+          <div style={{ background: "linear-gradient(160deg, #f8e9be, #edda9a)", border: "1.5px solid #c9a84c", borderRadius: "6px", padding: "4px 5px", display: "flex", gap: "2px" }}>
+            {["8", "8", "8"].map((d, i) => (
+              <div key={i} style={{ width: "13px", height: "16px", background: "linear-gradient(135deg,#fffbe8,#fff5c4)", border: "1px solid #c9b87a", borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontFamily: "Georgia,serif", fontSize: "8px", fontWeight: "bold", color: "#7a5a08" }}>{d}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p style={{ color: "#c4954a", fontFamily: "Georgia, serif", fontSize: "11px", fontWeight: 300, letterSpacing: "0.1em" }}>Groom &amp; Bride</p>
+      </div>
+    ),
+  },
+  {
+    slug: "hanoi-modern",
+    name: "Hanoi Modern",
+    description: "Desain minimalis hitam & krem ala Vietnam — cover portrait arch-top, profil couple dengan teks rotasi, masonry gallery, dan countdown split layout",
+    tag: "New ✦",
+    tagColor: "#1a1a1a",
+    defaultColors: { primaryColor: "#1a1a1a", secondaryColor: "#E4DEDB", bgColor: "#EEEDE8", textColor: "#1a1a1a" },
+    defaultFonts: { fontHeading: "Cormorant Garamond", fontBody: "Jost" },
+    preview: (
+      <div style={{ background: "#EEEDE8", borderRadius: "12px", padding: "0.75rem", minHeight: "130px", display: "flex", gap: "6px", overflow: "hidden", position: "relative" }}>
+        {/* Left date strip */}
+        <div style={{ width: "20px", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "4px" }}>
+          <div style={{ flex: 1, width: "1px", background: "#1a1a1a", position: "relative" }}>
+            <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", background: "#EEEDE8", padding: "2px 3px", fontSize: "6px", fontFamily: "Georgia,serif", color: "#1a1a1a", textAlign: "center", lineHeight: 1.3 }}>
+              <span>28</span><br /><span>06</span><br /><span>26</span>
+            </div>
+          </div>
+        </div>
+        {/* Right portrait */}
+        <div style={{ flex: 1, borderRadius: "9999px 9999px 0 0", background: "linear-gradient(180deg, #d4d0cb 0%, #bab5ae 100%)", overflow: "hidden", position: "relative" }}>
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(to top, #EEEDE8, transparent)" }} />
+          <div style={{ position: "absolute", bottom: "8px", left: "8px", right: "8px" }}>
+            <p style={{ fontFamily: "Georgia,serif", fontSize: "11px", color: "#1a1a1a", lineHeight: 1.2 }}>Bride &amp; Groom</p>
+          </div>
+        </div>
+      </div>
+    ),
+  },
 ];
 
 interface Theme {

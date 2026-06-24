@@ -34,6 +34,17 @@ export async function submitRsvp(data: RsvpInput) {
     data: { rsvpStatus: data.status },
   });
 
+  if (data.message) {
+    const existingWish = await prisma.wish.findFirst({ where: { guestId: guest.id } });
+    if (existingWish) {
+      await prisma.wish.update({ where: { id: existingWish.id }, data: { name: data.name, message: data.message } });
+    } else {
+      await prisma.wish.create({
+        data: { clientId: guest.clientId, guestId: guest.id, name: data.name, message: data.message, isApproved: true },
+      });
+    }
+  }
+
   return rsvp;
 }
 

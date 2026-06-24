@@ -17,6 +17,7 @@ interface Guest {
   name: string;
   phone: string | null;
   maxPax: number;
+  invitationCategory: string;
   rsvpStatus: RsvpStatus;
   rsvp: Rsvp | null;
 }
@@ -58,6 +59,9 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
   const totalMaxPax = guests.reduce((sum, g) => sum + g.maxPax, 0);
   const tidakHadir = guests.filter((g) => g.rsvpStatus === "TIDAK_HADIR").length;
   const pending = guests.filter((g) => g.rsvpStatus === "PENDING").length;
+  const nasiBoxPax = hadir
+    .filter((g) => g.invitationCategory === "PEMBERKATAN_NASI_BOX")
+    .reduce((sum, g) => sum + (g.rsvp?.paxCount ?? 0), 0);
 
   function openEdit(guest: Guest) {
     setForm({
@@ -119,6 +123,7 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
         <StatCard label="Tidak Hadir" value={tidakHadir} color="text-red-600" />
         <StatCard label="Total Pax Hadir" value={totalPax} color="text-stone-800" sub="orang" />
         <StatCard label="Total Max Pax" value={totalMaxPax} color="text-blue-700" sub="slot" />
+        {nasiBoxPax > 0 && <StatCard label="Nasi Box" value={nasiBoxPax} color="text-amber-700" sub="kotak" />}
       </div>
 
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">

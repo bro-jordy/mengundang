@@ -57,6 +57,7 @@ const CATEGORY_LABEL: Record<string, string> = {
   AKAD_RESEPSI: "Akad & Resepsi",
   PEMBERKATAN: "Pemberkatan",
   PEMBERKATAN_RESEPSI: "Pemberkatan & Resepsi",
+  PEMBERKATAN_NASI_BOX: "Pemberkatan & Nasi Box",
   SANGJIT: "Sangjit",
   LAMARAN: "Lamaran",
 };
@@ -68,6 +69,7 @@ const CATEGORY_COLOR: Record<string, string> = {
   AKAD_RESEPSI: "bg-purple-50 text-purple-700",
   PEMBERKATAN: "bg-blue-50 text-blue-700",
   PEMBERKATAN_RESEPSI: "bg-purple-50 text-purple-700",
+  PEMBERKATAN_NASI_BOX: "bg-amber-50 text-amber-700",
   SANGJIT: "bg-orange-50 text-orange-700",
   LAMARAN: "bg-pink-50 text-pink-700",
 };
@@ -97,6 +99,7 @@ function getInvitationCategories(
 
   if (hasPemberkatan) {
     result.push({ value: "PEMBERKATAN", label: "Pemberkatan" });
+    result.push({ value: "PEMBERKATAN_NASI_BOX", label: "Pemberkatan & Nasi Box" });
     if (hasResepsi) result.push({ value: "PEMBERKATAN_RESEPSI", label: "Pemberkatan & Resepsi" });
   }
 
@@ -288,6 +291,9 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
       const updated = await res.json();
       setGuests((prev) => prev.map((g) => (g.id === guestId ? { ...g, ...updated } : g)));
       setEditingGuestId(null);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      alert(err.error || "Gagal menyimpan perubahan");
     }
     setSaving(false);
   }
@@ -429,16 +435,26 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
       )}
 
       {/* Stats */}
-      <div className="flex gap-4 text-sm text-stone-500 flex-wrap">
-        <span>{guests.length} tamu · {guests.reduce((sum, g) => sum + g.maxPax, 0)} pax</span>
-        <span>{guests.filter((g) => g.isOpened).length} sudah buka</span>
-        <span>{guests.filter((g) => g.rsvpStatus === "HADIR").length} konfirmasi hadir</span>
-        {invitationCategories.map((cat) => (
-          <span key={cat.value}>
-            {guests.filter((g) => g.invitationCategory === cat.value).length} {cat.label.toLowerCase()}
-          </span>
-        ))}
-      </div>
+      {(() => {
+        const nasiBoxTotal = guests
+          .filter((g) => g.invitationCategory === "PEMBERKATAN_NASI_BOX")
+          .reduce((sum, g) => sum + g.maxPax, 0);
+        return (
+          <div className="flex gap-4 text-sm text-stone-500 flex-wrap">
+            <span>{guests.length} tamu · {guests.reduce((sum, g) => sum + g.maxPax, 0)} pax</span>
+            <span>{guests.filter((g) => g.isOpened).length} sudah buka</span>
+            <span>{guests.filter((g) => g.rsvpStatus === "HADIR").length} konfirmasi hadir</span>
+            {invitationCategories.map((cat) => (
+              <span key={cat.value}>
+                {guests.filter((g) => g.invitationCategory === cat.value).length} {cat.label.toLowerCase()}
+              </span>
+            ))}
+            {nasiBoxTotal > 0 && (
+              <span className="text-amber-600 font-medium">· {nasiBoxTotal} box (Est. Nasi Box)</span>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Guest table */}
       {filteredGuests.length === 0 ? (

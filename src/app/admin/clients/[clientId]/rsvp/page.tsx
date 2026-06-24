@@ -24,6 +24,7 @@ export default async function RsvpPage({ params }: Props) {
     name: g.name,
     phone: g.phone,
     maxPax: g.maxPax,
+    invitationCategory: g.invitationCategory,
     rsvpStatus: g.rsvpStatus as "HADIR" | "TIDAK_HADIR" | "PENDING",
     rsvp: g.rsvp
       ? {

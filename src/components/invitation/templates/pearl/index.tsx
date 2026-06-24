@@ -789,7 +789,7 @@ function RSVPSection({ clientId, guest, token, gold, ivory, champagne, text, fon
   onConfirmed?: (status: "HADIR" | "TIDAK_HADIR") => void;
 }) {
   const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">(guest.rsvp?.status as "HADIR" | "TIDAK_HADIR" || "HADIR");
-  const [pax, setPax] = useState(guest.rsvp?.paxCount || 1);
+  const [pax, setPax] = useState(guest.rsvp?.paxCount ?? guest.maxPax);
   const [msg, setMsg] = useState(guest.rsvp?.message || "");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(!!guest.rsvp);

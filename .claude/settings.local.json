@@ -107,7 +107,31 @@
       "Bash(git -C /Users/dieudonnejordy/Documents/undangan add src/components/invitation/templates/sage/index.tsx)",
       "Bash(git -C /Users/dieudonnejordy/Documents/undangan diff --stat HEAD)",
       "Bash(git -C /Users/dieudonnejordy/Documents/undangan restore src/components/cms/client/ProfileForm.tsx src/components/invitation/sections/AttentionSection.tsx src/components/invitation/templates/lucky-envelope/index.tsx src/components/invitation/templates/lucky-jackpot/index.tsx)",
-      "Bash(rm -rf /Users/dieudonnejordy/Documents/udangan-kami)"
+      "Bash(rm -rf /Users/dieudonnejordy/Documents/udangan-kami)",
+      "WebFetch(domain:v2.mrhanhphuc.net)",
+      "Bash(brew services *)",
+      "Bash(brew list *)",
+      "Bash(psql -c \"SELECT 1\" postgres)",
+      "Bash(rm /opt/homebrew/var/postgresql@17/postmaster.pid && brew services restart postgresql@17 2>&1 && sleep 2 && pg_isready 2>&1)",
+      "Bash(curl -s \"https://v2.mrhanhphuc.net/wedding-invitation/thiep-moi-cuoi-ngoc-long-thanh-lam2/\")",
+      "Bash(mkdir -p /Users/dieudonnejordy/Documents/undangan/src/components/invitation/templates/hanoi-modern)",
+      "Bash(DOTENV_CONFIG_PATH=/Users/dieudonnejordy/Documents/undangan/.env.local node -r dotenv/config -e ' *)",
+      "Bash(psql postgresql://localhost:5432/undangan -c \"SELECT name, \\\\\"invitationCategory\\\\\", \\\\\"barcodeChurch\\\\\", \\\\\"barcodeReception\\\\\" FROM \\\\\"Guest\\\\\" WHERE \\\\\"guestToken\\\\\" LIKE '%test_G%' OR \\\\\"guestToken\\\\\" = 'test_G-gnig' LIMIT 5;\")",
+      "Bash(npx tsx -e ' *)",
+      "Bash(psql postgresql://dieudonnejordy@localhost:5432/udangan_kami -c \"SELECT name, \\\\\"invitationCategory\\\\\", \\\\\"barcodeChurch\\\\\", \\\\\"barcodeReception\\\\\", \\\\\"isActive\\\\\" FROM \\\\\"Guest\\\\\" WHERE \\\\\"guestToken\\\\\" = 'test_G-gnig';\")",
+      "Bash(psql postgresql://dieudonnejordy@localhost:5432/udangan_kami -c \"\\\\dt\")",
+      "Bash(psql postgresql://dieudonnejordy@localhost:5432/udangan_kami -c \"SELECT name, invitation_category, barcode_church, barcode_reception, is_active FROM guests WHERE guest_token = 'test_G-gnig';\")",
+      "Bash(psql postgresql://dieudonnejordy@localhost:5432/udangan_kami -c 'SELECT name, \"invitationCategory\", \"barcodeChurch\", \"barcodeReception\" FROM guests WHERE \"guestToken\" = '\"'\"'test_G-gnig'\"'\"';\")",
+      "Bash(psql postgresql://dieudonnejordy@localhost:5432/udangan_kami -c \"SELECT name, \\\\\"invitationCategory\\\\\", \\\\\"barcodeChurch\\\\\", \\\\\"barcodeReception\\\\\" FROM guests WHERE \\\\\"guestToken\\\\\" = 'test_G-gnig';\")",
+      "Bash(sed -i '' 's/useState\\(guest\\\\.rsvp?\\\\.paxCount || 1\\)/useState\\(guest.rsvp?.paxCount ?? guest.maxPax\\)/g' src/components/invitation/templates/dark/index.tsx src/components/invitation/templates/pearl/index.tsx src/components/invitation/templates/envelope/index.tsx src/components/invitation/templates/sage/index.tsx src/components/invitation/templates/lucky-jackpot/index.tsx src/components/invitation/templates/lucky-envelope/index.tsx)",
+      "Bash(sed -i '' 's/useState\\(\\(guest\\\\.rsvp as any\\)?\\\\.paxCount || 1\\)/useState\\(\\(guest.rsvp as any\\)?.paxCount ?? guest.maxPax\\)/g' src/components/invitation/templates/lucky-hanoi/index.tsx src/components/invitation/templates/hanoi-modern/index.tsx)",
+      "Bash(node -e \"require\\('xlsx'\\); console.log\\('ok'\\)\")",
+      "Bash(git diff *)",
+      "Bash(vercel whoami *)",
+      "Bash(nslookup db.vejtcmzpuaaukydgdyrl.supabase.co)",
+      "Bash(nslookup db.vejtcmzpuaaukydgdyrl.supabase.co 8.8.8.8)",
+      "Bash(nslookup aws-1-ap-southeast-1.pooler.supabase.com)",
+      "Bash(nc -zv -w5 aws-1-ap-southeast-1.pooler.supabase.com 6543)"
     ],
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
@@ -115,7 +139,9 @@
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]",
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/clients/[clientId]/sections",
       "/Users/dieudonnejordy/Documents/udangan-kami/src/components/invitation/templates/envelope",
-      "/Users/dieudonnejordy/Documents/udangan-kami"
+      "/Users/dieudonnejordy/Documents/udangan-kami",
+      "/opt/homebrew/var/postgresql@17",
+      "/Users/dieudonnejordy/Documents/undangan/src/components/invitation/templates"
     ]
   }
 }
