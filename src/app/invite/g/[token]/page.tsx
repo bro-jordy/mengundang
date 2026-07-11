@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { getDeviceType } from "@/lib/utils";
 import { TemplateRenderer } from "@/components/invitation/TemplateRenderer";
+import { DisposableCamera } from "@/components/invitation/sections/DisposableCamera";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,11 @@ export default async function GuestInvitationByTokenPage({ params }: Props) {
         }}
         client={guest.client as any}
         token={token}
+      />
+      <DisposableCamera
+        token={token}
+        clientId={guest.client.id}
+        guestName={guest.name}
       />
     </>
   );

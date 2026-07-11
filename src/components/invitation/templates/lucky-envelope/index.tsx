@@ -1184,6 +1184,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
   const playMusicRef = useRef<(() => void) | null>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
   const [heroPassed, setHeroPassed] = useState(false);
+  const [contentReached, setContentReached] = useState(false);
 
   function handleOpen() {
     setCoverGone(true);
@@ -1191,41 +1192,76 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
     playMusicRef.current?.();
   }
 
-  // First scroll after opening → auto-scroll to section after hero
+  // Auto-scroll past hero to content — fires automatically after cover opens
   useEffect(() => {
     if (!coverGone || heroPassed) return;
-    function onFirstScroll() {
-      if (window.scrollY < 10) return;
+    const timer = setTimeout(() => {
       const targetY = anchorRef.current?.offsetTop ?? 0;
-      if (!targetY) return;
+      if (targetY < 50) return;
       setHeroPassed(true);
-      const startY = window.scrollY;
-      const distance = targetY - startY;
-      const duration = 900;
+      const duration = 1400;
       const startTime = performance.now();
       function easeOutQuart(t: number) { return 1 - Math.pow(1 - t, 4); }
       function step(now: number) {
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        window.scrollTo(0, startY + distance * easeOutQuart(progress));
+        window.scrollTo(0, targetY * easeOutQuart(progress));
         if (progress < 1) requestAnimationFrame(step);
+        else setContentReached(true);
       }
       requestAnimationFrame(step);
-    }
-    window.addEventListener("scroll", onFirstScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onFirstScroll);
+    }, 1200);
+    return () => clearTimeout(timer);
   }, [coverGone, heroPassed]);
 
-  // After passing hero → block scrolling back up
+  // After passing hero → block scrolling back up (cache minY once — reading offsetTop in handler causes layout thrashing)
   useEffect(() => {
     if (!heroPassed) return;
+    const minY = anchorRef.current?.offsetTop ?? 0;
     function lockUpScroll() {
-      const minY = anchorRef.current?.offsetTop ?? 0;
       if (window.scrollY < minY) window.scrollTo({ top: minY, behavior: "instant" as ScrollBehavior });
     }
     window.addEventListener("scroll", lockUpScroll, { passive: true });
     return () => window.removeEventListener("scroll", lockUpScroll);
   }, [heroPassed]);
+
+  // Cinematic auto-scroll — accumulates float position to avoid sub-pixel rounding jank
+  useEffect(() => {
+    if (!contentReached) return;
+    const SPEED = 40; // px per second — adjust freely
+    let animId: number;
+    let lastTime = performance.now();
+    let stopped = false;
+    const maxScroll = document.body.scrollHeight - window.innerHeight;
+    let pos = window.scrollY; // float accumulator
+
+    function tick(now: number) {
+      if (stopped) return;
+      const delta = Math.min(now - lastTime, 100); // cap: avoid big jump after tab switch
+      lastTime = now;
+      pos += (SPEED * delta) / 1000;
+      const target = Math.min(Math.round(pos), maxScroll);
+      window.scrollTo(0, target);
+      if (target < maxScroll) animId = requestAnimationFrame(tick);
+    }
+
+    function stop() {
+      stopped = true;
+      cancelAnimationFrame(animId);
+      window.removeEventListener("touchstart", stop);
+      window.removeEventListener("wheel", stop);
+      window.removeEventListener("mousedown", stop);
+      window.removeEventListener("keydown", stop);
+    }
+
+    window.addEventListener("touchstart", stop, { passive: true });
+    window.addEventListener("wheel", stop, { passive: true });
+    window.addEventListener("mousedown", stop);
+    window.addEventListener("keydown", stop);
+
+    animId = requestAnimationFrame(tick);
+    return () => stop();
+  }, [contentReached]);
 
   return (
     <>

@@ -34,6 +34,7 @@ model Client {
   updatedAt        DateTime          @updatedAt
   analytics        Analytics[]
   clientUsers      ClientUser[]
+  guestPhotos      GuestPhoto[]
   createdBy        User              @relation("ClientCreatedBy", fields: [createdById], references: [id])
   events           Event[]
   galleries        Gallery[]
@@ -190,6 +191,7 @@ model Guest {
   updatedAt          DateTime           @updatedAt
   attendances        Attendance[]
   visits             GuestVisit[]
+  guestPhotos        GuestPhoto[]
   client             Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
   rsvp               Rsvp?
   wishes             Wish[]
@@ -269,6 +271,19 @@ model LoveStory {
   client      Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@map("love_stories")
+}
+
+model GuestPhoto {
+  id          String   @id @default(cuid())
+  clientId    String
+  guestId     String?
+  url         String
+  storagePath String
+  createdAt   DateTime @default(now())
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  guest       Guest?   @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@map("guest_photos")
 }
 
 model Analytics {

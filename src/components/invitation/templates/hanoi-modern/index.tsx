@@ -3,11 +3,10 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  MapPin, Clock, Copy, Check, Wallet, QrCode, Send,
+  MapPin, Copy, Check, Wallet, QrCode, Send,
   Heart, LockKeyhole, ChevronDown, Gift as GiftIcon,
 } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
-import { formatDate } from "@/lib/utils";
 import type { Rsvp } from "@/types/prisma.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -64,11 +63,15 @@ const EVENT_LABEL: Record<string, string> = {
   SANGJIT: "Sangjit Ceremony", LAMARAN: "Lamaran",
 };
 
-const INVITATION_LABEL: Record<string, string> = {
-  WEDDING: "The Wedding of",
-  SANGJIT: "Sangjit Ceremony of",
-  LAMARAN: "Lamaran of",
-};
+// Constant JSX — defined once at module scope to avoid re-allocation on every render/tick
+const TIMELINE_ICON = (
+  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 256 256" fill="currentColor">
+    <path d="M184 20a12 12 0 1 1 12 12a12 12 0 0 1-12-12Zm-19.88 53.23c7.26 44.25 4.35 75.76-8.66 93.66A39.94 39.94 0 0 1 128 183.42V232h16a8 8 0 0 1 0 16H96a8 8 0 0 1 0-16h16v-48.58a40 40 0 0 1-27.46-16.53c-13-17.9-15.91-49.41-8.65-93.66a451 451 0 0 1 14.21-59.7A8 8 0 0 1 97.71 8h44.59a8 8 0 0 1 7.61 5.53a451 451 0 0 1 14.21 59.7Z" />
+  </svg>
+);
+
+const COUNTDOWN_KEYS = ["days", "hours", "minutes", "seconds"] as const;
+const COUNTDOWN_LABELS = ["Ngày", "Giờ", "Phút", "Giây"] as const;
 
 // ─── Global CSS ───────────────────────────────────────────────────────────────
 
@@ -282,85 +285,82 @@ function HanoiModernCover({
 
 // ─── About / Couple Section ────────────────────────────────────────────────────
 
+function PersonCard({
+  name, photo, parents, label, gradientSide, bgColor, primary, fontH, fontB,
+}: {
+  name: string; photo: string | null; parents: string;
+  label: string; gradientSide: "left" | "right";
+  bgColor: string; primary: string; fontH: string; fontB: string;
+}) {
+  return (
+    <FadeIn style={{ marginBottom: "3rem" }}>
+      <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", overflow: "hidden", borderRadius: "10px" }}>
+          <div style={{ aspectRatio: "4/5" }}>
+            {photo ? (
+              <img
+                src={photo} alt={name} loading="lazy"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <div style={{ width: "100%", height: "100%", background: `${primary}12` }} />
+            )}
+          </div>
+
+          <div style={{
+            position: "absolute", top: 0, bottom: 0,
+            [gradientSide]: 0,
+            width: "52%",
+            background: `linear-gradient(to ${gradientSide === "right" ? "left" : "right"}, ${bgColor} 0%, transparent 100%)`,
+          }} />
+
+          <div style={{
+            position: "absolute", top: "50%",
+            [gradientSide]: 0,
+            transform: `translateY(-50%) translateX(${gradientSide === "right" ? "36%" : "-36%"})`,
+            pointerEvents: "none", width: "100%",
+          }}>
+            <div style={{
+              transform: "rotate(90deg)",
+              fontFamily: "'Great Vibes', cursive",
+              fontSize: "clamp(3.2rem, 11vw, 5rem)",
+              color: primary,
+              whiteSpace: "nowrap",
+              letterSpacing: "0.08em",
+              lineHeight: 1,
+            }}>
+              {label}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ width: "80%", marginTop: "14px" }}>
+          <h3 style={{
+            fontFamily: `'${fontH}', 'Cormorant Garamond', Georgia, serif`,
+            fontSize: "1.5rem", fontWeight: 500, color: primary, marginBottom: "6px",
+          }}>
+            {name}
+          </h3>
+          {parents && (
+            <p style={{
+              fontFamily: `'${fontB}', 'Jost', sans-serif`,
+              fontSize: "0.82rem", lineHeight: 1.75, color: primary, opacity: 0.6,
+              textAlign: "left",
+            }}>
+              {parents}
+            </p>
+          )}
+        </div>
+      </div>
+    </FadeIn>
+  );
+}
+
 function AboutSection({
   profile, bgColor, primary, fontH, fontB,
 }: {
   profile: NonNullable<Profile>; bgColor: string; primary: string; fontH: string; fontB: string;
 }) {
-  function PersonCard({
-    name, photo, parents, label, gradientSide,
-  }: {
-    name: string; photo: string | null; parents: string;
-    label: string; gradientSide: "left" | "right";
-  }) {
-    return (
-      <FadeIn style={{ marginBottom: "3rem" }}>
-        <div style={{ position: "relative" }}>
-          {/* Photo + overlay */}
-          <div style={{ position: "relative", overflow: "hidden", borderRadius: "10px" }}>
-            <div style={{ aspectRatio: "4/5" }}>
-              {photo ? (
-                <img
-                  src={photo} alt={name} loading="lazy"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                />
-              ) : (
-                <div style={{ width: "100%", height: "100%", background: `${primary}12` }} />
-              )}
-            </div>
-
-            {/* Side gradient */}
-            <div style={{
-              position: "absolute", top: 0, bottom: 0,
-              [gradientSide]: 0,
-              width: "52%",
-              background: `linear-gradient(to ${gradientSide === "right" ? "left" : "right"}, ${bgColor} 0%, transparent 100%)`,
-            }} />
-
-            {/* Rotated label */}
-            <div style={{
-              position: "absolute", top: "50%",
-              [gradientSide]: 0,
-              transform: `translateY(-50%) translateX(${gradientSide === "right" ? "36%" : "-36%"})`,
-              pointerEvents: "none", width: "100%",
-            }}>
-              <div style={{
-                transform: "rotate(90deg)",
-                fontFamily: "'Great Vibes', cursive",
-                fontSize: "clamp(3.2rem, 11vw, 5rem)",
-                color: primary,
-                whiteSpace: "nowrap",
-                letterSpacing: "0.08em",
-                lineHeight: 1,
-              }}>
-                {label}
-              </div>
-            </div>
-          </div>
-
-          {/* Name + parents */}
-          <div style={{ width: "80%", marginTop: "14px" }}>
-            <h3 style={{
-              fontFamily: `'${fontH}', 'Cormorant Garamond', Georgia, serif`,
-              fontSize: "1.5rem", fontWeight: 500, color: primary, marginBottom: "6px",
-            }}>
-              {name}
-            </h3>
-            {parents && (
-              <p style={{
-                fontFamily: `'${fontB}', 'Jost', sans-serif`,
-                fontSize: "0.82rem", lineHeight: 1.75, color: primary, opacity: 0.6,
-                textAlign: "left",
-              }}>
-                {parents}
-              </p>
-            )}
-          </div>
-        </div>
-      </FadeIn>
-    );
-  }
-
   return (
     <section style={{ padding: "3.5rem 1.25rem 1rem", background: bgColor }}>
       <div style={{ maxWidth: "480px", margin: "0 auto" }}>
@@ -379,6 +379,7 @@ function AboutSection({
           parents={profile.brideParents}
           label="The Bride"
           gradientSide="right"
+          bgColor={bgColor} primary={primary} fontH={fontH} fontB={fontB}
         />
 
         <PersonCard
@@ -387,6 +388,7 @@ function AboutSection({
           parents={profile.groomParents}
           label="The Groom"
           gradientSide="left"
+          bgColor={bgColor} primary={primary} fontH={fontH} fontB={fontB}
         />
 
         {/* Opening quote */}
@@ -514,17 +516,10 @@ function CountdownEventsSection({
   const countdownBg = galleries.find((g) => g.type === "COVER" || g.type === "HERO")?.url;
   const firstEvent = events[0];
 
-  const eventDay = firstEvent?.date ? String(new Date(firstEvent.date).getDate()) : "--";
-  const eventMonthYear = firstEvent?.date
-    ? new Date(firstEvent.date).toLocaleDateString("id-ID", { weekday: "long", month: "long", year: "numeric" })
-    : "";
-
-  const TIMELINE_ICONS = [
-    // simple candlestick SVG reused from reference site (simplified)
-    <svg key="icon" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 256 256" fill="currentColor">
-      <path d="M184 20a12 12 0 1 1 12 12a12 12 0 0 1-12-12Zm-19.88 53.23c7.26 44.25 4.35 75.76-8.66 93.66A39.94 39.94 0 0 1 128 183.42V232h16a8 8 0 0 1 0 16H96a8 8 0 0 1 0-16h16v-48.58a40 40 0 0 1-27.46-16.53c-13-17.9-15.91-49.41-8.65-93.66a451 451 0 0 1 14.21-59.7A8 8 0 0 1 97.71 8h44.59a8 8 0 0 1 7.61 5.53a451 451 0 0 1 14.21 59.7Z" />
-    </svg>,
-  ];
+  const eventDay = useMemo(
+    () => firstEvent?.date ? String(new Date(firstEvent.date).getDate()) : "--",
+    [firstEvent?.date]
+  );
 
   if (!events.length) return null;
 
@@ -571,12 +566,7 @@ function CountdownEventsSection({
 
               {countdown ? (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px", marginBottom: "1.25rem" }}>
-                  {[
-                    { v: countdown.days, l: "Ngày" },
-                    { v: countdown.hours, l: "Giờ" },
-                    { v: countdown.minutes, l: "Phút" },
-                    { v: countdown.seconds, l: "Giây" },
-                  ].map(({ v, l }) => (
+                  {COUNTDOWN_LABELS.map((l, i) => (
                     <div key={l} style={{
                       background: primary, color: content,
                       borderRadius: "8px", padding: "8px 4px",
@@ -587,7 +577,7 @@ function CountdownEventsSection({
                         fontSize: "clamp(1.4rem, 4vw, 2.2rem)", fontWeight: 700,
                         color: content, lineHeight: 1,
                       }}>
-                        {String(v).padStart(2, "0")}
+                        {String(countdown[COUNTDOWN_KEYS[i]]).padStart(2, "0")}
                       </div>
                       <div style={{ fontFamily: `'${fontB}', sans-serif`, fontSize: "0.62rem", opacity: 0.7, marginTop: "4px" }}>
                         {l}
@@ -754,7 +744,7 @@ function CountdownEventsSection({
                         {ev.timeStart}
                       </p>
                       <div style={{ color: content, display: "flex", justifyContent: "center" }}>
-                        {TIMELINE_ICONS[0]}
+                        {TIMELINE_ICON}
                       </div>
                     </div>
 
@@ -791,11 +781,10 @@ function CountdownEventsSection({
 // ─── RSVP Section ─────────────────────────────────────────────────────────────
 
 function RSVPSection({
-  clientId, guest, token, bgImage, primary, content, fontH, fontB, onConfirmed,
+  clientId, guest, token, primary, fontH, fontB,
 }: {
   clientId: string; guest: Guest; token: string;
-  bgImage?: string; primary: string; content: string; fontH: string; fontB: string;
-  onConfirmed?: (s: "HADIR" | "TIDAK_HADIR") => void;
+  primary: string; fontH: string; fontB: string;
 }) {
   const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">((guest.rsvp?.status as "HADIR" | "TIDAK_HADIR") || "HADIR");
   const [pax, setPax] = useState((guest.rsvp as any)?.paxCount ?? guest.maxPax);
@@ -810,7 +799,7 @@ function RSVPSection({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clientId, guestId: guest.id, token, name: guest.name, paxCount: pax, status, message: msg }),
     });
-    if (res.ok) { setDone(true); onConfirmed?.(status); }
+    if (res.ok) { setDone(true); }
     setSaving(false);
   }
 
@@ -917,7 +906,7 @@ function RSVPSection({
   );
 }
 
-function RSVPPlaceholder({ primary, fontH, fontB }: { primary: string; fontH: string; fontB: string }) {
+function RSVPPlaceholder({ fontH, fontB }: { fontH: string; fontB: string }) {
   return (
     <div style={{ textAlign: "center", padding: "2.5rem 1.5rem", background: "rgba(255,255,255,0.1)", borderRadius: "16px" }}>
       <LockKeyhole size={24} color="#fff" style={{ margin: "0 auto 12px", display: "block" }} />
@@ -945,6 +934,9 @@ function WishesSection({
   const [msg, setMsg] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const sentTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (sentTimer.current) clearTimeout(sentTimer.current); }, []);
 
   async function send() {
     if (!msg.trim()) return;
@@ -957,7 +949,7 @@ function WishesSection({
       const data = await res.json();
       setWishes((p) => [data, ...p]);
       setMsg(""); setSent(true);
-      setTimeout(() => setSent(false), 3000);
+      sentTimer.current = setTimeout(() => setSent(false), 3000);
     }
     setSending(false);
   }
@@ -1050,13 +1042,12 @@ function WishesSection({
 
 function WillYouComeSection({
   clientId, guest, token, bgImage, primary, content, fontH, fontB,
-  initialWishes, sectionKeys, onConfirmed,
+  initialWishes, sectionKeys,
 }: {
   clientId: string; guest: Guest | null; token: string | null;
   bgImage?: string; primary: string; content: string; fontH: string; fontB: string;
   initialWishes: Props["client"]["wishes"];
   sectionKeys: string[];
-  onConfirmed?: (s: "HADIR" | "TIDAK_HADIR") => void;
 }) {
   const showRSVP = sectionKeys.includes("RSVP");
   const showWishes = sectionKeys.includes("WISHES");
@@ -1089,12 +1080,10 @@ function WillYouComeSection({
               {token && guest ? (
                 <RSVPSection
                   clientId={clientId} guest={guest} token={token}
-                  bgImage={bgImage} primary={primary} content={content}
-                  fontH={fontH} fontB={fontB}
-                  onConfirmed={onConfirmed}
+                  primary={primary} fontH={fontH} fontB={fontB}
                 />
               ) : (
-                <RSVPPlaceholder primary={primary} fontH={fontH} fontB={fontB} />
+                <RSVPPlaceholder fontH={fontH} fontB={fontB} />
               )}
             </FadeIn>
           )}
@@ -1132,13 +1121,17 @@ function GiftFloatingButton({
   const [open, setOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [qrisOpen, setQrisOpen] = useState<string | null>(null);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (copyTimer.current) clearTimeout(copyTimer.current); }, []);
 
   if (!active.length) return null;
 
   async function copy(key: string, val: string) {
     await navigator.clipboard.writeText(val);
     setCopiedId(key);
-    setTimeout(() => setCopiedId(null), 2200);
+    if (copyTimer.current) clearTimeout(copyTimer.current);
+    copyTimer.current = setTimeout(() => setCopiedId(null), 2200);
   }
 
   const banks = active.filter((g) => g.bankName && !g.qrisImage);
@@ -1342,9 +1335,6 @@ function ThankYouSection({
 // ─── Main Template ─────────────────────────────────────────────────────────────
 
 export function HanoiModernTemplate({ guest, client, token }: Props) {
-  const [confirmedRsvpStatus, setConfirmedRsvpStatus] = useState<"HADIR" | "TIDAK_HADIR" | null>(
-    (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null
-  );
 
   const profile = client.weddingProfile;
   const music = client.musics[0];
@@ -1368,13 +1358,19 @@ export function HanoiModernTemplate({ guest, client, token }: Props) {
   const thankYouBgUrl = client.galleries.find((g) => g.type === "COVER")?.url
     || heroUrl;
 
-  const countdownTarget = client.events
-    .filter((e) => e.date)
-    .map((e) => new Date(e.date!))
-    .filter((d) => d > new Date())
-    .sort((a, b) => a.getTime() - b.getTime())[0] ?? null;
+  const countdownTarget = useMemo(() =>
+    client.events
+      .filter((e) => e.date)
+      .map((e) => new Date(e.date!))
+      .filter((d) => d > new Date())
+      .sort((a, b) => a.getTime() - b.getTime())[0] ?? null,
+    [client.events]
+  );
 
-  const firstEventDate = client.events[0]?.date ? new Date(client.events[0].date) : null;
+  const firstEventDate = useMemo(
+    () => client.events[0]?.date ? new Date(client.events[0].date) : null,
+    [client.events]
+  );
 
   // Auto-scroll: plays through all sections automatically on load, like the Vietnamese reference.
   // User can interrupt by touching/scrolling; after reaching the bottom it stops.
@@ -1483,7 +1479,6 @@ export function HanoiModernTemplate({ guest, client, token }: Props) {
               fontB={fontB}
               initialWishes={client.wishes}
               sectionKeys={sectionKeys}
-              onConfirmed={(s) => setConfirmedRsvpStatus(s)}
             />
 
             {/* Gift floating button */}

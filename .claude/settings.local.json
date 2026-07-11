@@ -131,8 +131,15 @@
       "Bash(nslookup db.vejtcmzpuaaukydgdyrl.supabase.co)",
       "Bash(nslookup db.vejtcmzpuaaukydgdyrl.supabase.co 8.8.8.8)",
       "Bash(nslookup aws-1-ap-southeast-1.pooler.supabase.com)",
-      "Bash(nc -zv -w5 aws-1-ap-southeast-1.pooler.supabase.com 6543)"
+      "Bash(nc -zv -w5 aws-1-ap-southeast-1.pooler.supabase.com 6543)",
+      "Bash(gh api *)",
+      "Bash(python3 -c \"import sys,json; runs=json.load\\(sys.stdin\\).get\\('check_runs',[]\\); [print\\(r['name'], r['status'], r.get\\('conclusion',''\\)\\) for r in runs]\")",
+      "Skill(code-review)",
+      "Skill(code-review:*)",
+      "Bash(npm list *)",
+      "Bash(mkdir -p \"/Users/dieudonnejordy/Documents/undangan/src/app/api/clients/[clientId]/guest-photos/[id]\")"
     ],
+    "defaultMode": "bypassPermissions",
     "additionalDirectories": [
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/admin/clients/[clientId]",
       "/Users/dieudonnejordy/Documents/udangan-kami/src/app/api/users",
@@ -141,7 +148,8 @@
       "/Users/dieudonnejordy/Documents/udangan-kami/src/components/invitation/templates/envelope",
       "/Users/dieudonnejordy/Documents/udangan-kami",
       "/opt/homebrew/var/postgresql@17",
-      "/Users/dieudonnejordy/Documents/undangan/src/components/invitation/templates"
+      "/Users/dieudonnejordy/Documents/undangan/src/components/invitation/templates",
+      "/Users/dieudonnejordy/Documents/undangan/src/app/api/clients/[clientId]/guest-photos"
     ]
   }
 }

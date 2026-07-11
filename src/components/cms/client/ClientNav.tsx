@@ -29,6 +29,7 @@ const BASE_TABS = [
   { label: "Gift", path: "/gifts" },
   { label: "WhatsApp", path: "/whatsapp" },
   { label: "Kehadiran", path: "/attendance" },
+  { label: "Foto Tamu", path: "/guest-photos" },
 ];
 
 const SUPERADMIN_TABS = [
