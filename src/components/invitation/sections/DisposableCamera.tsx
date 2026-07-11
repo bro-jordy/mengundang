@@ -133,8 +133,7 @@ export function DisposableCamera({ token, clientId, guestName }: Props) {
       {open && (
         <div
           className="fixed inset-0 flex flex-col justify-end"
-          style={{ zIndex: 400 }}
-          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(2px)" }}
+          style={{ zIndex: 400, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(2px)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
         >
           <div
