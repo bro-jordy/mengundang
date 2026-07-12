@@ -18,8 +18,23 @@ model User {
   updatedAt      DateTime     @updatedAt
   clientUsers    ClientUser[]
   createdClients Client[]     @relation("ClientCreatedBy")
+  googleDrive    GoogleDriveAccount?
 
   @@map("users")
+}
+
+model GoogleDriveAccount {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  email        String
+  accessToken  String
+  refreshToken String
+  expiryDate   DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("google_drive_accounts")
 }
 
 model Client {
