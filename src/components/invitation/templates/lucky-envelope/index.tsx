@@ -1176,6 +1176,11 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
   const fontH = th?.fontHeading || "Cormorant Garamond";
   const fontB = th?.fontBody || "Jost";
 
+  // When a background image is set, let it bleed faintly through section surfaces
+  // instead of hiding behind fully opaque section backgrounds.
+  const ivorySurface = bgGallery ? `${ivory}d9` : ivory;
+  const champagneSurface = bgGallery ? `${champagne}d9` : champagne;
+
   const invLabel = INVITATION_LABEL[client.clientType] || "The Wedding Of";
   const groomNick = profile?.groomNickname || profile?.groomName || "Groom";
   const brideNick = profile?.brideNickname || profile?.brideName || "Bride";
@@ -1210,7 +1215,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
         else setContentReached(true);
       }
       requestAnimationFrame(step);
-    }, 1200);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [coverGone, heroPassed]);
 
@@ -1303,6 +1308,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
             invitationLabel={invLabel}
             groomPhoto={profile?.showGroomPhoto ? profile?.groomPhoto : null}
             bridePhoto={profile?.showBridePhoto ? profile?.bridePhoto : null}
+            heroUrl={heroUrl}
             primaryColor={gold}
             bgColor={ivory}
             fontHeading={fontH}
@@ -1339,13 +1345,13 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
         <div style={{ position: "relative", zIndex: 1 }}>
           {coverGone && (
             <>
-              <HeroSection heroUrl={heroUrl} gold={gold} ivory={ivory} text={text} fontH={fontH} coupleLabel={coupleLabel} invLabel={invLabel} t={t} />
+              <HeroSection heroUrl={heroUrl} gold={gold} ivory={ivorySurface} text={text} fontH={fontH} coupleLabel={coupleLabel} invLabel={invLabel} t={t} />
 
               {/* Scroll anchor */}
               <div ref={anchorRef} aria-hidden style={{ height: 0 }} />
 
               {showCountdown && countdownTimeLeft && (
-                <section style={{ padding: "3.5rem 1.5rem", background: champagne, textAlign: "center" }}>
+                <section style={{ padding: "3.5rem 1.5rem", background: champagneSurface, textAlign: "center" }}>
                   <p style={{ fontFamily: "'Cinzel', serif", fontSize: "0.58rem", letterSpacing: "0.3em", textTransform: "uppercase", color: gold, marginBottom: "1.6rem" }}>{t.countdownLabel}</p>
                   <div style={{ display: "flex", justifyContent: "center", gap: "1.5rem" }}>
                     {[{ v: countdownTimeLeft.days, l: t.days }, { v: countdownTimeLeft.hours, l: t.hours }, { v: countdownTimeLeft.minutes, l: t.minutes }, { v: countdownTimeLeft.seconds, l: t.seconds }].map(({ v, l }) => (
@@ -1359,7 +1365,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
               )}
 
               {sectionKeys.includes("COUPLE") && profile && (
-                <CoupleSection profile={profile} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} t={t} />
+                <CoupleSection profile={profile} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} />
               )}
 
               {(profile as any)?.attentionContent && (
@@ -1370,25 +1376,25 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
                   contentEn={(profile as any).attentionContentEn}
                   lang={lang === "en" ? "EN" : "ID"}
                   primaryColor={gold}
-                  bgColor={ivory}
+                  bgColor={ivorySurface}
                   textColor={text}
                   fontBody={fontB}
                 />
               )}
 
               {sectionKeys.includes("EVENT") && (
-                <EventsSection events={client.events} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} t={t} showMap={showMap} />
+                <EventsSection events={client.events} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} showMap={showMap} />
               )}
 
               {sectionKeys.includes("GALLERY") && (
-                <GallerySection galleries={client.galleries} gold={gold} champagne={champagne} text={text} fontH={fontH} t={t} />
+                <GallerySection galleries={client.galleries} gold={gold} champagne={champagneSurface} text={text} fontH={fontH} t={t} />
               )}
 
               {sectionKeys.includes("RSVP") &&
                 (token && guest ? (
-                  <RSVPSection clientId={client.id} guest={guest} token={token} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} t={t} onConfirmed={(s) => setConfirmedRsvpStatus(s)} />
+                  <RSVPSection clientId={client.id} guest={guest} token={token} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} onConfirmed={(s) => setConfirmedRsvpStatus(s)} />
                 ) : (
-                  <RSVPPlaceholder gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} t={t} />
+                  <RSVPPlaceholder gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} t={t} />
                 ))}
 
               {guest?.barcodeChurch && (barcodeVisibility === "ALWAYS" || (barcodeVisibility === "AFTER_RSVP" && confirmedRsvpStatus === "HADIR")) && (
@@ -1401,21 +1407,21 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
                   churchVenueName={client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
                   receptionVenueName={client.events.find((e: any) => e.type === "RESEPSI")?.venueName || "Resepsi"}
                   primaryColor={gold}
-                  bgColor={ivory}
+                  bgColor={ivorySurface}
                   fontHeading={fontH}
                   lang={lang}
                 />
               )}
 
               {sectionKeys.includes("WISHES") && (
-                <WishesSection clientId={client.id} initialWishes={client.wishes} guestName={guest?.name} guestId={guest?.id} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} t={t} />
+                <WishesSection clientId={client.id} initialWishes={client.wishes} guestName={guest?.name} guestId={guest?.id} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} />
               )}
 
               {sectionKeys.includes("GIFT") && (
-                <GiftSection gifts={client.gifts} gold={gold} ivory={ivory} champagne={champagne} text={text} fontH={fontH} fontB={fontB} t={t} />
+                <GiftSection gifts={client.gifts} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} />
               )}
 
-              <ClosingSection coupleLabel={coupleLabel} gold={gold} champagne={champagne} text={text} fontH={fontH} t={t} />
+              <ClosingSection coupleLabel={coupleLabel} gold={gold} champagne={champagneSurface} text={text} fontH={fontH} t={t} />
             </>
           )}
         </div>
