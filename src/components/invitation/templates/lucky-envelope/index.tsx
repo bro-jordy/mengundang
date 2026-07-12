@@ -474,7 +474,7 @@ function HeroSection({
       <motion.div style={{ y, position: "absolute", inset: "-12%" }}>
         {heroUrl ? (
           <>
-            <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${heroUrl}')`, backgroundSize: "cover", backgroundPosition: "center 30%" }} />
+            <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${heroUrl}')`, backgroundSize: "cover", backgroundPosition: "center 30%", opacity: 0.65 }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(250,248,244,0.12) 0%, rgba(51,40,32,0.5) 60%, rgba(51,40,32,0.82) 100%)" }} />
           </>
         ) : (
