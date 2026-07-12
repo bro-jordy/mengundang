@@ -7,7 +7,18 @@ const MAX_PHOTOS = 12;
 const MAX_DIM = 1280;
 const JPEG_QUALITY = 0.75;
 
-async function compressImage(file: File): Promise<Blob> {
+function isHeic(file: File): boolean {
+  if (["image/heic", "image/heif"].includes(file.type.toLowerCase())) return true;
+  return /\.hei[cf]$/i.test(file.name);
+}
+
+async function heicToJpeg(file: File): Promise<Blob> {
+  const heic2any = (await import("heic2any")).default;
+  const result = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
+  return Array.isArray(result) ? result[0] : result;
+}
+
+async function compressImage(file: Blob): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
@@ -88,7 +99,8 @@ export function DisposableCamera({ token, clientId, guestName }: Props) {
     setError(null);
 
     try {
-      const compressed = await compressImage(file);
+      const source = isHeic(file) ? await heicToJpeg(file) : file;
+      const compressed = await compressImage(source);
       const formData = new FormData();
       formData.append("file", compressed, "photo.jpg");
       formData.append("token", token);
@@ -222,7 +234,7 @@ export function DisposableCamera({ token, clientId, guestName }: Props) {
               <input
                 ref={fileRef}
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
                 className="hidden"
                 onChange={handleFile}
               />
