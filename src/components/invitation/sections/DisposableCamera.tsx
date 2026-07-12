@@ -73,7 +73,7 @@ export function DisposableCamera({ token, clientId, guestName }: Props) {
     try {
       const res = await fetch(`/api/guest-photos?token=${token}`);
       const data = await res.json();
-      if (data.data?.photos) setPhotos(data.data.photos);
+      if (data.photos) setPhotos(data.photos);
     } catch {
       // silently fail — non-critical
     } finally {
@@ -110,7 +110,7 @@ export function DisposableCamera({ token, clientId, guestName }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal mengupload foto");
 
-      setPhotos((prev) => [...prev, { id: data.data.id, url: data.data.url }]);
+      setPhotos((prev) => [...prev, { id: data.id, url: data.url }]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
