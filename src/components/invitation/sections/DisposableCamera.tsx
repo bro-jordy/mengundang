@@ -4,8 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Camera, X, ImagePlus, AlertCircle } from "lucide-react";
 
 const MAX_PHOTOS = 12;
-const MAX_DIM = 1920;
-const JPEG_QUALITY = 0.82;
+const MAX_DIM = 1280;
+const JPEG_QUALITY = 0.75;
 
 async function compressImage(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => {
