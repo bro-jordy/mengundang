@@ -233,8 +233,12 @@ function EventForm({
           {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type.message}</p>}
         </div>
         <div>
-          <label className={labelClass}>Label Kustom</label>
+          <label className={labelClass}>Label Kustom (ID)</label>
           <input {...register("label")} placeholder="Opsional — timpa nama acara" className={inputClass} />
+        </div>
+        <div>
+          <label className={labelClass}>Label Kustom (EN)</label>
+          <input {...register("labelEn")} placeholder="Optional — English label" className={inputClass} />
         </div>
         <div>
           <label className={labelClass}>Tanggal</label>

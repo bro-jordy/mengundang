@@ -86,16 +86,22 @@ model WeddingProfile {
   brideNickname  String   @default("")
   groomParents   String   @default("")
   brideParents   String   @default("")
+  groomParentsEn String?
+  brideParentsEn String?
   groomPhoto     String?
   bridePhoto     String?
   showGroomPhoto Boolean  @default(true)
   showBridePhoto Boolean  @default(true)
   heroImage      String?
   story           String?
+  storyEn         String?
   storyTitle      String?
+  storyTitleEn    String?
   showStoryTitle  Boolean  @default(true)
   openingQuote    String?
+  openingQuoteEn  String?
   openingQuoteBy  String?
+  openingQuoteByEn String?
   attentionTitle     String?
   attentionContent   String?
   attentionTitleEn   String?
@@ -112,6 +118,7 @@ model Event {
   clientId     String
   type         EventType
   label        String    @default("")
+  labelEn      String?
   date         DateTime?
   timeStart    String    @default("")
   timeEnd      String    @default("")

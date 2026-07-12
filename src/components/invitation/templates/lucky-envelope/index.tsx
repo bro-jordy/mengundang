@@ -76,10 +76,16 @@ type Profile = {
   brideNickname: string;
   groomParents: string;
   brideParents: string;
+  groomParentsEn: string | null;
+  brideParentsEn: string | null;
   openingQuote: string | null;
+  openingQuoteEn: string | null;
   openingQuoteBy: string | null;
+  openingQuoteByEn: string | null;
   story: string | null;
+  storyEn: string | null;
   storyTitle: string | null;
+  storyTitleEn: string | null;
   showStoryTitle: boolean;
   heroImage: string | null;
   groomPhoto: string | null;
@@ -104,6 +110,7 @@ interface Props {
       id: string;
       type: string;
       label: string;
+      labelEn: string | null;
       date: Date | null;
       timeStart: string;
       timeEnd: string;
@@ -517,13 +524,21 @@ function HeroSection({
 // ─── Couple Section ────────────────────────────────────────────────────────────
 
 function CoupleSection({
-  profile, gold, ivory, champagne, text, fontH, fontB, t,
+  profile, gold, ivory, champagne, text, fontH, fontB, t, lang,
 }: {
   profile: NonNullable<Profile>; gold: string; ivory: string; champagne: string;
-  text: string; fontH: string; fontB: string; t: Translations;
+  text: string; fontH: string; fontB: string; t: Translations; lang: Lang;
 }) {
+  const isEn = lang === "en";
+  const groomParents = (isEn && profile.groomParentsEn) || profile.groomParents;
+  const brideParents = (isEn && profile.brideParentsEn) || profile.brideParents;
+  const openingQuote = (isEn && profile.openingQuoteEn) || profile.openingQuote;
+  const openingQuoteBy = (isEn && profile.openingQuoteByEn) || profile.openingQuoteBy;
+  const story = (isEn && profile.storyEn) || profile.story;
+  const storyTitle = (isEn && profile.storyTitleEn) || profile.storyTitle;
+
   return (
-    <section style={{ padding: "6rem 1.5rem", background: `linear-gradient(180deg, ${ivory} 0%, ${champagne} 100%)` }}>
+    <section style={{ padding: "4rem 1.5rem", background: `linear-gradient(180deg, ${ivory} 0%, ${champagne} 100%)` }}>
       <div style={{ maxWidth: "480px", margin: "0 auto", textAlign: "center" }}>
         <SectionTitle eyebrow={t.eyebrow_couple} title={t.title_couple} gold={gold} text={text} fontH={fontH} />
 
@@ -546,9 +561,9 @@ function CoupleSection({
             <p style={{ fontFamily: `'${fontH}', 'Cormorant Garamond', Georgia, serif`, fontSize: "1.85rem", fontWeight: 400, color: text, marginBottom: "0.25rem" }}>
               {profile.groomName}
             </p>
-            {profile.groomParents && (
+            {groomParents && (
               <p style={{ fontSize: "0.82rem", color: text, opacity: 0.45, lineHeight: 1.6, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>
-                {profile.groomParents}
+                {groomParents}
               </p>
             )}
           </div>
@@ -582,24 +597,24 @@ function CoupleSection({
             <p style={{ fontFamily: `'${fontH}', 'Cormorant Garamond', Georgia, serif`, fontSize: "1.85rem", fontWeight: 400, color: text, marginBottom: "0.25rem" }}>
               {profile.brideName}
             </p>
-            {profile.brideParents && (
+            {brideParents && (
               <p style={{ fontSize: "0.82rem", color: text, opacity: 0.45, lineHeight: 1.6, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>
-                {profile.brideParents}
+                {brideParents}
               </p>
             )}
           </div>
         </AnimInView>
 
         {/* Opening quote */}
-        {profile.openingQuote && (
+        {openingQuote && (
           <AnimInView variant="fadeUp" delay={0.2}>
-            <div style={{ borderTop: `1px solid ${gold}28`, paddingTop: "2.5rem", marginTop: "0.5rem" }}>
+            <div style={{ borderTop: `1px solid ${gold}28`, paddingTop: "2rem", marginTop: "0.5rem" }}>
               <p style={{ fontFamily: `'${fontH}', 'Cormorant Garamond', Georgia, serif`, fontSize: "1.15rem", fontStyle: "italic", fontWeight: 300, lineHeight: 1.75, color: text, opacity: 0.68 }}>
-                &ldquo;{profile.openingQuote}&rdquo;
+                &ldquo;{openingQuote}&rdquo;
               </p>
-              {profile.openingQuoteBy && (
+              {openingQuoteBy && (
                 <p style={{ fontFamily: "'Cinzel', serif", fontSize: "0.6rem", letterSpacing: "0.22em", color: gold, marginTop: "0.85rem", textTransform: "uppercase" }}>
-                  — {profile.openingQuoteBy}
+                  — {openingQuoteBy}
                 </p>
               )}
             </div>
@@ -607,18 +622,18 @@ function CoupleSection({
         )}
 
         {/* Story */}
-        {profile.story && (
+        {story && (
           <AnimInView variant="fadeUp" delay={0.25}>
-            <div style={{ borderTop: `1px solid ${gold}22`, paddingTop: "2.5rem", marginTop: "2rem" }}>
+            <div style={{ borderTop: `1px solid ${gold}22`, paddingTop: "2rem", marginTop: "1.5rem" }}>
               {profile.showStoryTitle && (
                 <p style={{ fontFamily: "'Cinzel', serif", fontSize: "0.6rem", letterSpacing: "0.28em", textTransform: "uppercase", color: gold, marginBottom: "1.2rem" }}>
-                  {profile.storyTitle?.trim() || t.ourStory}
+                  {storyTitle?.trim() || t.ourStory}
                 </p>
               )}
               <div
                 className="lenv-story-html"
                 style={{ fontSize: "0.9rem", lineHeight: 1.9, color: text, opacity: 0.6, fontFamily: `'${fontB}', 'Jost', sans-serif`, textAlign: "left" }}
-                dangerouslySetInnerHTML={{ __html: storyToHtml(profile.story) }}
+                dangerouslySetInnerHTML={{ __html: storyToHtml(story) }}
               />
             </div>
           </AnimInView>
@@ -639,15 +654,16 @@ function getMapEmbedUrl(mapsUrl: string, venueName: string, venueAddress: string
 }
 
 function EventsSection({
-  events, gold, ivory, champagne, text, fontH, fontB, t, showMap,
+  events, gold, ivory, champagne, text, fontH, fontB, t, showMap, lang,
 }: {
   events: Props["client"]["events"]; gold: string; ivory: string; champagne: string;
-  text: string; fontH: string; fontB: string; t: Translations; showMap: boolean;
+  text: string; fontH: string; fontB: string; t: Translations; showMap: boolean; lang: Lang;
 }) {
   if (!events.length) return null;
+  const isEn = lang === "en";
 
   return (
-    <section style={{ padding: "6rem 1.5rem", background: `linear-gradient(180deg, ${champagne} 0%, ${ivory} 100%)` }}>
+    <section style={{ padding: "4rem 1.5rem", background: `linear-gradient(180deg, ${champagne} 0%, ${ivory} 100%)` }}>
       <div style={{ maxWidth: "480px", margin: "0 auto" }}>
         <SectionTitle eyebrow={t.eyebrow_event} title={t.title_event} gold={gold} text={text} fontH={fontH} />
         <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
@@ -660,7 +676,7 @@ function EventsSection({
                 <div style={{ display: "flex", alignItems: "center", gap: "0.9rem", marginBottom: "1.4rem" }}>
                   <div style={{ width: "4px", height: "30px", borderRadius: "99px", background: `linear-gradient(to bottom, ${gold}, ${gold}44)`, flexShrink: 0 }} />
                   <h3 style={{ fontFamily: `'${fontH}', 'Cormorant Garamond', Georgia, serif`, fontSize: "1.45rem", fontWeight: 400, color: text, lineHeight: 1.2 }}>
-                    {ev.label || EVENT_LABEL[ev.type] || ev.type}
+                    {(isEn && ev.labelEn) || ev.label || EVENT_LABEL[ev.type] || ev.type}
                   </h3>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
@@ -774,7 +790,7 @@ function GallerySection({
   }
 
   return (
-    <section style={{ padding: "6rem 0", background: `linear-gradient(160deg, #f9f4ed 0%, ${champagne} 100%)`, overflow: "hidden" }}>
+    <section style={{ padding: "4rem 0", background: `linear-gradient(160deg, #f9f4ed 0%, ${champagne} 100%)`, overflow: "hidden" }}>
       <div style={{ padding: "0 1.5rem", maxWidth: "480px", margin: "0 auto" }}>
         <SectionTitle eyebrow={t.eyebrow_gallery} title={t.title_gallery} gold={gold} text={text} fontH={fontH} />
       </div>
@@ -852,7 +868,7 @@ function RSVPSection({
   }
 
   return (
-    <section style={{ padding: "6rem 1.5rem", background: `linear-gradient(180deg, ${ivory} 0%, ${champagne} 100%)` }}>
+    <section style={{ padding: "4rem 1.5rem", background: `linear-gradient(180deg, ${ivory} 0%, ${champagne} 100%)` }}>
       <div style={{ maxWidth: "480px", margin: "0 auto" }}>
         <SectionTitle eyebrow={t.eyebrow_rsvp} title={t.title_rsvp} gold={gold} text={text} fontH={fontH} />
         <AnimInView variant="fadeUp" delay={0.1}>
@@ -905,7 +921,7 @@ function RSVPPlaceholder({
   gold: string; ivory: string; champagne: string; text: string; fontH: string; t: Translations;
 }) {
   return (
-    <section style={{ padding: "6rem 1.5rem", background: `linear-gradient(180deg, ${ivory} 0%, ${champagne} 100%)` }}>
+    <section style={{ padding: "4rem 1.5rem", background: `linear-gradient(180deg, ${ivory} 0%, ${champagne} 100%)` }}>
       <div style={{ maxWidth: "480px", margin: "0 auto" }}>
         <SectionTitle eyebrow={t.eyebrow_rsvp} title={t.title_rsvp} gold={gold} text={text} fontH={fontH} />
         <AnimInView variant="scaleIn" delay={0.1}>
@@ -958,7 +974,7 @@ function WishesSection({
   const inputBase: React.CSSProperties = { width: "100%", background: "#fff", border: `1px solid ${gold}22`, borderRadius: "14px", padding: "0.8rem 1rem", fontSize: "0.84rem", color: text, outline: "none", boxSizing: "border-box", fontFamily: `'${fontB}', 'Jost', sans-serif` };
 
   return (
-    <section style={{ padding: "6rem 1.5rem", background: `linear-gradient(180deg, ${champagne} 0%, ${ivory} 100%)` }}>
+    <section style={{ padding: "4rem 1.5rem", background: `linear-gradient(180deg, ${champagne} 0%, ${ivory} 100%)` }}>
       <div style={{ maxWidth: "520px", margin: "0 auto" }}>
         <SectionTitle eyebrow={t.eyebrow_wishes} title={t.title_wishes} gold={gold} text={text} fontH={fontH} />
         <AnimInView variant="fadeUp" delay={0.1}>
@@ -1030,7 +1046,7 @@ function GiftSection({
   }
 
   return (
-    <section style={{ padding: "6rem 1.5rem", background: `linear-gradient(180deg, ${ivory} 0%, ${champagne} 100%)` }}>
+    <section style={{ padding: "4rem 1.5rem", background: `linear-gradient(180deg, ${ivory} 0%, ${champagne} 100%)` }}>
       <div style={{ maxWidth: "480px", margin: "0 auto" }}>
         <SectionTitle eyebrow={t.eyebrow_gift} title={t.title_gift} gold={gold} text={text} fontH={fontH} />
         <AnimInView variant="fadeIn" delay={0.05}>
@@ -1365,7 +1381,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
               )}
 
               {sectionKeys.includes("COUPLE") && profile && (
-                <CoupleSection profile={profile} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} />
+                <CoupleSection profile={profile} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} lang={lang} />
               )}
 
               {(profile as any)?.attentionContent && (
@@ -1383,7 +1399,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
               )}
 
               {sectionKeys.includes("EVENT") && (
-                <EventsSection events={client.events} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} showMap={showMap} />
+                <EventsSection events={client.events} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} showMap={showMap} lang={lang} />
               )}
 
               {sectionKeys.includes("GALLERY") && (

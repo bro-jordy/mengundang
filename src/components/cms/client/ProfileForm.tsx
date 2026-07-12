@@ -22,6 +22,7 @@ export function ProfileForm({ clientId, initialData }: Props) {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [attentionLang, setAttentionLang] = useState<"id" | "en">("id");
+  const [contentLang, setContentLang] = useState<"id" | "en">("id");
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } =
     useForm<WeddingProfileInput>({
@@ -33,16 +34,22 @@ export function ProfileForm({ clientId, initialData }: Props) {
         brideNickname: initialData?.brideNickname ?? "",
         groomParents: initialData?.groomParents ?? "",
         brideParents: initialData?.brideParents ?? "",
+        groomParentsEn: (initialData as any)?.groomParentsEn ?? "",
+        brideParentsEn: (initialData as any)?.brideParentsEn ?? "",
         groomPhoto: initialData?.groomPhoto ?? "",
         bridePhoto: initialData?.bridePhoto ?? "",
         showGroomPhoto: (initialData as any)?.showGroomPhoto ?? true,
         showBridePhoto: (initialData as any)?.showBridePhoto ?? true,
         heroImage: initialData?.heroImage ?? "",
         story: initialData?.story ?? "",
+        storyEn: (initialData as any)?.storyEn ?? "",
         storyTitle: (initialData as any)?.storyTitle ?? "",
+        storyTitleEn: (initialData as any)?.storyTitleEn ?? "",
         showStoryTitle: (initialData as any)?.showStoryTitle ?? true,
         openingQuote: initialData?.openingQuote ?? "",
+        openingQuoteEn: (initialData as any)?.openingQuoteEn ?? "",
         openingQuoteBy: initialData?.openingQuoteBy ?? "",
+        openingQuoteByEn: (initialData as any)?.openingQuoteByEn ?? "",
         attentionTitle: (initialData as any)?.attentionTitle ?? "",
         attentionContent: (initialData as any)?.attentionContent ?? "",
         attentionTitleEn: (initialData as any)?.attentionTitleEn ?? "",
@@ -107,12 +114,20 @@ export function ProfileForm({ clientId, initialData }: Props) {
             <input {...register("groomNickname")} placeholder="Budi" className={inputClass} />
           </Field>
         </div>
-        <Field label="Nama Orang Tua" error={errors.groomParents?.message}>
+        <Field label="Nama Orang Tua (ID)" error={errors.groomParents?.message}>
           <input
             {...register("groomParents")}
             placeholder="Putra dari Bpk. Santoso & Ibu Sari"
             className={inputClass}
           />
+        </Field>
+        <Field label="Nama Orang Tua (EN)" error={undefined}>
+          <input
+            {...register("groomParentsEn")}
+            placeholder="Son of Mr. Santoso & Mrs. Sari"
+            className={inputClass}
+          />
+          <p className="text-xs text-stone-400 mt-1">Kosongkan untuk memakai versi Indonesia</p>
         </Field>
         <PhotoField
           label="Foto Mempelai Pria"
@@ -137,12 +152,20 @@ export function ProfileForm({ clientId, initialData }: Props) {
             <input {...register("brideNickname")} placeholder="Ayu" className={inputClass} />
           </Field>
         </div>
-        <Field label="Nama Orang Tua" error={errors.brideParents?.message}>
+        <Field label="Nama Orang Tua (ID)" error={errors.brideParents?.message}>
           <input
             {...register("brideParents")}
             placeholder="Putri dari Bpk. Lestari & Ibu Dewi"
             className={inputClass}
           />
+        </Field>
+        <Field label="Nama Orang Tua (EN)" error={undefined}>
+          <input
+            {...register("brideParentsEn")}
+            placeholder="Daughter of Mr. Lestari & Mrs. Dewi"
+            className={inputClass}
+          />
+          <p className="text-xs text-stone-400 mt-1">Kosongkan untuk memakai versi Indonesia</p>
         </Field>
         <PhotoField
           label="Foto Mempelai Wanita"
@@ -159,46 +182,104 @@ export function ProfileForm({ clientId, initialData }: Props) {
 
       <div className="bg-white rounded-2xl border border-stone-200 p-5 space-y-4">
         <h3 className="font-medium text-stone-700 text-sm">Konten Undangan</h3>
-        <Field label="Kata Pembuka / Quote" error={errors.openingQuote?.message}>
-          <textarea
-            {...register("openingQuote")}
-            rows={3}
-            placeholder="Dan di antara tanda-tanda kekuasaan-Nya..."
-            className={inputClass}
-          />
-        </Field>
-        <Field label="Sumber Quote" error={errors.openingQuoteBy?.message}>
-          <input
-            {...register("openingQuoteBy")}
-            placeholder="Contoh: QS. Ar-Rum: 21 · 1 Korintus 13:4 · Bhagavad Gita · Dhammapada"
-            className={inputClass}
-          />
-        </Field>
-        <Field label="Isi Cerita / Pesan" error={errors.story?.message}>
-          <RichTextEditor
-            value={watch("story") ?? ""}
-            onChange={(html) => setValue("story" as any, html, { shouldDirty: true })}
-            placeholder="Kisah pertemuan kami dimulai dari..."
-            rows={5}
-          />
-          <p className="text-xs text-stone-400 mt-1">Gunakan toolbar untuk teks tebal, miring, atau daftar poin.</p>
-        </Field>
-        <div className="space-y-3 pt-1">
+        <div className="flex gap-1 bg-stone-100 rounded-lg p-1 w-fit">
+          <button
+            type="button"
+            onClick={() => setContentLang("id")}
+            className={`px-3 py-1 text-xs rounded-md transition-colors ${contentLang === "id" ? "bg-white text-stone-800 shadow-sm font-medium" : "text-stone-500 hover:text-stone-700"}`}
+          >
+            Bahasa Indonesia
+          </button>
+          <button
+            type="button"
+            onClick={() => setContentLang("en")}
+            className={`px-3 py-1 text-xs rounded-md transition-colors ${contentLang === "en" ? "bg-white text-stone-800 shadow-sm font-medium" : "text-stone-500 hover:text-stone-700"}`}
+          >
+            English
+          </button>
+        </div>
+        {contentLang === "id" ? (
+          <>
+            <Field label="Kata Pembuka / Quote (ID)" error={errors.openingQuote?.message}>
+              <textarea
+                {...register("openingQuote")}
+                rows={3}
+                placeholder="Dan di antara tanda-tanda kekuasaan-Nya..."
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Sumber Quote (ID)" error={errors.openingQuoteBy?.message}>
+              <input
+                {...register("openingQuoteBy")}
+                placeholder="Contoh: QS. Ar-Rum: 21 · 1 Korintus 13:4 · Bhagavad Gita · Dhammapada"
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Isi Cerita / Pesan (ID)" error={errors.story?.message}>
+              <RichTextEditor
+                value={watch("story") ?? ""}
+                onChange={(html) => setValue("story" as any, html, { shouldDirty: true })}
+                placeholder="Kisah pertemuan kami dimulai dari..."
+                rows={5}
+              />
+              <p className="text-xs text-stone-400 mt-1">Gunakan toolbar untuk teks tebal, miring, atau daftar poin.</p>
+            </Field>
+            {(watch("showStoryTitle") ?? true) && (
+              <Field label="Judul bagian cerita (ID)" error={undefined}>
+                <input
+                  {...register("storyTitle")}
+                  placeholder="Cerita Singkat Pasangan"
+                  className={inputClass}
+                />
+                <p className="text-xs text-stone-400 mt-1">Kosongkan untuk menggunakan judul default</p>
+              </Field>
+            )}
+          </>
+        ) : (
+          <>
+            <Field label="Kata Pembuka / Quote (EN)" error={undefined}>
+              <textarea
+                {...register("openingQuoteEn")}
+                rows={3}
+                placeholder="And among His signs..."
+                className={inputClass}
+              />
+              <p className="text-xs text-stone-400 mt-1">Leave blank to fall back to Indonesian version.</p>
+            </Field>
+            <Field label="Quote Source (EN)" error={undefined}>
+              <input
+                {...register("openingQuoteByEn")}
+                placeholder="e.g. QS. Ar-Rum: 21 · 1 Corinthians 13:4"
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Story / Message (EN)" error={undefined}>
+              <RichTextEditor
+                value={watch("storyEn") ?? ""}
+                onChange={(html) => setValue("storyEn" as any, html, { shouldDirty: true })}
+                placeholder="Our story began when..."
+                rows={5}
+              />
+              <p className="text-xs text-stone-400 mt-1">Leave blank to fall back to Indonesian version.</p>
+            </Field>
+            {(watch("showStoryTitle") ?? true) && (
+              <Field label="Story Section Title (EN)" error={undefined}>
+                <input
+                  {...register("storyTitleEn")}
+                  placeholder="Our Story"
+                  className={inputClass}
+                />
+                <p className="text-xs text-stone-400 mt-1">Leave blank to use default title</p>
+              </Field>
+            )}
+          </>
+        )}
+        <div className="pt-1">
           <Toggle
             label="Tampilkan judul di atas cerita"
             value={watch("showStoryTitle") ?? true}
             onChange={(v) => autoSaveToggle("showStoryTitle", v)}
           />
-          {(watch("showStoryTitle") ?? true) && (
-            <Field label="Judul bagian cerita" error={undefined}>
-              <input
-                {...register("storyTitle")}
-                placeholder="Cerita Singkat Pasangan"
-                className={inputClass}
-              />
-              <p className="text-xs text-stone-400 mt-1">Kosongkan untuk menggunakan judul default</p>
-            </Field>
-          )}
         </div>
       </div>
 
