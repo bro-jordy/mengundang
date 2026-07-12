@@ -82,7 +82,7 @@ export function JackpotCover({
       }}
       style={{ backgroundColor: bgColor || "#fdf9f0" }}
     >
-      {/* Hero photo, faded — echoes the invitation's hero image */}
+      {/* Hero photo — echoes the invitation's hero image */}
       {heroUrl && (
         <div
           aria-hidden
@@ -91,15 +91,9 @@ export function JackpotCover({
             backgroundImage: `url('${heroUrl}')`,
             backgroundSize: "cover",
             backgroundPosition: "center 30%",
-            opacity: 0.21,
           }}
         />
       )}
-      <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: `linear-gradient(180deg, ${bgColor || "#fdf9f0"}b3 0%, ${bgColor || "#fdf9f0"}f2 100%)` }}
-      />
 
       {/* Subtle dot grid background */}
       <div
