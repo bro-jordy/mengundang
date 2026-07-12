@@ -1193,7 +1193,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
 
   function handleOpen() {
     setCoverGone(true);
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     playMusicRef.current?.();
   }
 
@@ -1210,7 +1210,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
       function step(now: number) {
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        window.scrollTo(0, targetY * easeOutQuart(progress));
+        window.scrollTo({ top: targetY * easeOutQuart(progress), behavior: "instant" as ScrollBehavior });
         if (progress < 1) requestAnimationFrame(step);
         else setContentReached(true);
       }
@@ -1246,7 +1246,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
       lastTime = now;
       pos += (SPEED * delta) / 1000;
       const target = Math.min(Math.round(pos), maxScroll);
-      window.scrollTo(0, target);
+      window.scrollTo({ top: target, behavior: "instant" as ScrollBehavior });
       if (target < maxScroll) animId = requestAnimationFrame(tick);
     }
 
