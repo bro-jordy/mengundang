@@ -27,7 +27,7 @@ export function GuestPhotoManager({ clientId }: { clientId: string }) {
     try {
       const res = await fetch(`/api/clients/${clientId}/guest-photos`);
       const data = await res.json();
-      if (data.data) setPhotos(data.data);
+      if (Array.isArray(data)) setPhotos(data);
     } catch {
       // ignore
     } finally {

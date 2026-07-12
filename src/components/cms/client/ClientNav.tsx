@@ -86,6 +86,7 @@ export function ClientNav({ client, role }: { client: Client; role?: string }) {
             <Link
               key={tab.path}
               href={href}
+              prefetch={false}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-2 text-sm rounded-t-lg whitespace-nowrap transition-colors"
               )}
