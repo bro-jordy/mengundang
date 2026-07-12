@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Trash2, Download, RefreshCw, Camera, Users, X, Check, CloudUpload, ExternalLink } from "lucide-react";
+import { Trash2, Download, RefreshCw, Camera, Users, X, Check, CloudUpload, ExternalLink, Archive } from "lucide-react";
 
 interface Photo {
   id: string;
@@ -35,6 +35,7 @@ export function GuestPhotoManager({ clientId }: { clientId: string }) {
   const [transferring, setTransferring] = useState(false);
   const [transferResult, setTransferResult] = useState<{ success: number; failed: number } | null>(null);
   const [gdriveNotice, setGdriveNotice] = useState<string | null>(null);
+  const [zipping, setZipping] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -124,6 +125,37 @@ export function GuestPhotoManager({ clientId }: { clientId: string }) {
       alert(err instanceof Error ? err.message : "Gagal transfer ke Google Drive");
     } finally {
       setTransferring(false);
+    }
+  }
+
+  async function downloadSelectedAsZip() {
+    if (selected.size === 0) return;
+    setZipping(true);
+    try {
+      const JSZip = (await import("jszip")).default;
+      const zip = new JSZip();
+      const toDownload = photos.filter((p) => selected.has(p.id));
+
+      await Promise.all(
+        toDownload.map(async (photo, i) => {
+          const res = await fetch(photo.url);
+          const blob = await res.blob();
+          const guestName = (photo.guest?.name || "tamu").replace(/[^a-zA-Z0-9 _-]/g, "").trim() || "tamu";
+          zip.file(`${guestName}-${i + 1}.jpg`, blob);
+        })
+      );
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "foto-tamu.zip";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Gagal membuat file ZIP");
+    } finally {
+      setZipping(false);
     }
   }
 
@@ -302,6 +334,21 @@ export function GuestPhotoManager({ clientId }: { clientId: string }) {
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
           <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
             <span className="text-sm font-medium text-stone-700 shrink-0">{selected.size} foto dipilih</span>
+
+            <button
+              onClick={downloadSelectedAsZip}
+              disabled={zipping}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-stone-100 text-stone-700 text-xs font-medium hover:bg-stone-200 disabled:opacity-40"
+            >
+              {zipping ? (
+                <span className="w-3 h-3 rounded-full border border-stone-400/40 border-t-stone-600 animate-spin" />
+              ) : (
+                <Archive size={13} />
+              )}
+              {zipping ? "Menyiapkan ZIP..." : "Download ZIP"}
+            </button>
+
+            <span className="text-stone-300 hidden sm:inline">|</span>
 
             {driveStatus === null ? null : !driveStatus.connected ? (
               <a
