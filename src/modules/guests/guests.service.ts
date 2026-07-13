@@ -31,6 +31,7 @@ export const getGuestByToken = cache(async function getGuestByToken(token: strin
     where: { guestToken: token },
     include: {
       rsvp: true,
+      attendances: true,
       client: {
         include: {
           weddingProfile: true,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Camera, X, ImagePlus, AlertCircle, CalendarClock } from "lucide-react";
+import { Camera, X, ImagePlus, AlertCircle, CalendarClock, QrCode } from "lucide-react";
 
 const MAX_PHOTOS = 12;
 const MAX_DIM = 1280;
@@ -64,10 +64,11 @@ interface Props {
   clientId: string;
   guestName: string;
   rsvpStatus: string | null;
+  hasCheckedIn: boolean;
   eventDates: string[]; // ISO strings
 }
 
-export function DisposableCamera({ token, clientId, guestName, rsvpStatus, eventDates }: Props) {
+export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCheckedIn, eventDates }: Props) {
   const [open, setOpen] = useState(false);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -92,7 +93,7 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, event
   const now = new Date();
   const isBeforeWindow = windowStart ? now < windowStart : false;
   const isAfterWindow = windowEnd ? now > windowEnd : false;
-  const canUpload = !isBeforeWindow && !isAfterWindow;
+  const canUpload = !isBeforeWindow && !isAfterWindow && hasCheckedIn;
 
   const loadPhotos = useCallback(async () => {
     if (rsvpStatus !== "HADIR") return;
@@ -203,6 +204,17 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, event
                 </p>
                 <p className="font-semibold text-lg mb-1" style={{ color: "#c8902a" }}>
                   {firstEventDate ? formatDateId(firstEventDate) : "—"}
+                </p>
+                <p className="text-white/30 text-xs mt-4">Sampai jumpa di sana! 📸</p>
+              </div>
+            ) : !hasCheckedIn ? (
+              <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: "rgba(200,144,42,0.15)" }}>
+                  <QrCode size={26} style={{ color: "#c8902a" }} />
+                </div>
+                <p className="text-white font-semibold text-base mb-2">Belum Check-in</p>
+                <p className="text-white/50 text-sm leading-relaxed mb-4">
+                  Kamera tamu hanya untuk yang sudah hadir di acara. Tunjukkan QR code undanganmu ke petugas di gereja atau resepsi untuk check-in dulu.
                 </p>
                 <p className="text-white/30 text-xs mt-4">Sampai jumpa di sana! 📸</p>
               </div>

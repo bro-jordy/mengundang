@@ -53,10 +53,22 @@ export async function POST(req: Request) {
 
     const guest = await prisma.guest.findUnique({
       where: { guestToken: token },
-      select: { id: true, isActive: true, clientId: true },
+      select: {
+        id: true,
+        isActive: true,
+        clientId: true,
+        rsvp: { select: { status: true } },
+        attendances: { select: { id: true }, take: 1 },
+      },
     });
     if (!guest || !guest.isActive) return apiError("Tamu tidak ditemukan", 404);
     if (guest.clientId !== clientId) return apiError("Akses ditolak", 403);
+    if (guest.rsvp?.status !== "HADIR") {
+      return apiError("Kamu perlu konfirmasi kehadiran (RSVP) terlebih dahulu", 403);
+    }
+    if (guest.attendances.length === 0) {
+      return apiError("Kamu perlu check-in di lokasi acara terlebih dahulu", 403);
+    }
 
     const existingCount = await prisma.guestPhoto.count({
       where: { guestId: guest.id },
