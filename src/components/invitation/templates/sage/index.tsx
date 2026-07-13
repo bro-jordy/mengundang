@@ -8,6 +8,7 @@ import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import { AttentionSection } from "../../sections/AttentionSection";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
+import { useGuestLanguage } from "@/hooks/useGuestLanguage";
 
 function storyToHtml(s: string | null | undefined): string {
   if (!s) return "";
@@ -227,7 +228,7 @@ export function SageTemplate({ guest, client, token }: Props) {
     (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null
   );
   const [coverGone, setCoverGone] = useState(false);
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useGuestLanguage("en");
   const t: T = TR[lang];
 
   useEffect(() => { window.scrollTo(0, 0); }, []);

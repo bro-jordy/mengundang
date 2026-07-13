@@ -15,6 +15,7 @@ import { AttentionSection } from "../../sections/AttentionSection";
 import { Heart, LockKeyhole } from "lucide-react";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
+import { useGuestLanguage } from "@/hooks/useGuestLanguage";
 
 // ─── Translations ─────────────────────────────────────────────────────────────
 
@@ -340,7 +341,15 @@ function JackpotRSVPPlaceholder({ primaryColor, bgColor, secondaryColor, textCol
 export function LuckyJackpotTemplate({ guest, client, token }: Props) {
   const [opened, setOpened] = useState(false);
   const [showHero, setShowHero] = useState(false);
-  const [lang, setLang] = useState<Lang>("EN");
+  const [guestLang, setGuestLang] = useGuestLanguage("en");
+  const lang: Lang = guestLang === "en" ? "EN" : "ID";
+  const setLang = (next: Lang | ((prev: Lang) => Lang)) => {
+    setGuestLang((prevCanonical) => {
+      const prevLang: Lang = prevCanonical === "en" ? "EN" : "ID";
+      const resolved = typeof next === "function" ? (next as (prev: Lang) => Lang)(prevLang) : next;
+      return resolved === "EN" ? "en" : "id";
+    });
+  };
   const [confirmedRsvpStatus, setConfirmedRsvpStatus] = useState<"HADIR" | "TIDAK_HADIR" | null>(
     (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null
   );

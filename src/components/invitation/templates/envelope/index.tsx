@@ -30,6 +30,7 @@ import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import { AttentionSection } from "../../sections/AttentionSection";
 import { formatDate } from "@/lib/utils";
 import type { Rsvp } from "@/types/prisma.types";
+import { useGuestLanguage } from "@/hooks/useGuestLanguage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -3253,7 +3254,7 @@ function ClosingSection({
 
 export function EnvelopeTemplate({ guest, client, token }: Props) {
   const [coverGone, setCoverGone] = useState(false);
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useGuestLanguage("en");
   const t: Translations = TR[lang];
   const [confirmedRsvpStatus, setConfirmedRsvpStatus] = useState<"HADIR" | "TIDAK_HADIR" | null>(
     (guest?.rsvp?.status as "HADIR" | "TIDAK_HADIR") ?? null

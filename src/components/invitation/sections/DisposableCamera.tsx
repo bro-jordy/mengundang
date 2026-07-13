@@ -2,10 +2,59 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Camera, X, ImagePlus, AlertCircle, CalendarClock, QrCode } from "lucide-react";
+import { useGuestLanguage } from "@/hooks/useGuestLanguage";
 
 const MAX_PHOTOS = 12;
 const MAX_DIM = 1280;
 const JPEG_QUALITY = 0.75;
+
+const TR = {
+  id: {
+    ariaLabel: "Buka kamera tamu",
+    title: "Kamera Tamu",
+    notAvailableTitle: "Kamera Belum Tersedia",
+    notAvailableBody: "Fitur foto bisa digunakan mulai",
+    seeYouThere: "Sampai jumpa di sana! 📸",
+    checkinTitle: "Belum Check-in",
+    checkinBody: "Kamera tamu hanya untuk yang sudah hadir di acara. Tunjukkan QR code undanganmu ke petugas di gereja atau resepsi untuk check-in dulu.",
+    framesLeft: (n: number) => `${n} frame tersisa`,
+    filmEmpty: "Film habis",
+    noPhotosYet: "Belum ada foto",
+    uploadFirst: "Upload foto pertamamu di bawah",
+    uploading: "Mengupload...",
+    uploadBtn: "Ambil / Upload Foto",
+    filmSoldOut: "Film sudah habis! Semua 12 foto sudah terpakai.",
+    uploadFailed: "Gagal mengupload foto",
+    genericError: "Terjadi kesalahan",
+    altPhoto: "Foto tamu",
+    photoCount: (n: number) => `${n}/${MAX_PHOTOS} foto`,
+  },
+  en: {
+    ariaLabel: "Open guest camera",
+    title: "Guest Camera",
+    notAvailableTitle: "Camera Not Available Yet",
+    notAvailableBody: "The photo feature unlocks on",
+    seeYouThere: "See you there! 📸",
+    checkinTitle: "Not Checked In Yet",
+    checkinBody: "The guest camera is only for those who've arrived. Show your invitation QR code to staff at the church or reception to check in first.",
+    framesLeft: (n: number) => `${n} frames left`,
+    filmEmpty: "Film's out",
+    noPhotosYet: "No photos yet",
+    uploadFirst: "Upload your first photo below",
+    uploading: "Uploading...",
+    uploadBtn: "Take / Upload Photo",
+    filmSoldOut: "Film's out! All 12 photos have been used.",
+    uploadFailed: "Failed to upload photo",
+    genericError: "Something went wrong",
+    altPhoto: "Guest photo",
+    photoCount: (n: number) => `${n}/${MAX_PHOTOS} photos`,
+  },
+} as const;
+
+const MONTHS: Record<"id" | "en", string[]> = {
+  id: ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"],
+  en: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+};
 
 function isHeic(file: File): boolean {
   if (["image/heic", "image/heif"].includes(file.type.toLowerCase())) return true;
@@ -49,9 +98,8 @@ async function compressImage(file: Blob): Promise<Blob> {
   });
 }
 
-function formatDateId(date: Date): string {
-  const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+function formatEventDate(date: Date, lang: "id" | "en"): string {
+  return `${date.getDate()} ${MONTHS[lang][date.getMonth()]} ${date.getFullYear()}`;
 }
 
 interface Photo {
@@ -69,6 +117,8 @@ interface Props {
 }
 
 export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCheckedIn, eventDates }: Props) {
+  const [lang] = useGuestLanguage("en");
+  const t = TR[lang];
   const [open, setOpen] = useState(false);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -119,7 +169,7 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCh
     if (!file) return;
     e.target.value = "";
     if (photos.length >= MAX_PHOTOS) {
-      setError("Film sudah habis! Semua 12 foto sudah terpakai.");
+      setError(t.filmSoldOut);
       return;
     }
     setUploading(true);
@@ -133,10 +183,10 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCh
       formData.append("clientId", clientId);
       const res = await fetch("/api/guest-photos", { method: "POST", body: formData });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal mengupload foto");
+      if (!res.ok) throw new Error(data.error || t.uploadFailed);
       setPhotos((prev) => [...prev, { id: data.id, url: data.url }]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Terjadi kesalahan");
+      setError(err instanceof Error ? err.message : t.genericError);
     } finally {
       setUploading(false);
     }
@@ -152,7 +202,7 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCh
         onClick={() => setOpen(true)}
         className="fixed bottom-6 left-6 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-transform active:scale-95"
         style={{ background: "rgba(20,20,20,0.85)", backdropFilter: "blur(8px)", zIndex: 300 }}
-        aria-label="Buka kamera tamu"
+        aria-label={t.ariaLabel}
       >
         <Camera size={20} className="text-white" />
         {loaded && photos.length > 0 && (
@@ -179,9 +229,9 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCh
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
               <div>
-                <p className="text-white font-semibold text-sm">Kamera Tamu</p>
+                <p className="text-white font-semibold text-sm">{t.title}</p>
                 <p className="text-white/50 text-xs mt-0.5">
-                  {guestName}{canUpload ? ` · ${photos.length}/${MAX_PHOTOS} foto` : ""}
+                  {guestName}{canUpload ? ` · ${t.photoCount(photos.length)}` : ""}
                 </p>
               </div>
               <button
@@ -198,25 +248,25 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCh
                 <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: "rgba(200,144,42,0.15)" }}>
                   <CalendarClock size={26} style={{ color: "#c8902a" }} />
                 </div>
-                <p className="text-white font-semibold text-base mb-2">Kamera Belum Tersedia</p>
+                <p className="text-white font-semibold text-base mb-2">{t.notAvailableTitle}</p>
                 <p className="text-white/50 text-sm leading-relaxed mb-4">
-                  Fitur foto bisa digunakan mulai
+                  {t.notAvailableBody}
                 </p>
                 <p className="font-semibold text-lg mb-1" style={{ color: "#c8902a" }}>
-                  {firstEventDate ? formatDateId(firstEventDate) : "—"}
+                  {firstEventDate ? formatEventDate(firstEventDate, lang) : "—"}
                 </p>
-                <p className="text-white/30 text-xs mt-4">Sampai jumpa di sana! 📸</p>
+                <p className="text-white/30 text-xs mt-4">{t.seeYouThere}</p>
               </div>
             ) : !hasCheckedIn ? (
               <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: "rgba(200,144,42,0.15)" }}>
                   <QrCode size={26} style={{ color: "#c8902a" }} />
                 </div>
-                <p className="text-white font-semibold text-base mb-2">Belum Check-in</p>
+                <p className="text-white font-semibold text-base mb-2">{t.checkinTitle}</p>
                 <p className="text-white/50 text-sm leading-relaxed mb-4">
-                  Kamera tamu hanya untuk yang sudah hadir di acara. Tunjukkan QR code undanganmu ke petugas di gereja atau resepsi untuk check-in dulu.
+                  {t.checkinBody}
                 </p>
-                <p className="text-white/30 text-xs mt-4">Sampai jumpa di sana! 📸</p>
+                <p className="text-white/30 text-xs mt-4">{t.seeYouThere}</p>
               </div>
             ) : (
               <>
@@ -231,7 +281,7 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCh
                   ))}
                 </div>
                 <p className="px-5 pb-3 text-white/40 text-xs">
-                  {remaining > 0 ? `${remaining} frame tersisa` : "Film habis"}
+                  {remaining > 0 ? t.framesLeft(remaining) : t.filmEmpty}
                 </p>
 
                 {/* Photos grid */}
@@ -239,15 +289,15 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCh
                   {photos.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-10 text-center">
                       <Camera size={32} className="text-white/20 mb-3" />
-                      <p className="text-white/50 text-sm">Belum ada foto</p>
-                      <p className="text-white/30 text-xs mt-1">Upload foto pertamamu di bawah</p>
+                      <p className="text-white/50 text-sm">{t.noPhotosYet}</p>
+                      <p className="text-white/30 text-xs mt-1">{t.uploadFirst}</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 gap-2">
                       {photos.map((photo) => (
                         <div key={photo.id} className="aspect-square rounded-lg overflow-hidden" style={{ background: "#222" }}>
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={photo.url} alt="Foto tamu" className="w-full h-full object-cover" loading="lazy" />
+                          <img src={photo.url} alt={t.altPhoto} className="w-full h-full object-cover" loading="lazy" />
                         </div>
                       ))}
                       {remaining > 0 && Array.from({ length: Math.min(remaining, 3) }).map((_, i) => (
@@ -285,9 +335,9 @@ export function DisposableCamera({ token, clientId, guestName, rsvpStatus, hasCh
                     style={{ background: remaining === 0 ? "#333" : "#c8902a", color: "white" }}
                   >
                     {uploading ? (
-                      <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Mengupload...</>
-                    ) : remaining === 0 ? "Film sudah habis" : (
-                      <><ImagePlus size={16} />Ambil / Upload Foto</>
+                      <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />{t.uploading}</>
+                    ) : remaining === 0 ? t.filmEmpty : (
+                      <><ImagePlus size={16} />{t.uploadBtn}</>
                     )}
                   </button>
                 </div>
