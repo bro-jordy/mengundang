@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { JackpotCover } from "./JackpotCover";
 import { MusicPlayer } from "../../sections/MusicPlayer";
-import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
+import { BarcodeSection } from "../../sections/BarcodeSection";
 import { AttentionSection } from "../../sections/AttentionSection";
 import { formatDate } from "@/lib/utils";
 import type { Rsvp } from "@/types/prisma.types";
@@ -235,6 +235,12 @@ const EVENT_LABEL: Record<string, string> = {
   SANGJIT: "Sangjit",
   LAMARAN: "Engagement Ceremony",
 };
+
+/** Prefers the client's custom event label over the generic event-type name. */
+function getEventDisplayLabel(ev: { type: string; label?: string | null; labelEn?: string | null } | undefined, lang: Lang): string {
+  if (!ev) return "Acara";
+  return (lang === "en" && ev.labelEn) || ev.label || EVENT_LABEL[ev.type] || ev.type;
+}
 
 const INVITATION_LABEL: Record<string, string> = {
   WEDDING: "The Wedding Of",
@@ -481,7 +487,7 @@ function HeroSection({
       <motion.div style={{ y, position: "absolute", inset: "-12%" }}>
         {heroUrl ? (
           <>
-            <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${heroUrl}')`, backgroundSize: "cover", backgroundPosition: "center 30%", opacity: 0.65 }} />
+            <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${heroUrl}')`, backgroundSize: "cover", backgroundPosition: "center 10%", opacity: 0.65 }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(250,248,244,0.12) 0%, rgba(51,40,32,0.5) 60%, rgba(51,40,32,0.82) 100%)" }} />
           </>
         ) : (
@@ -1418,8 +1424,8 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
                   barcodeChurch={guest.barcodeChurch}
                   barcodeReception={guest.barcodeReception ?? null}
                   invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
-                  churchLabel={getEventLabel(client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.type ?? client.events[0]?.type ?? "ACARA")}
-                  receptionLabel={getEventLabel(client.events.find((e: any) => e.type === "RESEPSI")?.type ?? "RESEPSI")}
+                  churchLabel={getEventDisplayLabel(client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY") ?? client.events[0], lang)}
+                  receptionLabel={getEventDisplayLabel(client.events.find((e: any) => e.type === "RESEPSI"), lang)}
                   churchVenueName={client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
                   receptionVenueName={client.events.find((e: any) => e.type === "RESEPSI")?.venueName || "Resepsi"}
                   primaryColor={gold}

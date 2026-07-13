@@ -90,7 +90,7 @@ export function JackpotCover({
           style={{
             backgroundImage: `url('${heroUrl}')`,
             backgroundSize: "cover",
-            backgroundPosition: "center 30%",
+            backgroundPosition: "center 10%",
             opacity: 0.65,
           }}
         />
