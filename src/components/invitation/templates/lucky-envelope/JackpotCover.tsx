@@ -74,7 +74,7 @@ export function JackpotCover({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-between overflow-hidden px-6 pt-20 pb-12"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-between overflow-hidden px-6 pt-20 pb-24"
       animate={phase === "opening" ? { opacity: 0, scale: 1.04 } : { opacity: 1, scale: 1 }}
       transition={phase === "opening" ? { duration: 0.85, ease: "easeInOut" } : undefined}
       onAnimationComplete={() => {
