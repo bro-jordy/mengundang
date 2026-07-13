@@ -74,7 +74,7 @@ export function JackpotCover({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden px-6"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-between overflow-hidden px-6 pt-20 pb-12"
       animate={phase === "opening" ? { opacity: 0, scale: 1.04 } : { opacity: 1, scale: 1 }}
       transition={phase === "opening" ? { duration: 0.85, ease: "easeInOut" } : undefined}
       onAnimationComplete={() => {
@@ -175,12 +175,14 @@ export function JackpotCover({
             fontFamily: `'${fontHeading}', Georgia, serif`,
             fontSize: "2.75rem",
             color: "#2d1f0a",
-            marginBottom: 20,
           }}
         >
           {brideNickname || "Bride"}
         </h1>
+      </div>
 
+      {/* Bottom-anchored block: fortune reveal + guest name + CTA — kept off the face zone of the photo */}
+      <div className="relative z-10 flex flex-col items-center w-full max-w-sm">
         {/* Groom | Machine | Bride row */}
         <div className="flex items-end justify-center gap-3 w-full mb-5">
           <motion.div
