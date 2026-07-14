@@ -123,6 +123,7 @@ model Event {
   timeStart    String    @default("")
   timeEnd      String    @default("")
   venueName    String    @default("")
+  venueNameEn  String?
   venueAddress String    @default("")
   mapsUrl      String    @default("")
   mapsEmbed    String    @default("")

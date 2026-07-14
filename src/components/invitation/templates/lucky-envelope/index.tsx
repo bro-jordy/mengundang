@@ -116,6 +116,7 @@ interface Props {
       timeStart: string;
       timeEnd: string;
       venueName: string;
+      venueNameEn: string | null;
       venueAddress: string;
       mapsUrl: string;
     }[];
@@ -690,7 +691,7 @@ function EventsSection({
                   {ev.date && (
                     <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
                       <Calendar size={13} color={gold} style={{ flexShrink: 0 }} />
-                      <p style={{ fontSize: "0.84rem", color: text, opacity: 0.68, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{formatDate(ev.date)}</p>
+                      <p style={{ fontSize: "0.84rem", color: text, opacity: 0.68, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{formatDate(ev.date, isEn ? "EN" : "ID")}</p>
                     </div>
                   )}
                   {(ev.timeStart || ev.timeEnd) && (
@@ -705,7 +706,7 @@ function EventsSection({
                     <div style={{ display: "flex", alignItems: "flex-start", gap: "0.65rem" }}>
                       <MapPin size={13} color={gold} style={{ marginTop: "2px", flexShrink: 0 }} />
                       <div>
-                        <p style={{ fontSize: "0.84rem", fontWeight: 500, color: text, opacity: 0.85, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{ev.venueName}</p>
+                        <p style={{ fontSize: "0.84rem", fontWeight: 500, color: text, opacity: 0.85, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{(isEn && ev.venueNameEn) || ev.venueName}</p>
                         {ev.venueAddress && (
                           <p style={{ fontSize: "0.75rem", color: text, opacity: 0.42, marginTop: "0.2rem", lineHeight: 1.55, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{ev.venueAddress}</p>
                         )}
@@ -715,7 +716,7 @@ function EventsSection({
                 </div>
                 {showMap && ev.mapsUrl && ev.venueName && (
                   <div style={{ marginTop: "1rem", borderRadius: "12px", overflow: "hidden", border: `1px solid ${gold}22` }}>
-                    <iframe src={getMapEmbedUrl(ev.mapsUrl, ev.venueName, ev.venueAddress)} width="100%" height="200" style={{ display: "block", border: "none" }} loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={ev.venueName} />
+                    <iframe src={getMapEmbedUrl(ev.mapsUrl, (isEn && ev.venueNameEn) || ev.venueName, ev.venueAddress)} width="100%" height="200" style={{ display: "block", border: "none" }} loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={(isEn && ev.venueNameEn) || ev.venueName} />
                   </div>
                 )}
                 {ev.mapsUrl && (

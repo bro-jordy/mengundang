@@ -146,7 +146,7 @@ interface Props {
   client: {
     id: string; name: string; slug: string; clientType: string;
     weddingProfile: Profile;
-    events: { id: string; type: string; label: string; date: Date | null; timeStart: string; timeEnd: string; venueName: string; venueAddress: string; mapsUrl: string }[];
+    events: { id: string; type: string; label: string; date: Date | null; timeStart: string; timeEnd: string; venueName: string; venueNameEn?: string | null; venueAddress: string; mapsUrl: string }[];
     musics: { url: string; title: string }[];
     sections: { sectionKey: string; sortOrder: number }[];
     galleries: { id: string; url: string; type: string; sortOrder: number }[];
@@ -447,12 +447,13 @@ function CoupleSection({
 // ─── Events Section (timeline design) ─────────────────────────────────────────
 
 function EventsSection({
-  events, gold, ivory, cream, text, fontH, fontB, t, showMap,
+  events, gold, ivory, cream, text, fontH, fontB, t, showMap, lang,
 }: {
   events: Props["client"]["events"]; gold: string; ivory: string; cream: string;
-  text: string; fontH: string; fontB: string; t: Translations; showMap: boolean;
+  text: string; fontH: string; fontB: string; t: Translations; showMap: boolean; lang: Lang;
 }) {
   if (!events.length) return null;
+  const isEn = lang === "en";
 
   return (
     <section style={{ padding: "6rem 1.5rem", background: `linear-gradient(180deg, ${cream} 0%, ${ivory} 100%)` }}>
@@ -512,7 +513,7 @@ function EventsSection({
                       {ev.date && (
                         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                           <Calendar size={12} color={gold} style={{ flexShrink: 0 }} />
-                          <p style={{ fontSize: "0.82rem", color: text, opacity: 0.65, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{formatDate(ev.date)}</p>
+                          <p style={{ fontSize: "0.82rem", color: text, opacity: 0.65, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{formatDate(ev.date, isEn ? "EN" : "ID")}</p>
                         </div>
                       )}
                       {(ev.timeStart || ev.timeEnd) && (
@@ -527,7 +528,7 @@ function EventsSection({
                         <div style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem" }}>
                           <MapPin size={12} color={gold} style={{ marginTop: "2px", flexShrink: 0 }} />
                           <div>
-                            <p style={{ fontSize: "0.82rem", fontWeight: 500, color: text, opacity: 0.82, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{ev.venueName}</p>
+                            <p style={{ fontSize: "0.82rem", fontWeight: 500, color: text, opacity: 0.82, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{(isEn && ev.venueNameEn) || ev.venueName}</p>
                             {ev.venueAddress && (
                               <p style={{ fontSize: "0.72rem", color: text, opacity: 0.38, marginTop: "0.18rem", lineHeight: 1.55, fontFamily: `'${fontB}', 'Jost', sans-serif` }}>{ev.venueAddress}</p>
                             )}
@@ -539,12 +540,12 @@ function EventsSection({
                     {showMap && ev.mapsUrl && ev.venueName && (
                       <div style={{ marginTop: "1rem", borderRadius: "12px", overflow: "hidden", border: `1px solid ${gold}22` }}>
                         <iframe
-                          src={getMapEmbedUrl(ev.mapsUrl, ev.venueName, ev.venueAddress)}
+                          src={getMapEmbedUrl(ev.mapsUrl, (isEn && ev.venueNameEn) || ev.venueName, ev.venueAddress)}
                           width="100%" height="190"
                           style={{ display: "block", border: "none" }}
                           loading="lazy"
                           referrerPolicy="no-referrer-when-downgrade"
-                          title={ev.venueName}
+                          title={(isEn && ev.venueNameEn) || ev.venueName}
                         />
                       </div>
                     )}
@@ -1129,6 +1130,7 @@ export function LuckyHanoiTemplate({ guest, client, token }: Props) {
                 <EventsSection
                   events={client.events} gold={gold} ivory={ivory} cream={cream}
                   text={text} fontH={fontH} fontB={fontB} t={t} showMap={showMap}
+                  lang={lang}
                 />
               )}
 

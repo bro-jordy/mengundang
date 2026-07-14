@@ -23,6 +23,7 @@ interface Event {
   timeStart: string;
   timeEnd: string;
   venueName: string;
+  venueNameEn?: string | null;
   venueAddress: string;
   mapsUrl: string;
 }
@@ -83,7 +84,7 @@ export function JackpotEventSection({ events, showMap, lang = "ID" }: Props) {
                       <div className="flex items-start gap-3 mb-3">
                         <Calendar size={16} className="text-stone-400 mt-0.5 shrink-0" />
                         <p className="text-sm text-stone-700">
-                          {formatDate(event.date)}
+                          {formatDate(event.date, lang)}
                         </p>
                       </div>
                     </StaggerItem>
@@ -107,7 +108,7 @@ export function JackpotEventSection({ events, showMap, lang = "ID" }: Props) {
                         <MapPin size={16} className="text-stone-400 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-sm font-medium text-stone-700">
-                            {event.venueName}
+                            {(lang === "EN" && event.venueNameEn) || event.venueName}
                           </p>
                           {event.venueAddress && (
                             <p className="text-xs text-stone-500 mt-0.5">
@@ -123,13 +124,13 @@ export function JackpotEventSection({ events, showMap, lang = "ID" }: Props) {
                     <StaggerItem>
                       <div className="mt-4 rounded-xl overflow-hidden border border-stone-200">
                         <iframe
-                          src={getMapEmbedUrl(event.mapsUrl, event.venueName, event.venueAddress)}
+                          src={getMapEmbedUrl(event.mapsUrl, (lang === "EN" && event.venueNameEn) || event.venueName, event.venueAddress)}
                           width="100%"
                           height="200"
                           style={{ display: "block", border: "none" }}
                           loading="lazy"
                           referrerPolicy="no-referrer-when-downgrade"
-                          title={event.venueName}
+                          title={(lang === "EN" && event.venueNameEn) || event.venueName}
                         />
                       </div>
                     </StaggerItem>

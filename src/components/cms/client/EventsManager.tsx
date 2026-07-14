@@ -256,9 +256,15 @@ function EventForm({
         </div>
       </div>
 
-      <div>
-        <label className={labelClass}>Nama Venue</label>
-        <input {...register("venueName")} placeholder={ph.name} className={inputClass} />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className={labelClass}>Nama Venue (ID)</label>
+          <input {...register("venueName")} placeholder={ph.name} className={inputClass} />
+        </div>
+        <div>
+          <label className={labelClass}>Nama Venue (EN)</label>
+          <input {...register("venueNameEn")} placeholder="Optional — English venue name" className={inputClass} />
+        </div>
       </div>
 
       <div>

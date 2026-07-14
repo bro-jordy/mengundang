@@ -37,6 +37,7 @@ export const eventSchema = z.object({
   timeStart: z.string().default(""),
   timeEnd: z.string().default(""),
   venueName: z.string().default(""),
+  venueNameEn: z.string().optional().nullable(),
   venueAddress: z.string().default(""),
   mapsUrl: z.string().default(""),
   mapsEmbed: z.string().default(""),

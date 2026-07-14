@@ -103,10 +103,12 @@ interface Props {
       id: string;
       type: string;
       label: string;
+      labelEn?: string | null;
       date: Date | null;
       timeStart: string;
       timeEnd: string;
       venueName: string;
+      venueNameEn?: string | null;
       venueAddress: string;
       mapsUrl: string;
     }[];
@@ -1483,6 +1485,7 @@ function EventsSection({
   fontB,
   t,
   showMap,
+  lang,
 }: {
   events: Props["client"]["events"];
   gold: string;
@@ -1493,8 +1496,10 @@ function EventsSection({
   fontB: string;
   t: Translations;
   showMap: boolean;
+  lang: Lang;
 }) {
   if (!events.length) return null;
+  const isEn = lang === "en";
 
   return (
     <section
@@ -1578,7 +1583,7 @@ function EventsSection({
                           fontFamily: `'${fontB}', 'Jost', sans-serif`,
                         }}
                       >
-                        {formatDate(ev.date)}
+                        {formatDate(ev.date, isEn ? "EN" : "ID")}
                       </p>
                     </div>
                   )}
@@ -1617,7 +1622,7 @@ function EventsSection({
                             fontFamily: `'${fontB}', 'Jost', sans-serif`,
                           }}
                         >
-                          {ev.venueName}
+                          {(isEn && ev.venueNameEn) || ev.venueName}
                         </p>
                         {ev.venueAddress && (
                           <p
@@ -1641,12 +1646,12 @@ function EventsSection({
                 {showMap && ev.mapsUrl && ev.venueName && (
                   <div style={{ marginTop: "1rem", borderRadius: "12px", overflow: "hidden", border: `1px solid ${gold}22` }}>
                     <iframe
-                      src={getMapEmbedUrl(ev.mapsUrl, ev.venueName, ev.venueAddress)}
+                      src={getMapEmbedUrl(ev.mapsUrl, (isEn && ev.venueNameEn) || ev.venueName, ev.venueAddress)}
                       width="100%" height="200"
                       style={{ display: "block", border: "none" }}
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
-                      title={ev.venueName}
+                      title={(isEn && ev.venueNameEn) || ev.venueName}
                     />
                   </div>
                 )}
@@ -3530,6 +3535,7 @@ export function EnvelopeTemplate({ guest, client, token }: Props) {
                   fontB={fontB}
                   t={t}
                   showMap={showMap}
+                  lang={lang}
                 />
               )}
 

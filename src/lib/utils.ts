@@ -13,9 +13,9 @@ export function slugify(text: string): string {
     .trim();
 }
 
-export function formatDate(date: Date | string | null): string {
+export function formatDate(date: Date | string | null, lang: "EN" | "ID" = "ID"): string {
   if (!date) return "-";
-  return new Intl.DateTimeFormat("id-ID", {
+  return new Intl.DateTimeFormat(lang === "EN" ? "en-US" : "id-ID", {
     day: "numeric",
     month: "long",
     year: "numeric",

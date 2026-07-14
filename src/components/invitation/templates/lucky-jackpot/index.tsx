@@ -137,6 +137,7 @@ interface Props {
       timeStart: string;
       timeEnd: string;
       venueName: string;
+      venueNameEn?: string | null;
       venueAddress: string;
       mapsUrl: string;
     }[];
@@ -505,7 +506,7 @@ export function LuckyJackpotTemplate({ guest, client, token }: Props) {
               {firstEvent?.date && (
                 <StaggerItem>
                   <p className="mt-4 text-xs" style={{ color: `${primaryColor}88`, fontFamily: "Georgia, serif", letterSpacing: "0.08em" }}>
-                    {formatDate(firstEvent.date)} · {firstEvent.venueName}
+                    {formatDate(firstEvent.date, lang)} · {(lang === "EN" && firstEvent.venueNameEn) || firstEvent.venueName}
                   </p>
                 </StaggerItem>
               )}

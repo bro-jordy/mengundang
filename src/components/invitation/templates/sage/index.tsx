@@ -8,7 +8,7 @@ import { BarcodeSection, getEventLabel } from "../../sections/BarcodeSection";
 import { AttentionSection } from "../../sections/AttentionSection";
 import type { Rsvp } from "@/types/prisma.types";
 import { formatDate } from "@/lib/utils";
-import { useGuestLanguage } from "@/hooks/useGuestLanguage";
+import { useGuestLanguage, type GuestLanguage } from "@/hooks/useGuestLanguage";
 
 function storyToHtml(s: string | null | undefined): string {
   if (!s) return "";
@@ -160,7 +160,7 @@ interface Props {
   client: {
     id: string; name: string; slug: string; clientType: string;
     weddingProfile: Profile;
-    events: { id: string; type: string; label: string; date: Date | null; timeStart: string; timeEnd: string; venueName: string; venueAddress: string; mapsUrl: string }[];
+    events: { id: string; type: string; label: string; labelEn?: string | null; date: Date | null; timeStart: string; timeEnd: string; venueName: string; venueNameEn?: string | null; venueAddress: string; mapsUrl: string }[];
     musics: { url: string; title: string }[];
     sections: { sectionKey: string; sortOrder: number }[];
     galleries: { id: string; url: string; type: string; sortOrder: number }[];
@@ -468,7 +468,7 @@ export function SageTemplate({ guest, client, token }: Props) {
 
             {/* Events */}
             {sectionKeys.includes("EVENT") && (
-              <EventSection events={client.events} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} showMap={showMap} t={t} />
+              <EventSection events={client.events} accent={accent} cream={cream} ivory={ivory} text={text} fontH={fontH} fontB={fontB} showMap={showMap} t={t} lang={lang} />
             )}
 
             {/* Gallery */}
@@ -635,10 +635,11 @@ function CoupleSection({ profile, accent, cream, ivory, text, fontH, fontB, t }:
 
 // ─── Event Section ────────────────────────────────────────────────────────────
 
-function EventSection({ events, accent, cream, ivory, text, fontH, fontB, showMap, t }: {
-  events: Props["client"]["events"]; accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string; showMap: boolean; t: T;
+function EventSection({ events, accent, cream, ivory, text, fontH, fontB, showMap, t, lang }: {
+  events: Props["client"]["events"]; accent: string; cream: string; ivory: string; text: string; fontH: string; fontB: string; showMap: boolean; t: T; lang: GuestLanguage;
 }) {
   if (!events.length) return null;
+  const isEn = lang === "en";
   return (
     <section style={{ padding: "4rem 1.5rem", background: ivory }}>
       <div style={{ maxWidth: "520px", margin: "0 auto" }}>
@@ -656,7 +657,7 @@ function EventSection({ events, accent, cream, ivory, text, fontH, fontB, showMa
                   {ev.date && (
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <Calendar size={13} color={accent} />
-                      <p style={{ fontSize: "0.82rem", color: text, opacity: 0.65 }}>{formatDate(ev.date)}</p>
+                      <p style={{ fontSize: "0.82rem", color: text, opacity: 0.65 }}>{formatDate(ev.date, isEn ? "EN" : "ID")}</p>
                     </div>
                   )}
                   {(ev.timeStart || ev.timeEnd) && (
@@ -669,7 +670,7 @@ function EventSection({ events, accent, cream, ivory, text, fontH, fontB, showMa
                     <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
                       <MapPin size={13} color={accent} style={{ marginTop: "2px", flexShrink: 0 }} />
                       <div>
-                        <p style={{ fontSize: "0.82rem", fontWeight: 600, color: text }}>{ev.venueName}</p>
+                        <p style={{ fontSize: "0.82rem", fontWeight: 600, color: text }}>{(isEn && ev.venueNameEn) || ev.venueName}</p>
                         {ev.venueAddress && <p style={{ fontSize: "0.72rem", color: text, opacity: 0.45, marginTop: "2px" }}>{ev.venueAddress}</p>}
                       </div>
                     </div>
@@ -680,13 +681,13 @@ function EventSection({ events, accent, cream, ivory, text, fontH, fontB, showMa
                 {showMap && ev.mapsUrl && ev.venueName && (
                   <div style={{ marginTop: "1rem", borderRadius: "8px", overflow: "hidden", border: `1px solid ${SAGE.sand}` }}>
                     <iframe
-                      src={getMapEmbedUrl(ev.mapsUrl, ev.venueName, ev.venueAddress)}
+                      src={getMapEmbedUrl(ev.mapsUrl, (isEn && ev.venueNameEn) || ev.venueName, ev.venueAddress)}
                       width="100%"
                       height="200"
                       style={{ display: "block", border: "none" }}
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
-                      title={ev.venueName}
+                      title={(isEn && ev.venueNameEn) || ev.venueName}
                     />
                   </div>
                 )}
