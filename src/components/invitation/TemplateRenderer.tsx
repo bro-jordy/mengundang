@@ -1,13 +1,15 @@
-import { DarkTemplate } from "./templates/dark";
-import { ClassicTemplate } from "./templates/classic";
-import { PearlTemplate } from "./templates/pearl";
-import { SageTemplate } from "./templates/sage";
-import { EnvelopeTemplate } from "./templates/envelope";
-import { LuckyJackpotTemplate } from "./templates/lucky-jackpot";
-import { LuckyEnvelopeTemplate } from "./templates/lucky-envelope";
-import { LuckyHanoiTemplate } from "./templates/lucky-hanoi";
-import { HanoiModernTemplate } from "./templates/hanoi-modern";
+"use client";
+
+import dynamic from "next/dynamic";
 import type { Rsvp } from "@/types/prisma.types";
+
+// Tema lain (classic, dark, envelope, hanoi-modern, lucky-hanoi, lucky-jackpot, pearl) masih ada
+// di src/components/invitation/templates/ untuk testing, tapi sengaja tidak didaftarkan di sini
+// biar tidak ikut ke-bundle ke JS undangan tamu. Tema aktif saat ini: sage & lucky-envelope.
+const SageTemplate = dynamic(() => import("./templates/sage").then((m) => m.SageTemplate));
+const LuckyEnvelopeTemplate = dynamic(() =>
+  import("./templates/lucky-envelope").then((m) => m.LuckyEnvelopeTemplate)
+);
 
 interface Guest {
   id: string;
@@ -46,15 +48,8 @@ interface Props {
 }
 
 export function TemplateRenderer({ guest, client, token }: Props) {
-  const slug = client.theme?.templateSlug || "dark";
+  const slug = client.theme?.templateSlug || "sage";
 
-  if (slug === "classic") return <ClassicTemplate guest={guest} client={client as any} token={token} />;
-  if (slug === "pearl") return <PearlTemplate guest={guest} client={client as any} token={token} />;
-  if (slug === "sage") return <SageTemplate guest={guest} client={client as any} token={token} />;
-  if (slug === "envelope") return <EnvelopeTemplate guest={guest} client={client as any} token={token} />;
-  if (slug === "lucky-jackpot") return <LuckyJackpotTemplate guest={guest} client={client as any} token={token} />;
   if (slug === "lucky-envelope") return <LuckyEnvelopeTemplate guest={guest} client={client as any} token={token} />;
-  if (slug === "lucky-hanoi") return <LuckyHanoiTemplate guest={guest} client={client as any} token={token} />;
-  if (slug === "hanoi-modern") return <HanoiModernTemplate guest={guest} client={client as any} token={token} />;
-  return <DarkTemplate guest={guest} client={client as any} token={token} />;
+  return <SageTemplate guest={guest} client={client as any} token={token} />;
 }

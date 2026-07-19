@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import Image from "next/image";
 import {
   motion,
   AnimatePresence,
@@ -489,7 +490,7 @@ function HeroSection({
       <motion.div style={{ y, position: "absolute", inset: "-12%" }}>
         {heroUrl ? (
           <>
-            <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${heroUrl}')`, backgroundSize: "cover", backgroundPosition: "center 10%", opacity: 0.65 }} />
+            <Image src={heroUrl} alt="" fill priority sizes="100vw" style={{ objectFit: "cover", objectPosition: "center 10%", opacity: 0.65 }} />
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(250,248,244,0.12) 0%, rgba(51,40,32,0.5) 60%, rgba(51,40,32,0.82) 100%)" }} />
           </>
         ) : (
@@ -556,8 +557,8 @@ function CoupleSection({
             {profile.showGroomPhoto && (
               <motion.div whileHover={{ scale: 1.04 }} transition={{ duration: 0.4, ease: "easeOut" }} style={{ display: "inline-block", marginBottom: "1.4rem" }}>
                 {profile.groomPhoto ? (
-                  <div style={{ width: 154, height: 154, borderRadius: "50%", overflow: "hidden", border: `3px solid ${gold}55`, boxShadow: `0 0 0 7px ${champagne}, 0 8px 36px ${gold}30`, margin: "0 auto" }}>
-                    <img src={profile.groomPhoto} alt={profile.groomName} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <div style={{ width: 154, height: 154, borderRadius: "50%", overflow: "hidden", border: `3px solid ${gold}55`, boxShadow: `0 0 0 7px ${champagne}, 0 8px 36px ${gold}30`, margin: "0 auto", position: "relative" }}>
+                    <Image src={profile.groomPhoto} alt={profile.groomName} fill sizes="154px" style={{ objectFit: "cover" }} />
                   </div>
                 ) : (
                   <div style={{ width: 154, height: 154, borderRadius: "50%", background: champagne, border: `3px solid ${gold}44`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}>
@@ -592,8 +593,8 @@ function CoupleSection({
             {profile.showBridePhoto && (
               <motion.div whileHover={{ scale: 1.04 }} transition={{ duration: 0.4, ease: "easeOut" }} style={{ display: "inline-block", marginBottom: "1.4rem" }}>
                 {profile.bridePhoto ? (
-                  <div style={{ width: 154, height: 154, borderRadius: "50%", overflow: "hidden", border: `3px solid ${gold}55`, boxShadow: `0 0 0 7px ${champagne}, 0 8px 36px ${gold}30`, margin: "0 auto" }}>
-                    <img src={profile.bridePhoto} alt={profile.brideName} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <div style={{ width: 154, height: 154, borderRadius: "50%", overflow: "hidden", border: `3px solid ${gold}55`, boxShadow: `0 0 0 7px ${champagne}, 0 8px 36px ${gold}30`, margin: "0 auto", position: "relative" }}>
+                    <Image src={profile.bridePhoto} alt={profile.brideName} fill sizes="154px" style={{ objectFit: "cover" }} />
                   </div>
                 ) : (
                   <div style={{ width: 154, height: 154, borderRadius: "50%", background: champagne, border: `3px solid ${gold}44`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}>
@@ -838,10 +839,10 @@ function GallerySection({
                   transition: animated ? "opacity 400ms ease, transform 400ms ease, box-shadow 400ms ease" : "none",
                 }}
               >
-                <div style={{ aspectRatio: "3/4", overflow: "hidden" }}>
-                  <img
-                    src={photo.url} alt="" draggable={false} loading="lazy"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                <div style={{ aspectRatio: "3/4", overflow: "hidden", position: "relative" }}>
+                  <Image
+                    src={photo.url} alt="" draggable={false} fill sizes="(max-width: 480px) 70vw, 320px"
+                    style={{ objectFit: "cover" }}
                   />
                 </div>
               </div>
@@ -1124,7 +1125,7 @@ function GiftSection({
                 <AnimatePresence>
                   {qrisOpen === gift.id && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: "hidden", borderTop: `1px solid ${gold}18`, padding: "1.3rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                      <img src={gift.qrisImage!} alt="QRIS" loading="lazy" decoding="async" style={{ maxWidth: "175px", width: "100%", borderRadius: "12px" }} />
+                      <Image src={gift.qrisImage!} alt="QRIS" width={350} height={350} style={{ maxWidth: "175px", width: "100%", height: "auto", borderRadius: "12px" }} />
                       <p style={{ marginTop: "0.6rem", fontFamily: "'Jost', sans-serif", fontSize: "0.7rem", color: text, opacity: 0.38 }}>{t.scanToTransfer}</p>
                     </motion.div>
                   )}

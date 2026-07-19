@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/database/prisma";
 import { generateGuestToken, generateInvitationUrl } from "@/lib/token";
 import { randomBytes } from "crypto";
@@ -26,26 +27,45 @@ export async function getGuests(clientId: string) {
   });
 }
 
+// Data client (profile, event, galeri, tema, musik, section, gift, wishes) jarang berubah —
+// dicache 60 detik supaya guest yang buka undangan tidak selalu hit relational query berat ini.
+// Perubahan lewat CMS baru kelihatan di undangan tamu maksimal 60 detik kemudian.
+const getCachedClientInvitationData = unstable_cache(
+  async (clientId: string) => {
+    return prisma.client.findUnique({
+      where: { id: clientId },
+      include: {
+        weddingProfile: true,
+        events: { orderBy: { sortOrder: "asc" } },
+        galleries: { orderBy: { sortOrder: "asc" } },
+        theme: true,
+        musics: { where: { isActive: true } },
+        sections: { where: { isActive: true }, orderBy: { sortOrder: "asc" } },
+        gifts: { where: { isActive: true } },
+        wishes: { where: { isApproved: true }, orderBy: { createdAt: "desc" }, take: 20 },
+      },
+    });
+  },
+  ["client-invitation-data"],
+  { revalidate: 60, tags: ["client-invitation-data"] }
+);
+
 export const getGuestByToken = cache(async function getGuestByToken(token: string) {
-  return prisma.guest.findUnique({
+  // Data guest & RSVP harus selalu fresh (status hadir/tidak bisa berubah kapan saja), jadi tidak dicache.
+  const guest = await prisma.guest.findUnique({
     where: { guestToken: token },
     include: {
       rsvp: true,
       attendances: true,
-      client: {
-        include: {
-          weddingProfile: true,
-          events: { orderBy: { sortOrder: "asc" } },
-          galleries: { orderBy: { sortOrder: "asc" } },
-          theme: true,
-          musics: { where: { isActive: true } },
-          sections: { where: { isActive: true }, orderBy: { sortOrder: "asc" } },
-          gifts: { where: { isActive: true } },
-          wishes: { where: { isApproved: true }, orderBy: { createdAt: "desc" }, take: 20 },
-        },
-      },
+      client: { select: { id: true } },
     },
   });
+  if (!guest) return null;
+
+  const client = await getCachedClientInvitationData(guest.client.id);
+  if (!client) return null;
+
+  return { ...guest, client };
 });
 
 export async function createGuest(

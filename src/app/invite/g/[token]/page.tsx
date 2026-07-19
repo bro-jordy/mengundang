@@ -68,7 +68,7 @@ export default async function GuestInvitationByTokenPage({ params }: Props) {
         hasCheckedIn={guest.attendances.length > 0}
         eventDates={guest.client.events
           .filter((e) => e.date)
-          .map((e) => (e.date as Date).toISOString())}
+          .map((e) => new Date(e.date as Date).toISOString())}
       />
     </>
   );

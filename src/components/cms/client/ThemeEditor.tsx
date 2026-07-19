@@ -36,49 +36,6 @@ interface Template {
 
 const TEMPLATES: Template[] = [
   {
-    slug: "dark",
-    name: "Dark Elegance",
-    description: "Minimalis modern dengan latar gelap, aksen emas hangat, dan tipografi elegan",
-    tag: "Modern",
-    tagColor: "#c4a07a",
-    defaultColors: { primaryColor: "#c4a07a", secondaryColor: "#f5f5f5", bgColor: "#ffffff", textColor: "#1a1a1a" },
-    defaultFonts: { fontHeading: "Cormorant", fontBody: "IBM Plex Sans" },
-    preview: (
-      <div style={{ background: "#1a1a1a", borderRadius: "12px", padding: "1rem", minHeight: "130px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "8px" }}>
-        <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: "8px", padding: "12px", textAlign: "center", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "9px", letterSpacing: "0.2em", marginBottom: "4px" }}>The Wedding Of</p>
-          <p style={{ color: "#fff", fontFamily: "Georgia, serif", fontSize: "16px", fontWeight: 300 }}>Groom &amp; Bride</p>
-        </div>
-        <div style={{ height: "1px", width: "24px", background: "linear-gradient(90deg,transparent,#c4a07a,transparent)", margin: "0 auto" }} />
-        <div style={{ background: "#242424", borderRadius: "8px", padding: "8px", textAlign: "center" }}>
-          <p style={{ color: "#c4a07a", fontSize: "9px", fontFamily: "Georgia, serif" }}>Detail Acara</p>
-          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "8px", marginTop: "2px" }}>Sabtu, 1 Februari 2026</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    slug: "classic",
-    name: "Classic Ivory",
-    description: "Tradisional elegan dengan warna gading, dekorasi serif, dan kesan hangat romantis",
-    tag: "Klasik",
-    tagColor: "#b8860b",
-    defaultColors: { primaryColor: "#b8860b", secondaryColor: "#f5f0e8", bgColor: "#fffdf7", textColor: "#3d3d3d" },
-    defaultFonts: { fontHeading: "Playfair Display", fontBody: "Lato" },
-    preview: (
-      <div style={{ background: "#fffdf7", borderRadius: "12px", padding: "1rem", minHeight: "130px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", border: "1px solid #f0e8d8" }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-          <p style={{ color: "#888", fontSize: "8px", letterSpacing: "0.25em", textTransform: "uppercase" }}>Undangan Pernikahan</p>
-          <p style={{ color: "#3d3d3d", fontFamily: "Georgia, serif", fontSize: "18px", fontWeight: 700 }}>Groom</p>
-          <p style={{ color: "#b8860b", fontSize: "14px" }}>&amp;</p>
-          <p style={{ color: "#3d3d3d", fontFamily: "Georgia, serif", fontSize: "18px", fontWeight: 700 }}>Bride</p>
-        </div>
-        <div style={{ height: "1px", width: "32px", background: "#b8860b", opacity: 0.5 }} />
-        <p style={{ color: "#b8860b", fontSize: "8px", letterSpacing: "0.15em" }}>Sabtu, 1 Februari 2026</p>
-      </div>
-    ),
-  },
-  {
     slug: "sage",
     name: "Sage Editorial",
     description: "Pinterest masonry gallery, horizontal scroll snap, animasi stagger elegan, nuansa sage green & cream",
@@ -106,75 +63,6 @@ const TEMPLATES: Template[] = [
     ),
   },
   {
-    slug: "pearl",
-    name: "Pearl Luxury",
-    description: "Mewah modern dengan animasi Framer Motion, galeri sinematik, dan estetika champagne gold",
-    tag: "Luxury ✦",
-    tagColor: "#c9a96e",
-    defaultColors: { primaryColor: "#c9a96e", secondaryColor: "#f5ede0", bgColor: "#fdf8f3", textColor: "#3d2e28" },
-    defaultFonts: { fontHeading: "Cormorant Garamond", fontBody: "Lato" },
-    preview: (
-      <div style={{ background: "linear-gradient(135deg, #fdf8f3 0%, #f5ede0 100%)", borderRadius: "12px", padding: "1rem", minHeight: "130px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", border: "1px solid #e8d8c055" }}>
-        <div style={{ height: "1px", width: "40px", background: "linear-gradient(90deg,transparent,#c9a96e,transparent)" }} />
-        <div style={{ textAlign: "center" }}>
-          <p style={{ color: "#c9a96e", fontSize: "8px", letterSpacing: "0.3em", fontStyle: "italic", marginBottom: "4px" }}>The Wedding Of</p>
-          <p style={{ color: "#3d2e28", fontFamily: "Georgia, serif", fontSize: "17px", fontWeight: 300 }}>Groom &amp; Bride</p>
-        </div>
-        <div style={{ height: "1px", width: "32px", background: "linear-gradient(90deg,transparent,#c9a96e,transparent)" }} />
-        <div style={{ background: "rgba(201,169,110,0.15)", borderRadius: "9999px", padding: "4px 16px", border: "1px solid #c9a96e55" }}>
-          <p style={{ color: "#c9a96e", fontSize: "8px", fontWeight: 600, letterSpacing: "0.2em" }}>BUKA UNDANGAN</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    slug: "envelope",
-    name: "Envelope Journey",
-    description: "Pengalaman membuka amplop mewah 3D, animasi sinematik, galeri polaroid scrapbook, dan scroll dua arah",
-    tag: "Premium ✦✦",
-    tagColor: "#c4954a",
-    defaultColors: { primaryColor: "#c4954a", secondaryColor: "#f4ece0", bgColor: "#faf8f4", textColor: "#332820" },
-    defaultFonts: { fontHeading: "Cormorant Garamond", fontBody: "Jost" },
-    preview: (
-      <div style={{ background: "radial-gradient(ellipse at 50% 40%, #f8f0e2 0%, #ede0c6 100%)", borderRadius: "12px", padding: "1rem", minHeight: "130px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", position: "relative", overflow: "hidden" }}>
-        {/* Mini envelope */}
-        <div style={{ position: "relative", width: "72px", height: "50px" }}>
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(155deg, #f4e9d3, #e9d9b8)", borderRadius: "2px", boxShadow: "0 4px 12px rgba(61,40,20,0.2)" }} />
-          <div style={{ position: "absolute", inset: 0, clipPath: "polygon(0 0, 100% 0, 50% 55%)", background: "linear-gradient(to bottom, #f6eedb, #e8d7b4)" }} />
-          <div style={{ position: "absolute", top: "8%", left: "50%", transform: "translateX(-50%)", width: "10px", height: "10px", borderRadius: "50%", background: "radial-gradient(circle at 38% 35%, #d4a843, #9e6d26)", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" }} />
-        </div>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ color: "#c4954a", fontSize: "7px", letterSpacing: "0.3em", fontFamily: "Georgia,serif", marginBottom: "3px" }}>✦ Wedding Invitation ✦</p>
-          <p style={{ color: "#332820", fontFamily: "Georgia, serif", fontSize: "13px", fontWeight: 300 }}>Groom &amp; Bride</p>
-        </div>
-        <div style={{ height: "1px", width: "28px", background: "linear-gradient(90deg,transparent,#c4954a,transparent)" }} />
-      </div>
-    ),
-  },
-  {
-    slug: "lucky-jackpot",
-    name: "Lucky Jackpot",
-    description: "Opening animasi mesin fortune mewah — 8826 bertransformasi menjadi 888, simbol keberuntungan berlipat ganda",
-    tag: "Fortune ✦✦✦",
-    tagColor: "#c9a84c",
-    defaultColors: { primaryColor: "#c9a84c", secondaryColor: "#fdf3d0", bgColor: "#fdf9f0", textColor: "#2d1f0a" },
-    defaultFonts: { fontHeading: "Cormorant Garamond", fontBody: "Lato" },
-    preview: (
-      <div style={{ background: "linear-gradient(135deg, #fdf9f0 0%, #f5e9c8 100%)", borderRadius: "12px", padding: "1rem", minHeight: "130px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", border: "1px solid #c9a84c33" }}>
-        <p style={{ color: "#8b6914", fontSize: "8px", letterSpacing: "0.28em", fontFamily: "Georgia,serif", textTransform: "uppercase" }}>✦ Fortune ✦</p>
-        <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-          {["8", "8", "8"].map((d, i) => (
-            <div key={i} style={{ width: "22px", height: "26px", background: "linear-gradient(135deg,#fef9ed,#fdf3d0)", border: "1.5px solid #c9b87a", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontFamily: "Georgia,serif", fontSize: "13px", fontWeight: "bold", color: "#8b6914" }}>{d}</span>
-            </div>
-          ))}
-        </div>
-        <p style={{ color: "#2d1f0a", fontFamily: "Georgia, serif", fontSize: "13px", fontWeight: 300 }}>Groom &amp; Bride</p>
-        <p style={{ color: "#c9a84c", fontSize: "7px", letterSpacing: "0.2em", fontStyle: "italic", fontFamily: "Georgia,serif" }}>✦ The Ultimate Jackpot ✦</p>
-      </div>
-    ),
-  },
-  {
     slug: "lucky-envelope",
     name: "Lucky Envelope",
     description: "Pembukaan mesin fortune Lucky Jackpot dilanjutkan perjalanan amplop mewah 3D — dua pengalaman premium dalam satu undangan",
@@ -198,62 +86,6 @@ const TEMPLATES: Template[] = [
           <div style={{ position: "absolute", top: "8%", left: "50%", transform: "translateX(-50%)", width: "7px", height: "7px", borderRadius: "50%", background: "radial-gradient(circle at 38% 35%, #d4a843, #9e6d26)" }} />
         </div>
         <p style={{ color: "#332820", fontFamily: "Georgia, serif", fontSize: "12px", fontWeight: 300 }}>Groom &amp; Bride</p>
-      </div>
-    ),
-  },
-  {
-    slug: "lucky-hanoi",
-    name: "Lucky Hanoi",
-    description: "Pembukaan mesin slot 8→888 dengan karakter pasangan bergaya Changshan & Cheongsam, dilanjutkan layout undangan elegan bilingual ID/EN",
-    tag: "New ✦",
-    tagColor: "#c4954a",
-    defaultColors: { primaryColor: "#c4954a", secondaryColor: "#f4ece0", bgColor: "#fafaf8", textColor: "#1e1a14" },
-    defaultFonts: { fontHeading: "Cormorant Garamond", fontBody: "Jost" },
-    preview: (
-      <div style={{ background: "radial-gradient(ellipse at 50% 40%, #fafaf8 0%, #f4ece0 100%)", borderRadius: "12px", padding: "1rem", minHeight: "130px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", border: "1px solid #c4954a33" }}>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: "6px", marginBottom: "4px" }}>
-          {/* Woman silhouette */}
-          <div style={{ width: "18px", height: "40px", background: "linear-gradient(to bottom, #5C3319 0%, #5C3319 70%, #F2CA98 100%)", borderRadius: "4px 4px 2px 2px", opacity: 0.85 }} />
-          {/* Man silhouette */}
-          <div style={{ width: "20px", height: "46px", background: "linear-gradient(to bottom, #D4C4A0 0%, #D4C4A0 65%, #C2B08A 100%)", borderRadius: "4px 4px 2px 2px", opacity: 0.85 }} />
-          {/* Machine */}
-          <div style={{ background: "linear-gradient(160deg, #f8e9be, #edda9a)", border: "1.5px solid #c9a84c", borderRadius: "6px", padding: "4px 5px", display: "flex", gap: "2px" }}>
-            {["8", "8", "8"].map((d, i) => (
-              <div key={i} style={{ width: "13px", height: "16px", background: "linear-gradient(135deg,#fffbe8,#fff5c4)", border: "1px solid #c9b87a", borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: "Georgia,serif", fontSize: "8px", fontWeight: "bold", color: "#7a5a08" }}>{d}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <p style={{ color: "#c4954a", fontFamily: "Georgia, serif", fontSize: "11px", fontWeight: 300, letterSpacing: "0.1em" }}>Groom &amp; Bride</p>
-      </div>
-    ),
-  },
-  {
-    slug: "hanoi-modern",
-    name: "Hanoi Modern",
-    description: "Desain minimalis hitam & krem ala Vietnam — cover portrait arch-top, profil couple dengan teks rotasi, masonry gallery, dan countdown split layout",
-    tag: "New ✦",
-    tagColor: "#1a1a1a",
-    defaultColors: { primaryColor: "#1a1a1a", secondaryColor: "#E4DEDB", bgColor: "#EEEDE8", textColor: "#1a1a1a" },
-    defaultFonts: { fontHeading: "Cormorant Garamond", fontBody: "Jost" },
-    preview: (
-      <div style={{ background: "#EEEDE8", borderRadius: "12px", padding: "0.75rem", minHeight: "130px", display: "flex", gap: "6px", overflow: "hidden", position: "relative" }}>
-        {/* Left date strip */}
-        <div style={{ width: "20px", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "4px" }}>
-          <div style={{ flex: 1, width: "1px", background: "#1a1a1a", position: "relative" }}>
-            <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", background: "#EEEDE8", padding: "2px 3px", fontSize: "6px", fontFamily: "Georgia,serif", color: "#1a1a1a", textAlign: "center", lineHeight: 1.3 }}>
-              <span>28</span><br /><span>06</span><br /><span>26</span>
-            </div>
-          </div>
-        </div>
-        {/* Right portrait */}
-        <div style={{ flex: 1, borderRadius: "9999px 9999px 0 0", background: "linear-gradient(180deg, #d4d0cb 0%, #bab5ae 100%)", overflow: "hidden", position: "relative" }}>
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "50%", background: "linear-gradient(to top, #EEEDE8, transparent)" }} />
-          <div style={{ position: "absolute", bottom: "8px", left: "8px", right: "8px" }}>
-            <p style={{ fontFamily: "Georgia,serif", fontSize: "11px", color: "#1a1a1a", lineHeight: 1.2 }}>Bride &amp; Groom</p>
-          </div>
-        </div>
       </div>
     ),
   },

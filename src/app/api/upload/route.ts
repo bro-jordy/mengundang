@@ -1,6 +1,7 @@
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { nanoid } from "nanoid";
+import sharp from "sharp";
 import { requireAuth, canAccessClient } from "@/lib/auth/permissions";
 import { apiError, apiSuccess } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ const ALLOWED_AUDIO_TYPES = [
 
 const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_AUDIO_TYPES];
 const MAX_SIZE = 30 * 1024 * 1024; // 30 MB
+const MAX_IMAGE_DIMENSION = 2000; // px, sisi terpanjang — cukup untuk hero/gallery di layar mobile & retina
 
 export async function POST(req: Request) {
   try {
@@ -50,14 +52,30 @@ export async function POST(req: Request) {
       return apiError("Ukuran file terlalu besar. Maksimal 30MB.");
     }
 
-    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    let ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    let buffer: Buffer = Buffer.from(await file.arrayBuffer());
+
+    // GIF dilewati biar animasinya tidak hilang; format gambar lain di-resize & dikompres ke WebP.
+    if (ALLOWED_IMAGE_TYPES.includes(file.type) && file.type !== "image/gif") {
+      buffer = await sharp(buffer, { failOn: "none" })
+        .rotate()
+        .resize({
+          width: MAX_IMAGE_DIMENSION,
+          height: MAX_IMAGE_DIMENSION,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 82 })
+        .toBuffer();
+      ext = "webp";
+    }
+
     const filename = `${nanoid(12)}.${ext}`;
 
     const uploadDir = join(process.cwd(), "public", "uploads", clientId);
     await mkdir(uploadDir, { recursive: true });
 
-    const bytes = await file.arrayBuffer();
-    await writeFile(join(uploadDir, filename), Buffer.from(bytes));
+    await writeFile(join(uploadDir, filename), buffer);
 
     return apiSuccess({ url: `/uploads/${clientId}/${filename}` });
   } catch (err) {

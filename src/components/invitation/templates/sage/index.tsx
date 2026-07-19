@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Calendar, Copy, Check, Wallet, QrCode, Gift, Send, Heart, LockKeyhole, X, Shirt, AlarmClock } from "lucide-react";
 import { MusicPlayer } from "../../sections/MusicPlayer";
@@ -323,12 +324,11 @@ export function SageTemplate({ guest, client, token }: Props) {
             onAnimationComplete={() => { if (opened) setCoverGone(true); }}
             style={{ position: "fixed", inset: 0, zIndex: 50, pointerEvents: opened ? "none" : "auto" }}
           >
-            <div style={{
-              position: "absolute", inset: 0,
-              backgroundImage: heroUrl ? `url('${heroUrl}')` : undefined,
-              backgroundSize: "cover", backgroundPosition: "center",
-              backgroundColor: heroUrl ? undefined : ivory,
-            }} />
+            {heroUrl ? (
+              <Image src={heroUrl} alt="" fill priority sizes="100vw" style={{ objectFit: "cover" }} />
+            ) : (
+              <div style={{ position: "absolute", inset: 0, backgroundColor: ivory }} />
+            )}
             {heroUrl && <div style={{ position: "absolute", inset: 0, background: "rgba(30,30,28,0.42)" }} />}
             <div style={{ position: "absolute", top: "1.5rem", left: "2rem", right: "2rem", height: "1px", background: heroUrl ? "rgba(255,255,255,0.3)" : SAGE.sand }} />
 
@@ -412,7 +412,7 @@ export function SageTemplate({ guest, client, token }: Props) {
             {/* Hero strip */}
             {heroUrl && (
               <div style={{ position: "sticky", top: 0, zIndex: 20, height: "200px", overflow: "hidden" }}>
-                <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${heroUrl}')`, backgroundSize: "cover", backgroundPosition: "center 25%" }} />
+                <Image src={heroUrl} alt="" fill sizes="100vw" style={{ objectFit: "cover", objectPosition: "center 25%" }} />
                 <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to bottom, rgba(30,30,28,0.08) 0%, rgba(255,255,255,0.55) 50%, ${cream} 100%)` }} />
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 1.5rem" }}>
                   <p style={{ fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase", color: accent, marginBottom: "0.35rem", textShadow: "0 1px 8px rgba(255,255,255,0.95)" }}>{invLabel}</p>
@@ -557,10 +557,9 @@ function CoupleSection({ profile, accent, cream, ivory, text, fontH, fontB, t }:
             <div style={{ textAlign: "center" }}>
               {profile.showGroomPhoto && (
                 <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.35 }}
-                  style={{ marginBottom: "1rem", overflow: "hidden", borderRadius: "8px", aspectRatio: "3/4" }}>
+                  style={{ marginBottom: "1rem", overflow: "hidden", borderRadius: "8px", aspectRatio: "3/4", position: "relative" }}>
                   {profile.groomPhoto ? (
-                    <img src={profile.groomPhoto} alt={profile.groomName}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    <Image src={profile.groomPhoto} alt={profile.groomName} fill sizes="(max-width: 520px) 45vw, 240px" style={{ objectFit: "cover" }} />
                   ) : (
                     <div style={{ width: "100%", height: "100%", background: ivory, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <span style={{ fontSize: "2.5rem" }}>👤</span>
@@ -579,10 +578,9 @@ function CoupleSection({ profile, accent, cream, ivory, text, fontH, fontB, t }:
             <div style={{ textAlign: "center" }}>
               {profile.showBridePhoto && (
                 <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.35 }}
-                  style={{ marginBottom: "1rem", overflow: "hidden", borderRadius: "8px", aspectRatio: "3/4" }}>
+                  style={{ marginBottom: "1rem", overflow: "hidden", borderRadius: "8px", aspectRatio: "3/4", position: "relative" }}>
                   {profile.bridePhoto ? (
-                    <img src={profile.bridePhoto} alt={profile.brideName}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    <Image src={profile.bridePhoto} alt={profile.brideName} fill sizes="(max-width: 520px) 45vw, 240px" style={{ objectFit: "cover" }} />
                   ) : (
                     <div style={{ width: "100%", height: "100%", background: ivory, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <span style={{ fontSize: "2.5rem" }}>👤</span>
@@ -752,8 +750,8 @@ function GallerySection({ galleries, accent, cream, ivory, text, fontH, t }: {
                     position: "relative",
                   }}
                 >
-                  <img src={photo.url} alt="" draggable={false} loading="lazy"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <Image src={photo.url} alt="" draggable={false} fill sizes="50vw"
+                    style={{ objectFit: "cover" }} />
                   <motion.div
                     initial={{ opacity: 0 }}
                     whileHover={{ opacity: 1 }}
@@ -779,8 +777,8 @@ function GallerySection({ galleries, accent, cream, ivory, text, fontH, t }: {
                     position: "relative",
                   }}
                 >
-                  <img src={photo.url} alt="" draggable={false} loading="lazy"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <Image src={photo.url} alt="" draggable={false} fill sizes="50vw"
+                    style={{ objectFit: "cover" }} />
                   <motion.div
                     initial={{ opacity: 0 }}
                     whileHover={{ opacity: 1 }}
@@ -818,9 +816,9 @@ function GallerySection({ galleries, accent, cream, ivory, text, fontH, t }: {
                   cursor: "pointer", boxShadow: "0 8px 24px rgba(30,30,28,0.12)",
                 }}
               >
-                <div style={{ aspectRatio: "2/3" }}>
-                  <img src={photo.url} alt="" draggable={false} loading="lazy"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <div style={{ aspectRatio: "2/3", position: "relative" }}>
+                  <Image src={photo.url} alt="" draggable={false} fill sizes="50vw"
+                    style={{ objectFit: "cover" }} />
                 </div>
               </motion.div>
             ))}
@@ -1188,7 +1186,7 @@ function GiftSection({ gifts, accent, cream, ivory, text, fontH, fontB, t }: {
                   {qrisOpen === gift.id && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                       style={{ overflow: "hidden", borderTop: `1px solid ${SAGE.sand}`, padding: "1.25rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                      <img src={gift.qrisImage!} alt="QRIS" style={{ maxWidth: "160px", width: "100%", borderRadius: "8px" }} />
+                      <Image src={gift.qrisImage!} alt="QRIS" width={320} height={320} style={{ maxWidth: "160px", width: "100%", height: "auto", borderRadius: "8px" }} />
                       <p style={{ fontSize: "0.68rem", color: text, opacity: 0.4, marginTop: "0.5rem" }}>{t.scanToTransfer}</p>
                     </motion.div>
                   )}

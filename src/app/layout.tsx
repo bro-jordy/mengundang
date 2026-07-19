@@ -1,6 +1,35 @@
 import type { Metadata, Viewport } from "next";
+import { IBM_Plex_Sans, IBM_Plex_Mono, Playfair_Display, Lato } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-ibm-plex-sans",
+  display: "swap",
+});
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-ibm-plex-mono",
+  display: "swap",
+});
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-playfair-display",
+  display: "swap",
+});
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-lato",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -23,12 +52,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="h-full antialiased">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
-      </head>
+    <html
+      lang="id"
+      className={`h-full antialiased ${ibmPlexSans.variable} ${ibmPlexMono.variable} ${playfairDisplay.variable} ${lato.variable}`}
+    >
       <body className="min-h-full flex flex-col">
         <SessionProvider>{children}</SessionProvider>
       </body>
