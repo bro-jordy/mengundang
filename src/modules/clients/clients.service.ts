@@ -19,6 +19,15 @@ export async function getAllClients(userId: string, role: string) {
   });
 }
 
+// Data ringan buat ClientNav (header + tab bar) — dipanggil di layout tiap kali pindah tab,
+// jadi sengaja tidak include relasi berat (events/theme/sections/musics/gifts/dll) yang tidak dipakai di situ.
+export async function getClientNavInfo(id: string) {
+  return prisma.client.findUnique({
+    where: { id },
+    select: { id: true, name: true, slug: true, status: true, clientType: true },
+  });
+}
+
 export async function getClientById(id: string) {
   return prisma.client.findUnique({
     where: { id },

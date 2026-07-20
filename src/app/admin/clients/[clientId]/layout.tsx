@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth/auth";
 import { canAccessClient } from "@/lib/auth/permissions";
-import { getClientById } from "@/modules/clients/clients.service";
+import { getClientNavInfo } from "@/modules/clients/clients.service";
 import { notFound, redirect } from "next/navigation";
 import { ClientNav } from "@/components/cms/client/ClientNav";
 
@@ -14,10 +14,11 @@ export default async function ClientLayout({ children, params }: Props) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const hasAccess = await canAccessClient(clientId);
+  const [hasAccess, client] = await Promise.all([
+    canAccessClient(clientId),
+    getClientNavInfo(clientId),
+  ]);
   if (!hasAccess) redirect("/admin/clients");
-
-  const client = await getClientById(clientId);
   if (!client) notFound();
 
   const user = session.user as { role?: string };
