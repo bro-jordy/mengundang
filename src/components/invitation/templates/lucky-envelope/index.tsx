@@ -66,7 +66,7 @@ interface Guest {
   name: string;
   maxPax: number;
   rsvp: Rsvp | null;
-  invitationCategory?: "GEREJA_SAJA" | "GEREJA_RESEPSI";
+  invitationCategory?: string;
   barcodeChurch?: string | null;
   barcodeReception?: string | null;
 }
@@ -243,6 +243,35 @@ const EVENT_LABEL: Record<string, string> = {
 function getEventDisplayLabel(ev: { type: string; label?: string | null; labelEn?: string | null } | undefined, lang: Lang): string {
   if (!ev) return "Acara";
   return (lang === "en" && ev.labelEn) || ev.label || EVENT_LABEL[ev.type] || ev.type;
+}
+
+/**
+ * Only show events (and their maps) the guest is actually invited to — e.g. a
+ * guest invited to "PEMBERKATAN" only must not see the Resepsi/After Party maps.
+ * No category (anonymous/preview link) falls back to showing every event.
+ */
+function getEventsForGuestCategory(
+  events: Props["client"]["events"],
+  invitationCategory: string | undefined
+): Props["client"]["events"] {
+  if (!invitationCategory) return events;
+
+  const includesReception = invitationCategory.includes("RESEPSI");
+  const ceremonyType = invitationCategory.startsWith("AKAD")
+    ? "AKAD"
+    : invitationCategory.startsWith("PEMBERKATAN")
+    ? "PEMBERKATAN"
+    : invitationCategory === "SANGJIT"
+    ? "SANGJIT"
+    : invitationCategory === "LAMARAN"
+    ? "LAMARAN"
+    : null;
+
+  return events.filter((ev) => {
+    if (ev.type === "RESEPSI" || ev.type === "AFTER_PARTY") return includesReception;
+    if (ceremonyType) return ev.type === ceremonyType;
+    return true;
+  });
 }
 
 const INVITATION_LABEL: Record<string, string> = {
@@ -1406,7 +1435,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
               )}
 
               {sectionKeys.includes("EVENT") && (
-                <EventsSection events={client.events} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} showMap={showMap} lang={lang} />
+                <EventsSection events={getEventsForGuestCategory(client.events, guest?.invitationCategory)} gold={gold} ivory={ivorySurface} champagne={champagneSurface} text={text} fontH={fontH} fontB={fontB} t={t} showMap={showMap} lang={lang} />
               )}
 
               {sectionKeys.includes("GALLERY") && (

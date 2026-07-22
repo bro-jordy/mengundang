@@ -40,7 +40,7 @@ function useWakeLock(active: boolean) {
 interface Props {
   barcodeChurch: string | null;
   barcodeReception: string | null;
-  invitationCategory: "GEREJA_SAJA" | "GEREJA_RESEPSI";
+  invitationCategory: string;
   /** Human-readable label for the first barcode, e.g. "Akad", "Pemberkatan", "Sangjit" */
   churchLabel?: string;
   /** Human-readable label for the second barcode, e.g. "Resepsi" */
