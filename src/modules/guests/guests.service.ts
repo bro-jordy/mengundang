@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/database/prisma";
 import { generateGuestToken, generateInvitationUrl } from "@/lib/token";
 import { randomBytes } from "crypto";
-import type { CreateGuestInput, UpdateGuestInput, InvitationCategoryValue } from "./guests.schema";
+import type { CreateGuestInput, UpdateGuestInput, InvitationCategoryValue, GuestSideValue } from "./guests.schema";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -85,6 +85,7 @@ export async function createGuest(
       name: data.name,
       phone: data.phone || null,
       invitationCategory: data.invitationCategory,
+      side: data.side || null,
       barcodeChurch,
       barcodeReception,
       maxPax: data.maxPax,
@@ -96,7 +97,7 @@ export async function createGuest(
 
 export async function importGuests(
   clientId: string,
-  guests: Array<{ name: string; phone?: string; invitationCategory?: InvitationCategoryValue; maxPax?: number }>,
+  guests: Array<{ name: string; phone?: string; invitationCategory?: InvitationCategoryValue; side?: GuestSideValue | null; maxPax?: number }>,
   clientSlug: string,
   clientType?: string
 ) {
@@ -109,6 +110,7 @@ export async function importGuests(
       name: g.name,
       phone: g.phone || null,
       invitationCategory: category,
+      side: g.side || null,
       barcodeChurch: generateBarcode(),
       barcodeReception: needsBarcodeReception(category) ? generateBarcode() : null,
       maxPax: g.maxPax ?? 2,

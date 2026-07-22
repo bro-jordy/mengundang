@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createGuestSchema, type CreateGuestInput } from "@/modules/guests/guests.schema";
+import { createGuestSchema, GUEST_SIDES, type CreateGuestInput } from "@/modules/guests/guests.schema";
 import { renderWhatsappMessage, buildWhatsappLink } from "@/lib/whatsapp";
 import { formatDate } from "@/lib/utils";
 import {
@@ -74,6 +74,16 @@ const CATEGORY_COLOR: Record<string, string> = {
   LAMARAN: "bg-pink-50 text-pink-700",
 };
 
+const SIDE_LABEL: Record<string, string> = {
+  GROOM: "Pihak Pria",
+  BRIDE: "Pihak Wanita",
+};
+
+const SIDE_COLOR: Record<string, string> = {
+  GROOM: "bg-sky-50 text-sky-700",
+  BRIDE: "bg-rose-50 text-rose-700",
+};
+
 function getInvitationCategories(
   clientType: string,
   eventTypes: string[]
@@ -118,9 +128,10 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
   const [fixingUrls, setFixingUrls] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [sideFilter, setSideFilter] = useState<"ALL" | "GROOM" | "BRIDE">("ALL");
   const fileRef = useRef<HTMLInputElement>(null);
   const [editingGuestId, setEditingGuestId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", phone: "", invitationCategory: "", maxPax: 2 });
+  const [editForm, setEditForm] = useState({ name: "", phone: "", invitationCategory: "", side: "", maxPax: 2 });
   const [saving, setSaving] = useState(false);
 
   const invitationCategories = getInvitationCategories(
@@ -129,9 +140,9 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
   );
   const defaultCategory = invitationCategories[0]?.value ?? "AKAD_RESEPSI";
 
-  const filteredGuests = guests.filter((g) =>
-    g.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredGuests = guests
+    .filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((g) => sideFilter === "ALL" || g.side === sideFilter);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateGuestInput>({
     resolver: zodResolver(createGuestSchema) as any,
@@ -221,14 +232,16 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
     const lines = text.trim().split("\n").slice(1);
     const validCategories = invitationCategories.map((c) => c.value);
     const parsed = lines.map((line) => {
-      const [name, phone, category, maxPax] = line.split(",").map((s) => s.trim());
+      const [name, phone, category, side, maxPax] = line.split(",").map((s) => s.trim());
       const resolvedCategory = validCategories.includes(category)
         ? category
         : defaultCategory;
+      const resolvedSide = (GUEST_SIDES as readonly string[]).includes(side) ? (side as "GROOM" | "BRIDE") : null;
       return {
         name,
         phone,
         invitationCategory: resolvedCategory as any,
+        side: resolvedSide,
         maxPax: Number(maxPax) || 2,
       };
     }).filter((g) => g.name);
@@ -270,6 +283,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
       name: guest.name,
       phone: guest.phone ?? "",
       invitationCategory: guest.invitationCategory,
+      side: guest.side ?? "",
       maxPax: guest.maxPax,
     });
   }
@@ -284,6 +298,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
         name: editForm.name.trim(),
         phone: editForm.phone.trim() || null,
         invitationCategory: editForm.invitationCategory,
+        side: editForm.side || null,
         maxPax: Number(editForm.maxPax),
       }),
     });
@@ -300,11 +315,12 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
   function exportCSV() {
     const rows = [
-      ["Nama", "Telepon", "Kategori", "Maks Tamu", "Link Undangan", "Status RSVP", "Sudah Dibuka"],
+      ["Nama", "Telepon", "Kategori", "Pihak", "Maks Tamu", "Link Undangan", "Status RSVP", "Sudah Dibuka"],
       ...guests.map((g) => [
         g.name,
         g.phone || "",
         g.invitationCategory,
+        g.side ?? "",
         g.maxPax,
         g.invitationUrl,
         g.rsvpStatus,
@@ -333,6 +349,19 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
           onChange={(e) => setSearch(e.target.value)}
           className="border border-stone-300 rounded-lg px-3 py-2 text-sm flex-1 min-w-48 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
+        <div className="flex items-center gap-1 border border-stone-300 rounded-lg p-1">
+          {(["ALL", "GROOM", "BRIDE"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSideFilter(s)}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                sideFilter === s ? "bg-stone-800 text-white" : "text-stone-500 hover:bg-stone-50"
+              }`}
+            >
+              {s === "ALL" ? "Semua" : s === "GROOM" ? "Pihak Pria" : "Pihak Wanita"}
+            </button>
+          ))}
+        </div>
         <button
           onClick={() => setShowAddForm(!showAddForm)}
           className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700"
@@ -371,7 +400,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
       {/* Format CSV info */}
       <p className="text-xs text-stone-400">
         Format CSV:{" "}
-        <span className="font-mono">Nama,Telepon,Kategori({csvCategoryValues}),MaksTamu</span>
+        <span className="font-mono">Nama,Telepon,Kategori({csvCategoryValues}),Pihak(GROOM/BRIDE),MaksTamu</span>
       </p>
 
       {/* Add form */}
@@ -403,6 +432,18 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
               {errors.invitationCategory && (
                 <p className="text-red-500 text-xs mt-1">{errors.invitationCategory.message}</p>
               )}
+            </div>
+            <div>
+              <label className={labelClass}>Pihak</label>
+              <select
+                {...register("side", { setValueAs: (v) => (v === "" ? undefined : v) })}
+                className={inputClass}
+                defaultValue=""
+              >
+                <option value="">Belum ditentukan</option>
+                <option value="GROOM">Pihak Pria</option>
+                <option value="BRIDE">Pihak Wanita</option>
+              </select>
             </div>
             <div>
               <label className={labelClass}>Maks Tamu</label>
@@ -444,6 +485,8 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
             <span>{guests.length} tamu · {guests.reduce((sum, g) => sum + g.maxPax, 0)} pax</span>
             <span>{guests.filter((g) => g.isOpened).length} sudah buka</span>
             <span>{guests.filter((g) => g.rsvpStatus === "HADIR").length} konfirmasi hadir</span>
+            <span>{guests.filter((g) => g.side === "GROOM").length} pihak pria</span>
+            <span>{guests.filter((g) => g.side === "BRIDE").length} pihak wanita</span>
             {invitationCategories.map((cat) => (
               <span key={cat.value}>
                 {guests.filter((g) => g.invitationCategory === cat.value).length} {cat.label.toLowerCase()}
@@ -460,7 +503,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
       {filteredGuests.length === 0 ? (
         <div className="bg-white rounded-2xl border border-stone-200 p-10 text-center">
           <p className="text-stone-400 text-sm">
-            {search ? "Tidak ada tamu yang cocok." : "Belum ada tamu."}
+            {search || sideFilter !== "ALL" ? "Tidak ada tamu yang cocok." : "Belum ada tamu."}
           </p>
         </div>
       ) : (
@@ -471,6 +514,7 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
               <tr className="border-b border-stone-100 text-left">
                 <th className="px-4 py-3 text-stone-500 font-medium sticky left-0 bg-white z-10 border-r border-stone-100">Nama</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">Kategori</th>
+                <th className="px-4 py-3 text-stone-500 font-medium">Pihak</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">RSVP</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">Pax</th>
                 <th className="px-4 py-3 text-stone-500 font-medium">Barcode</th>
@@ -512,6 +556,17 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                           {invitationCategories.map((cat) => (
                             <option key={cat.value} value={cat.value}>{cat.label}</option>
                           ))}
+                        </select>
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={editForm.side}
+                          onChange={(e) => setEditForm((f) => ({ ...f, side: e.target.value }))}
+                          className={inputClass}
+                        >
+                          <option value="">Belum ditentukan</option>
+                          <option value="GROOM">Pihak Pria</option>
+                          <option value="BRIDE">Pihak Wanita</option>
                         </select>
                       </td>
                       <td className="px-4 py-3">
@@ -568,6 +623,15 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
                       >
                         {CATEGORY_LABEL[guest.invitationCategory] ?? guest.invitationCategory}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {guest.side ? (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${SIDE_COLOR[guest.side]}`}>
+                          {SIDE_LABEL[guest.side]}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-stone-400">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[guest.rsvpStatus]}`}>

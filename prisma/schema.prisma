@@ -200,6 +200,7 @@ model Guest {
   phone              String?
   email              String?
   invitationCategory InvitationCategory @default(GEREJA_RESEPSI)
+  side               GuestSide?
   barcodeChurch      String?            @unique
   barcodeReception   String?            @unique
   guestToken         String             @unique @default("")
@@ -386,6 +387,11 @@ enum GalleryType {
 enum GuestSendStatus {
   UNSENT
   SENT
+}
+
+enum GuestSide {
+  GROOM
+  BRIDE
 }
 
 enum RsvpStatus {
