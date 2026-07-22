@@ -254,7 +254,8 @@ function getEventsForGuestCategory(
   events: Props["client"]["events"],
   invitationCategory: string | undefined
 ): Props["client"]["events"] {
-  if (!invitationCategory) return events;
+  // If guest has no explicit category, do not show any events (and therefore no maps).
+  if (!invitationCategory) return [];
 
   const includesReception = invitationCategory.includes("RESEPSI");
   const ceremonyType = invitationCategory.startsWith("AKAD")
