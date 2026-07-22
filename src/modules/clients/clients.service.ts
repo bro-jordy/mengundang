@@ -33,7 +33,7 @@ export async function getClientById(id: string) {
     where: { id },
     include: {
       weddingProfile: true,
-      events: { orderBy: { sortOrder: "asc" } },
+      events: { orderBy: [{ sortOrder: "asc" }, { date: "asc" }, { timeStart: "asc" }] },
       theme: true,
       sections: { orderBy: { sortOrder: "asc" } },
       musics: true,
@@ -54,7 +54,7 @@ export const getClientBySlug = cache(async function getClientBySlug(slug: string
     where: { slug },
     include: {
       weddingProfile: true,
-      events: { orderBy: { sortOrder: "asc" } },
+      events: { orderBy: [{ sortOrder: "asc" }, { date: "asc" }, { timeStart: "asc" }] },
       galleries: { orderBy: { sortOrder: "asc" } },
       theme: true,
       musics: { where: { isActive: true } },
@@ -77,13 +77,13 @@ export async function createClient(data: CreateClientInput, userId: string) {
       weddingProfile: { create: {} },
       theme: {
         create: {
-          templateSlug: "dark",
-          primaryColor: "#c4a07a",
-          secondaryColor: "#f5f5f5",
-          bgColor: "#ffffff",
-          textColor: "#1a1a1a",
-          fontHeading: "Cormorant",
-          fontBody: "IBM Plex Sans",
+          templateSlug: "lucky-envelope",
+          primaryColor: "#c4954a",
+          secondaryColor: "#f4ece0",
+          bgColor: "#faf8f4",
+          textColor: "#332820",
+          fontHeading: "Cormorant Garamond",
+          fontBody: "Jost",
         },
       },
       sections: { create: DEFAULT_SECTIONS },

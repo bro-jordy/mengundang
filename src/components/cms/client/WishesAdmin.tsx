@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { formatDate } from "@/lib/utils";
-import { Eye, EyeOff, MessageSquareReply, Check, X } from "lucide-react";
+import { Eye, EyeOff, MessageSquareReply, Check, X, Trash2 } from "lucide-react";
 
 interface Wish {
   id: string;
@@ -47,6 +47,14 @@ export function WishesAdmin({ initialWishes }: Props) {
     }
   }
 
+  async function deleteWish(id: string) {
+    if (!confirm("Hapus ucapan ini secara permanen?")) return;
+    const res = await fetch(`/api/wishes/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setWishes((prev) => prev.filter((w) => w.id !== id));
+    }
+  }
+
   if (wishes.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-stone-200 p-10 text-center">
@@ -63,6 +71,7 @@ export function WishesAdmin({ initialWishes }: Props) {
           wish={wish}
           onToggleVisibility={toggleVisibility}
           onSaveReply={saveReply}
+          onDelete={deleteWish}
         />
       ))}
     </div>
@@ -73,10 +82,12 @@ function WishCard({
   wish,
   onToggleVisibility,
   onSaveReply,
+  onDelete,
 }: {
   wish: Wish;
   onToggleVisibility: (id: string, current: boolean) => void;
   onSaveReply: (id: string, reply: string) => Promise<void>;
+  onDelete: (id: string) => void;
 }) {
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState(wish.reply ?? "");
@@ -173,6 +184,13 @@ function WishCard({
             title={wish.isApproved ? "Sembunyikan dari undangan" : "Tampilkan di undangan"}
           >
             {wish.isApproved ? <Eye size={16} /> : <EyeOff size={16} />}
+          </button>
+          <button
+            onClick={() => onDelete(wish.id)}
+            className="p-1.5 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+            title="Hapus ucapan"
+          >
+            <Trash2 size={16} />
           </button>
         </div>
       </div>

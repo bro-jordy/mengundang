@@ -14,6 +14,9 @@ export async function POST(req: Request) {
     if (err instanceof Error && err.message === "INVALID_TOKEN") {
       return apiError("Link undangan tidak valid", 400);
     }
+    if (err instanceof Error && err.message === "PAX_EXCEEDS_MAX") {
+      return apiError("Jumlah tamu melebihi batas maksimal", 400);
+    }
     return apiError("Terjadi kesalahan server", 500);
   }
 }

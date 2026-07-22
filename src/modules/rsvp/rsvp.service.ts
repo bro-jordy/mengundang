@@ -4,11 +4,15 @@ import type { RsvpInput, WishInput } from "./rsvp.schema";
 export async function submitRsvp(data: RsvpInput) {
   const guest = await prisma.guest.findUnique({
     where: { guestToken: data.token },
-    select: { id: true, clientId: true, isActive: true },
+    select: { id: true, clientId: true, isActive: true, maxPax: true },
   });
 
   if (!guest || !guest.isActive) {
     throw new Error("INVALID_TOKEN");
+  }
+
+  if (data.paxCount > guest.maxPax) {
+    throw new Error("PAX_EXCEEDS_MAX");
   }
 
   const rsvp = await prisma.rsvp.upsert({
@@ -17,7 +21,6 @@ export async function submitRsvp(data: RsvpInput) {
       name: data.name,
       paxCount: data.paxCount,
       status: data.status,
-      message: data.message || null,
     },
     create: {
       guestId: guest.id,
@@ -25,7 +28,6 @@ export async function submitRsvp(data: RsvpInput) {
       name: data.name,
       paxCount: data.paxCount,
       status: data.status,
-      message: data.message || null,
     },
   });
 
@@ -33,17 +35,6 @@ export async function submitRsvp(data: RsvpInput) {
     where: { id: guest.id },
     data: { rsvpStatus: data.status },
   });
-
-  if (data.message) {
-    const existingWish = await prisma.wish.findFirst({ where: { guestId: guest.id } });
-    if (existingWish) {
-      await prisma.wish.update({ where: { id: existingWish.id }, data: { name: data.name, message: data.message } });
-    } else {
-      await prisma.wish.create({
-        data: { clientId: guest.clientId, guestId: guest.id, name: data.name, message: data.message, isApproved: true },
-      });
-    }
-  }
 
   return rsvp;
 }
@@ -77,4 +68,8 @@ export async function getWishes(clientId: string) {
 
 export async function updateWish(id: string, data: { isApproved?: boolean; reply?: string | null }) {
   return prisma.wish.update({ where: { id }, data });
+}
+
+export async function deleteWish(id: string) {
+  return prisma.wish.delete({ where: { id } });
 }

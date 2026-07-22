@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { JackpotCover } from "./JackpotCover";
 import { MusicPlayer } from "../../sections/MusicPlayer";
-import { BarcodeSection } from "../../sections/BarcodeSection";
+import { BarcodeSection, getEventVenueName } from "../../sections/BarcodeSection";
 import { AttentionSection } from "../../sections/AttentionSection";
 import { formatDate } from "@/lib/utils";
 import type { Rsvp } from "@/types/prisma.types";
@@ -865,13 +865,12 @@ function RSVPSection({
 }) {
   const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">((guest.rsvp?.status as "HADIR" | "TIDAK_HADIR") || "HADIR");
   const [pax, setPax] = useState(guest.rsvp?.paxCount ?? guest.maxPax);
-  const [msg, setMsg] = useState(guest.rsvp?.message || "");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(!!guest.rsvp);
 
   async function submit() {
     setSaving(true);
-    const res = await fetch("/api/rsvp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId, guestId: guest.id, token, name: guest.name, paxCount: pax, status, message: msg }) });
+    const res = await fetch("/api/rsvp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clientId, guestId: guest.id, token, name: guest.name, paxCount: pax, status }) });
     if (res.ok) { setDone(true); onConfirmed?.(status); }
     setSaving(false);
   }
@@ -912,7 +911,6 @@ function RSVPSection({
                   </motion.div>
                 )}
               </AnimatePresence>
-              <textarea value={msg} onChange={(e) => setMsg(e.target.value)} rows={3} placeholder={t.messagePlaceholder} style={{ width: "100%", background: champagne, border: `1px solid ${gold}22`, borderRadius: "14px", padding: "0.8rem 1rem", fontSize: "0.84rem", color: text, resize: "none", outline: "none", boxSizing: "border-box", fontFamily: `'${fontB}', 'Jost', sans-serif`, lineHeight: 1.65 }} />
               <motion.button whileHover={{ scale: 1.02, boxShadow: `0 10px 28px ${gold}50`, transition: { duration: 0.25 } }} whileTap={{ scale: 0.97 }} onClick={submit} disabled={saving} style={{ width: "100%", marginTop: "1rem", padding: "0.95rem", background: `linear-gradient(135deg, ${gold} 0%, #e8c98a 50%, ${gold} 100%)`, backgroundSize: "200% 100%", color: "#2a1c14", border: "none", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 500, letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Cinzel', serif", opacity: saving ? 0.6 : 1, transition: "opacity 0.2s" }}>
                 {saving ? t.sending : t.confirmBtn}
               </motion.button>
@@ -1429,8 +1427,8 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
                   invitationCategory={guest.invitationCategory ?? "GEREJA_RESEPSI"}
                   churchLabel={getEventDisplayLabel(client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY") ?? client.events[0], lang)}
                   receptionLabel={getEventDisplayLabel(client.events.find((e: any) => e.type === "RESEPSI"), lang)}
-                  churchVenueName={client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY")?.venueName || client.events[0]?.venueName || "Venue"}
-                  receptionVenueName={client.events.find((e: any) => e.type === "RESEPSI")?.venueName || "Resepsi"}
+                  churchVenueName={getEventVenueName(client.events.find((e: any) => e.type !== "RESEPSI" && e.type !== "AFTER_PARTY") ?? client.events[0], lang, "Venue")}
+                  receptionVenueName={getEventVenueName(client.events.find((e: any) => e.type === "RESEPSI"), lang, "Resepsi")}
                   primaryColor={gold}
                   bgColor={ivorySurface}
                   fontHeading={fontH}

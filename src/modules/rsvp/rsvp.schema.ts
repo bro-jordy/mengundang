@@ -3,9 +3,8 @@ import { z } from "zod";
 export const rsvpSchema = z.object({
   token: z.string().min(1),
   name: z.string().min(1, "Nama wajib diisi"),
-  paxCount: z.number().int().min(1).max(10),
+  paxCount: z.number().int().min(1),
   status: z.enum(["HADIR", "TIDAK_HADIR"]),
-  message: z.string().optional().nullable(),
 });
 
 export const wishSchema = z.object({

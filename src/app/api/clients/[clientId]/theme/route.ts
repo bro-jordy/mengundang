@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const themeSchema = z.object({
-  templateSlug: z.string().min(1).optional(),
+  templateSlug: z.enum(["lucky-envelope"]).optional(),
   primaryColor: z.string().min(1).optional(),
   secondaryColor: z.string().min(1).optional(),
   bgColor: z.string().min(1).optional(),

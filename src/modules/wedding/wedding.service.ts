@@ -19,7 +19,7 @@ export async function upsertWeddingProfile(
 export async function getEvents(clientId: string) {
   return prisma.event.findMany({
     where: { clientId },
-    orderBy: { sortOrder: "asc" },
+    orderBy: [{ sortOrder: "asc" }, { date: "asc" }, { timeStart: "asc" }],
   });
 }
 

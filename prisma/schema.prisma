@@ -151,7 +151,7 @@ model Gallery {
 model Theme {
   id             String   @id @default(cuid())
   clientId       String   @unique
-  templateSlug   String   @default("classic")
+  templateSlug   String   @default("lucky-envelope")
   primaryColor   String   @default("#b8860b")
   secondaryColor String   @default("#f5f0e8")
   bgColor        String   @default("#fffdf7")

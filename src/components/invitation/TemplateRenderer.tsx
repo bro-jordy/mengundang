@@ -3,10 +3,6 @@
 import dynamic from "next/dynamic";
 import type { Rsvp } from "@/types/prisma.types";
 
-// Tema lain (classic, dark, envelope, hanoi-modern, lucky-hanoi, lucky-jackpot, pearl) masih ada
-// di src/components/invitation/templates/ untuk testing, tapi sengaja tidak didaftarkan di sini
-// biar tidak ikut ke-bundle ke JS undangan tamu. Tema aktif saat ini: sage & lucky-envelope.
-const SageTemplate = dynamic(() => import("./templates/sage").then((m) => m.SageTemplate));
 const LuckyEnvelopeTemplate = dynamic(() =>
   import("./templates/lucky-envelope").then((m) => m.LuckyEnvelopeTemplate)
 );
@@ -48,8 +44,5 @@ interface Props {
 }
 
 export function TemplateRenderer({ guest, client, token }: Props) {
-  const slug = client.theme?.templateSlug || "sage";
-
-  if (slug === "lucky-envelope") return <LuckyEnvelopeTemplate guest={guest} client={client as any} token={token} />;
-  return <SageTemplate guest={guest} client={client as any} token={token} />;
+  return <LuckyEnvelopeTemplate guest={guest} client={client as any} token={token} />;
 }

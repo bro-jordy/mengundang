@@ -36,7 +36,7 @@ const getCachedClientInvitationData = unstable_cache(
       where: { id: clientId },
       include: {
         weddingProfile: true,
-        events: { orderBy: { sortOrder: "asc" } },
+        events: { orderBy: [{ sortOrder: "asc" }, { date: "asc" }, { timeStart: "asc" }] },
         galleries: { orderBy: { sortOrder: "asc" } },
         theme: true,
         musics: { where: { isActive: true } },

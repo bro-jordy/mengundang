@@ -36,33 +36,6 @@ interface Template {
 
 const TEMPLATES: Template[] = [
   {
-    slug: "sage",
-    name: "Sage Editorial",
-    description: "Pinterest masonry gallery, horizontal scroll snap, animasi stagger elegan, nuansa sage green & cream",
-    tag: "Editorial ✦",
-    tagColor: "#7c9a7e",
-    defaultColors: { primaryColor: "#7c9a7e", secondaryColor: "#f2efe9", bgColor: "#fafaf8", textColor: "#1e1e1c" },
-    defaultFonts: { fontHeading: "Playfair Display", fontBody: "Lato" },
-    preview: (
-      <div style={{ background: "#fafaf8", borderRadius: "12px", padding: "1rem", minHeight: "130px", border: "1px solid #e8e2d9" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", height: "90px" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <div style={{ flex: 2, background: "#e8e2d9", borderRadius: "6px" }} />
-            <div style={{ flex: 1, background: "#f2efe9", borderRadius: "6px", border: "1px solid #e8e2d9" }} />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "20px" }}>
-            <div style={{ flex: 1, background: "#f2efe9", borderRadius: "6px", border: "1px solid #e8e2d9" }} />
-            <div style={{ flex: 2, background: "#e8e2d9", borderRadius: "6px" }} />
-          </div>
-        </div>
-        <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ height: "2px", width: "16px", background: "#7c9a7e", borderRadius: "1px" }} />
-          <p style={{ color: "#1e1e1c", fontFamily: "Georgia,serif", fontSize: "11px", fontStyle: "italic" }}>Sage Editorial</p>
-        </div>
-      </div>
-    ),
-  },
-  {
     slug: "lucky-envelope",
     name: "Lucky Envelope",
     description: "Pembukaan mesin fortune Lucky Jackpot dilanjutkan perjalanan amplop mewah 3D — dua pengalaman premium dalam satu undangan",
@@ -320,35 +293,35 @@ export function ThemeEditor({ clientId, initialTheme }: Props) {
               <div className="rounded-xl overflow-hidden mb-3" style={{ background: theme.bgColor }}>
                 {/* Header bubble */}
                 <div className="rounded-xl p-4 text-center mb-3"
-                  style={{ background: theme.templateSlug === "dark" ? "#1a1a1a" : theme.secondaryColor, border: `1px solid ${theme.primaryColor}33` }}>
+                  style={{ background: theme.secondaryColor, border: `1px solid ${theme.primaryColor}33` }}>
                   <p className="text-xs italic mb-1"
-                    style={{ color: theme.templateSlug === "dark" ? "rgba(255,255,255,0.6)" : theme.primaryColor, fontFamily: `'${theme.fontHeading}', Georgia, serif` }}>
+                    style={{ color: theme.primaryColor, fontFamily: `'${theme.fontHeading}', Georgia, serif` }}>
                     The Wedding Of
                   </p>
                   <p className="text-lg font-light"
-                    style={{ color: theme.templateSlug === "dark" ? "#fff" : theme.textColor, fontFamily: `'${theme.fontHeading}', Georgia, serif` }}>
+                    style={{ color: theme.textColor, fontFamily: `'${theme.fontHeading}', Georgia, serif` }}>
                     Groom &amp; Bride
                   </p>
                 </div>
                 <div className="h-px w-8 mx-auto mb-3" style={{ background: `linear-gradient(90deg,transparent,${theme.primaryColor},transparent)` }} />
                 <p className="text-xs font-light text-center mb-3"
-                  style={{ color: theme.templateSlug === "dark" ? "rgba(0,0,0,0.5)" : theme.textColor + "80", fontFamily: `'${theme.fontBody}', sans-serif` }}>
+                  style={{ color: theme.textColor + "80", fontFamily: `'${theme.fontBody}', sans-serif` }}>
                   Dengan hormat kami mengundang
                 </p>
                 <div className="rounded-xl p-3 mb-3"
-                  style={{ background: theme.templateSlug === "dark" ? "#242424" : theme.secondaryColor }}>
+                  style={{ background: theme.secondaryColor }}>
                   <p className="text-xs font-light text-center"
                     style={{ color: theme.primaryColor, fontFamily: `'${theme.fontHeading}', Georgia, serif` }}>
                     Detail Acara
                   </p>
                   <p className="text-xs mt-1 text-center"
-                    style={{ color: theme.templateSlug === "dark" ? "rgba(255,255,255,0.5)" : theme.textColor + "70", fontFamily: `'${theme.fontBody}', sans-serif` }}>
+                    style={{ color: theme.textColor + "70", fontFamily: `'${theme.fontBody}', sans-serif` }}>
                     Sabtu, 1 Februari 2026
                   </p>
                 </div>
                 <div className="text-center">
                   <span className="inline-block px-4 py-1.5 rounded-full text-xs font-medium"
-                    style={{ background: theme.primaryColor, color: theme.templateSlug === "pearl" ? "#3d2e28" : "#fff" }}>
+                    style={{ background: theme.primaryColor, color: "#fff" }}>
                     Buka Undangan
                   </span>
                 </div>

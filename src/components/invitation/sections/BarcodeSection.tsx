@@ -53,13 +53,23 @@ interface Props {
   lang?: "id" | "en";
 }
 
-const EVENT_TYPE_LABEL: Record<string, string> = {
-  AKAD: "Akad",
-  PEMBERKATAN: "Pemberkatan",
-  RESEPSI: "Resepsi",
-  AFTER_PARTY: "After Party",
-  SANGJIT: "Sangjit",
-  LAMARAN: "Lamaran",
+const EVENT_TYPE_LABEL: Record<"id" | "en", Record<string, string>> = {
+  id: {
+    AKAD: "Akad",
+    PEMBERKATAN: "Pemberkatan",
+    RESEPSI: "Resepsi",
+    AFTER_PARTY: "After Party",
+    SANGJIT: "Sangjit",
+    LAMARAN: "Lamaran",
+  },
+  en: {
+    AKAD: "Wedding Ceremony",
+    PEMBERKATAN: "Holy Matrimony",
+    RESEPSI: "Reception",
+    AFTER_PARTY: "After Party",
+    SANGJIT: "Sangjit Ceremony",
+    LAMARAN: "Engagement",
+  },
 };
 
 const TR = {
@@ -78,8 +88,18 @@ const TR = {
 } as const;
 
 /** Convert an EventType enum value to a display label. */
-export function getEventLabel(eventType: string): string {
-  return EVENT_TYPE_LABEL[eventType] ?? eventType;
+export function getEventLabel(eventType: string, lang: "id" | "en" = "id"): string {
+  return EVENT_TYPE_LABEL[lang][eventType] ?? eventType;
+}
+
+/** Resolve an event's venue name in the given language, falling back to the Indonesian name. */
+export function getEventVenueName(
+  event: { venueName?: string | null; venueNameEn?: string | null } | undefined,
+  lang: "id" | "en",
+  fallback: string
+): string {
+  if (!event) return fallback;
+  return (lang === "en" && event.venueNameEn) || event.venueName || fallback;
 }
 
 export function BarcodeSection({

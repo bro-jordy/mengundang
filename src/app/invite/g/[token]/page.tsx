@@ -7,18 +7,8 @@ import { DisposableCamera } from "@/components/invitation/sections/DisposableCam
 
 export const dynamic = "force-dynamic";
 
-const THEME_FONTS: Record<string, string> = {
-  envelope:
-    "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;500&display=swap",
-  pearl:
-    "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap",
-  dark: "https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap",
-  sage: "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap",
-  "lucky-jackpot":
-    "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&display=swap",
-  "lucky-envelope":
-    "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;500&display=swap",
-};
+const LUCKY_ENVELOPE_FONT_URL =
+  "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&family=Cinzel:wght@400;500&display=swap";
 
 interface Props {
   params: Promise<{ token: string }>;
@@ -36,7 +26,7 @@ export default async function GuestInvitationByTokenPage({ params }: Props) {
   const ua = headersList.get("user-agent") || "";
   markGuestOpened(guest.id, guest.client.id, ip, ua, getDeviceType(ua)).catch(() => {});
 
-  const fontUrl = THEME_FONTS[guest.client.theme?.templateSlug ?? ""] ?? null;
+  const fontUrl = LUCKY_ENVELOPE_FONT_URL;
 
   return (
     <>
