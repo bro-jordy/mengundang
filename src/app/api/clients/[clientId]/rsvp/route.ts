@@ -1,6 +1,7 @@
 import { canAccessClient, requireAuth } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/database/prisma";
 import { apiError, apiSuccess } from "@/lib/utils";
+import { soupTypeSchema } from "@/modules/rsvp/rsvp.schema";
 import { z } from "zod";
 
 const rsvpAdminSchema = z.object({
@@ -8,6 +9,7 @@ const rsvpAdminSchema = z.object({
   status: z.enum(["HADIR", "TIDAK_HADIR", "PENDING"]),
   paxCount: z.number().int().min(1).default(1),
   message: z.string().optional(),
+  soupChoices: z.array(soupTypeSchema).optional(),
 });
 
 interface Params {
@@ -25,17 +27,23 @@ export async function POST(req: Request, { params }: Params) {
     const parsed = rsvpAdminSchema.safeParse(body);
     if (!parsed.success) return apiError(parsed.error.issues[0]?.message || "Validasi gagal");
 
-    const { guestId, status, paxCount, message } = parsed.data;
+    const { guestId, status, paxCount, message, soupChoices } = parsed.data;
 
     const guest = await prisma.guest.findUnique({
       where: { id: guestId, clientId },
-      select: { id: true, name: true },
+      select: { id: true, name: true, invitationCategory: true },
     });
     if (!guest) return apiError("Tamu tidak ditemukan", 404);
 
+    const needsSoupChoice = status === "HADIR" && guest.invitationCategory.includes("RESEPSI");
+    if (needsSoupChoice && soupChoices?.length !== paxCount) {
+      return apiError("Pilihan soup wajib diisi untuk semua tamu", 400);
+    }
+    const resolvedSoupChoices = needsSoupChoice ? soupChoices! : [];
+
     const rsvp = await prisma.rsvp.upsert({
       where: { guestId },
-      update: { status, paxCount, message: message || null },
+      update: { status, paxCount, message: message || null, soupChoices: resolvedSoupChoices },
       create: {
         guestId,
         clientId,
@@ -43,6 +51,7 @@ export async function POST(req: Request, { params }: Params) {
         status,
         paxCount,
         message: message || null,
+        soupChoices: resolvedSoupChoices,
       },
     });
 

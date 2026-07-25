@@ -1,21 +1,41 @@
 import { prisma } from "@/lib/database/prisma";
 import type { CreateTableInput, UpdateTableInput } from "./tables.schema";
 
+function guestPax(guest: { maxPax: number; rsvp: { paxCount: number } | null }): number {
+  return guest.rsvp?.paxCount ?? guest.maxPax;
+}
+
 export async function getTables(clientId: string) {
-  return prisma.table.findMany({
+  const tables = await prisma.table.findMany({
     where: { clientId },
-    include: { guests: { select: { id: true, name: true, maxPax: true } } },
+    include: {
+      guests: { select: { id: true, name: true, maxPax: true, rsvp: { select: { paxCount: true } } } },
+    },
     orderBy: [{ sortOrder: "asc" }, { code: "asc" }],
   });
+
+  return tables.map((t) => ({
+    ...t,
+    guests: t.guests.map((g) => ({ id: g.id, name: g.name, pax: guestPax(g) })),
+  }));
 }
 
 export async function getUnassignedReceptionGuests(clientId: string) {
   const guests = await prisma.guest.findMany({
-    where: { clientId, isActive: true, tableId: null },
-    select: { id: true, name: true, maxPax: true, invitationCategory: true },
+    where: { clientId, isActive: true, tableId: null, rsvpStatus: "HADIR" },
+    select: {
+      id: true,
+      name: true,
+      maxPax: true,
+      invitationCategory: true,
+      rsvp: { select: { paxCount: true } },
+    },
     orderBy: { name: "asc" },
   });
-  return guests.filter((g) => g.invitationCategory.includes("RESEPSI"));
+
+  return guests
+    .filter((g) => g.invitationCategory.includes("RESEPSI"))
+    .map((g) => ({ id: g.id, name: g.name, pax: guestPax(g) }));
 }
 
 export async function createTable(clientId: string, data: CreateTableInput) {
@@ -34,21 +54,22 @@ export async function deleteTable(clientId: string, id: string) {
 export async function assignGuestToTable(clientId: string, guestId: string, tableId: string | null) {
   const guest = await prisma.guest.findUnique({
     where: { id: guestId, clientId },
-    select: { maxPax: true },
+    select: { maxPax: true, rsvp: { select: { paxCount: true } } },
   });
   if (!guest) throw new Error("GUEST_NOT_FOUND");
+  const pax = guestPax(guest);
 
   if (tableId) {
     const table = await prisma.table.findUnique({
       where: { id: tableId, clientId },
-      include: { guests: { select: { id: true, maxPax: true } } },
+      include: { guests: { select: { id: true, maxPax: true, rsvp: { select: { paxCount: true } } } } },
     });
     if (!table) throw new Error("TABLE_NOT_FOUND");
 
     const filled = table.guests
       .filter((g) => g.id !== guestId)
-      .reduce((sum, g) => sum + g.maxPax, 0);
-    if (filled + guest.maxPax > table.capacity) throw new Error("TABLE_FULL");
+      .reduce((sum, g) => sum + guestPax(g), 0);
+    if (filled + pax > table.capacity) throw new Error("TABLE_FULL");
   }
 
   return prisma.guest.update({ where: { id: guestId, clientId }, data: { tableId } });
