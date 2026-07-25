@@ -9,10 +9,12 @@ import {
   DEFAULT_TEMPLATE_EN,
 } from "@/lib/whatsapp";
 import { formatDate } from "@/lib/utils";
+import { GUEST_CATEGORY_SORT_ORDER } from "@/modules/guests/guests.schema";
 
 type SendStatus = "UNSENT" | "SENT";
 type RsvpStatus = "PENDING" | "HADIR" | "TIDAK_HADIR";
 type Filter = "all" | "unsent" | "sent";
+type SideFilter = "ALL" | "GROOM" | "BRIDE";
 type Lang = "id" | "en";
 
 interface Guest {
@@ -23,6 +25,8 @@ interface Guest {
   sendStatus: SendStatus;
   rsvpStatus: RsvpStatus;
   invitationUrl: string;
+  side: "GROOM" | "BRIDE" | null;
+  invitationCategory: string;
 }
 
 interface Profile {
@@ -57,6 +61,12 @@ const RSVP_LABEL: Record<RsvpStatus, string> = {
   TIDAK_HADIR: "Tidak Hadir",
 };
 
+const SIDE_LABEL: Record<SideFilter, string> = {
+  ALL: "Semua Pihak",
+  GROOM: "Pihak Pria",
+  BRIDE: "Pihak Wanita",
+};
+
 export function WhatsAppBlast({
   clientId,
   clientName,
@@ -74,6 +84,7 @@ export function WhatsAppBlast({
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [templateSaved, setTemplateSaved] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
+  const [sideFilter, setSideFilter] = useState<SideFilter>("ALL");
   const [sending, setSending] = useState<string | null>(null);
   const [sendLang, setSendLang] = useState<Lang>("id");
   const [previewGuestId, setPreviewGuestId] = useState<string>(
@@ -162,11 +173,20 @@ export function WhatsAppBlast({
   const totalMaxPax = guests.reduce((sum, g) => sum + g.maxPax, 0);
   const unsentWithPhone = guests.filter((g) => g.sendStatus === "UNSENT" && g.phone).length;
 
-  const filtered = guests.filter((g) => {
-    if (filter === "unsent") return g.sendStatus === "UNSENT";
-    if (filter === "sent") return g.sendStatus === "SENT";
-    return true;
-  });
+  const filtered = guests
+    .filter((g) => {
+      if (filter === "unsent") return g.sendStatus === "UNSENT";
+      if (filter === "sent") return g.sendStatus === "SENT";
+      return true;
+    })
+    .filter((g) => sideFilter === "ALL" || g.side === sideFilter)
+    .sort((a, b) => {
+      const categoryDiff =
+        GUEST_CATEGORY_SORT_ORDER.indexOf(a.invitationCategory as any) -
+        GUEST_CATEGORY_SORT_ORDER.indexOf(b.invitationCategory as any);
+      if (categoryDiff !== 0) return categoryDiff;
+      return a.name.localeCompare(b.name, "id");
+    });
 
   return (
     <div className="space-y-6">
@@ -303,6 +323,20 @@ export function WhatsAppBlast({
                 }`}
               >
                 {f === "all" ? "Semua" : f === "unsent" ? "Belum Terkirim" : "Terkirim"}
+              </button>
+            ))}
+            <span className="w-px bg-stone-200 mx-1" />
+            {(["ALL", "GROOM", "BRIDE"] as SideFilter[]).map((s) => (
+              <button
+                key={s}
+                onClick={() => setSideFilter(s)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  sideFilter === s
+                    ? "bg-blue-600 text-white"
+                    : "border border-stone-200 text-stone-600 hover:bg-stone-50"
+                }`}
+              >
+                {SIDE_LABEL[s]}
               </button>
             ))}
           </div>

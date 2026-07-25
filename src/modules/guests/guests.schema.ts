@@ -14,6 +14,18 @@ const INVITATION_CATEGORIES = [
 
 export const GUEST_SIDES = ["GROOM", "BRIDE"] as const;
 
+export const GUEST_CATEGORY_SORT_ORDER = [
+  "PEMBERKATAN_RESEPSI",
+  "PEMBERKATAN",
+  "GEREJA_RESEPSI",
+  "GEREJA_SAJA",
+  "AKAD_RESEPSI",
+  "AKAD",
+  "PEMBERKATAN_NASI_BOX",
+  "SANGJIT",
+  "LAMARAN",
+] as const;
+
 export const createGuestSchema = z.object({
   name: z.string().min(1, "Nama wajib diisi"),
   phone: z.string().optional().nullable(),

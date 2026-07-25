@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createGuestSchema, GUEST_SIDES, type CreateGuestInput } from "@/modules/guests/guests.schema";
+import { createGuestSchema, GUEST_SIDES, GUEST_CATEGORY_SORT_ORDER, type CreateGuestInput } from "@/modules/guests/guests.schema";
 import { renderWhatsappMessage, buildWhatsappLink } from "@/lib/whatsapp";
 import { formatDate } from "@/lib/utils";
 import {
@@ -142,7 +142,12 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
   const filteredGuests = guests
     .filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
-    .filter((g) => sideFilter === "ALL" || g.side === sideFilter);
+    .filter((g) => sideFilter === "ALL" || g.side === sideFilter)
+    .sort((a, b) => {
+      const categoryDiff = GUEST_CATEGORY_SORT_ORDER.indexOf(a.invitationCategory as any) - GUEST_CATEGORY_SORT_ORDER.indexOf(b.invitationCategory as any);
+      if (categoryDiff !== 0) return categoryDiff;
+      return a.name.localeCompare(b.name, "id");
+    });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateGuestInput>({
     resolver: zodResolver(createGuestSchema) as any,

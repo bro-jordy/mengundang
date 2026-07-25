@@ -751,7 +751,7 @@ function EventsSection({
                 </div>
                 {showMap && ev.mapsUrl && ev.venueName && (
                   <div style={{ marginTop: "1rem", borderRadius: "12px", overflow: "hidden", border: `1px solid ${gold}22` }}>
-                    <iframe src={getMapEmbedUrl(ev.mapsUrl, (isEn && ev.venueNameEn) || ev.venueName, ev.venueAddress)} width="100%" height="200" style={{ display: "block", border: "none" }} loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={(isEn && ev.venueNameEn) || ev.venueName} />
+                    <iframe src={getMapEmbedUrl(ev.mapsUrl, (isEn && ev.venueNameEn) || ev.venueName, ev.venueAddress)} width="100%" height="200" style={{ display: "block", border: "none", pointerEvents: "none" }} loading="lazy" referrerPolicy="no-referrer-when-downgrade" title={(isEn && ev.venueNameEn) || ev.venueName} />
                   </div>
                 )}
                 {ev.mapsUrl && (

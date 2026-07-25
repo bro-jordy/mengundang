@@ -217,7 +217,12 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
 
       const scanner = new Html5QrcodeScanner(
         scannerDivId,
-        { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1 },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1,
+          videoConstraints: { facingMode: "environment" },
+        },
         false
       );
 

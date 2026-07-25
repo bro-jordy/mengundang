@@ -43,6 +43,8 @@ export default async function WhatsAppPage({ params }: Props) {
       | "HADIR"
       | "TIDAK_HADIR",
     invitationUrl: g.invitationUrl,
+    side: g.side as "GROOM" | "BRIDE" | null,
+    invitationCategory: g.invitationCategory,
   }));
 
   const clientType = client.clientType as string;
