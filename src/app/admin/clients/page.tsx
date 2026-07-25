@@ -9,7 +9,7 @@ import { DeleteClientButton } from "@/components/cms/client/DeleteClientButton";
 import { Users } from "lucide-react";
 
 const SUBDOMAIN: Record<string, string> = {
-  WEDDING: "pernikahan",
+  WEDDING: "wedding",
   SANGJIT: "sangjit",
   LAMARAN: "lamaran",
 };

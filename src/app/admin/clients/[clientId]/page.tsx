@@ -6,7 +6,7 @@ import { formatDate } from "@/lib/utils";
 import { ClientStatusToggle } from "@/components/cms/client/ClientStatusToggle";
 
 const SUBDOMAIN: Record<string, string> = {
-  WEDDING: "pernikahan",
+  WEDDING: "wedding",
   SANGJIT: "sangjit",
   LAMARAN: "lamaran",
 };

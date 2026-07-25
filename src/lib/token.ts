@@ -18,7 +18,7 @@ export function generateGuestToken(guestName?: string): string {
 }
 
 const CLIENT_TYPE_SUBDOMAIN: Record<string, string> = {
-  WEDDING: "pernikahan",
+  WEDDING: "wedding",
   LAMARAN: "lamaran",
   SANGJIT: "sangjit",
 };
@@ -31,7 +31,7 @@ export function generateInvitationUrl(
 ): string {
   const domain = process.env.NEXT_PUBLIC_INVITATION_DOMAIN;
   if (domain && clientType) {
-    const subdomain = CLIENT_TYPE_SUBDOMAIN[clientType] ?? "pernikahan";
+    const subdomain = CLIENT_TYPE_SUBDOMAIN[clientType] ?? "wedding";
     if (clientSlug) {
       return `https://${subdomain}.${domain}/${clientSlug}/g/${token}`;
     }
