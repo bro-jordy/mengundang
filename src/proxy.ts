@@ -9,10 +9,13 @@ export default auth((req) => {
     hostname !== MAIN_DOMAIN && hostname.endsWith(`.${MAIN_DOMAIN}`);
 
   if (isSubdomain) {
-    const slug = req.nextUrl.pathname.slice(1);
-    if (slug && !slug.startsWith("_next") && !slug.startsWith("api")) {
+    const path = req.nextUrl.pathname.slice(1);
+    if (path && !path.startsWith("_next") && !path.startsWith("api")) {
       const url = req.nextUrl.clone();
-      url.pathname = `/invite/${slug}`;
+      const segments = path.split("/");
+      // Guest tokens always contain "_" (name-slug_random); bare client slugs never do.
+      const isGuestToken = segments.length === 1 && segments[0].includes("_");
+      url.pathname = isGuestToken ? `/invite/g/${segments[0]}` : `/invite/${path}`;
       return NextResponse.rewrite(url);
     }
   }
