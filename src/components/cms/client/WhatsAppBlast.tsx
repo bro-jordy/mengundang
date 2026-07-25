@@ -67,6 +67,30 @@ const SIDE_LABEL: Record<SideFilter, string> = {
   BRIDE: "Pihak Wanita",
 };
 
+const CATEGORY_LABEL: Record<string, string> = {
+  GEREJA_SAJA: "Gereja Saja",
+  GEREJA_RESEPSI: "Gereja + Resepsi",
+  AKAD: "Akad",
+  AKAD_RESEPSI: "Akad & Resepsi",
+  PEMBERKATAN: "Pemberkatan",
+  PEMBERKATAN_RESEPSI: "Pemberkatan & Resepsi",
+  PEMBERKATAN_NASI_BOX: "Pemberkatan & Nasi Box",
+  SANGJIT: "Sangjit",
+  LAMARAN: "Lamaran",
+};
+
+const CATEGORY_COLOR: Record<string, string> = {
+  GEREJA_SAJA: "bg-blue-50 text-blue-700",
+  GEREJA_RESEPSI: "bg-purple-50 text-purple-700",
+  AKAD: "bg-blue-50 text-blue-700",
+  AKAD_RESEPSI: "bg-purple-50 text-purple-700",
+  PEMBERKATAN: "bg-blue-50 text-blue-700",
+  PEMBERKATAN_RESEPSI: "bg-purple-50 text-purple-700",
+  PEMBERKATAN_NASI_BOX: "bg-amber-50 text-amber-700",
+  SANGJIT: "bg-orange-50 text-orange-700",
+  LAMARAN: "bg-pink-50 text-pink-700",
+};
+
 export function WhatsAppBlast({
   clientId,
   clientName,
@@ -91,7 +115,23 @@ export function WhatsAppBlast({
     initialGuests[0]?.id ?? ""
   );
 
-  const previewGuest = guests.find((g) => g.id === previewGuestId);
+  const filtered = guests
+    .filter((g) => {
+      if (filter === "unsent") return g.sendStatus === "UNSENT";
+      if (filter === "sent") return g.sendStatus === "SENT";
+      return true;
+    })
+    .filter((g) => sideFilter === "ALL" || g.side === sideFilter)
+    .sort((a, b) => {
+      const categoryDiff =
+        GUEST_CATEGORY_SORT_ORDER.indexOf(a.invitationCategory as any) -
+        GUEST_CATEGORY_SORT_ORDER.indexOf(b.invitationCategory as any);
+      if (categoryDiff !== 0) return categoryDiff;
+      return a.name.localeCompare(b.name, "id");
+    });
+
+  const previewList = [...filtered].sort((a, b) => a.name.localeCompare(b.name, "id"));
+  const previewGuest = previewList.find((g) => g.id === previewGuestId) ?? previewList[0];
 
   const templateVars = {
     guest_name: previewGuest?.name ?? "—",
@@ -173,21 +213,6 @@ export function WhatsAppBlast({
   const totalMaxPax = guests.reduce((sum, g) => sum + g.maxPax, 0);
   const unsentWithPhone = guests.filter((g) => g.sendStatus === "UNSENT" && g.phone).length;
 
-  const filtered = guests
-    .filter((g) => {
-      if (filter === "unsent") return g.sendStatus === "UNSENT";
-      if (filter === "sent") return g.sendStatus === "SENT";
-      return true;
-    })
-    .filter((g) => sideFilter === "ALL" || g.side === sideFilter)
-    .sort((a, b) => {
-      const categoryDiff =
-        GUEST_CATEGORY_SORT_ORDER.indexOf(a.invitationCategory as any) -
-        GUEST_CATEGORY_SORT_ORDER.indexOf(b.invitationCategory as any);
-      if (categoryDiff !== 0) return categoryDiff;
-      return a.name.localeCompare(b.name, "id");
-    });
-
   return (
     <div className="space-y-6">
       {/* Stats */}
@@ -265,13 +290,13 @@ export function WhatsAppBlast({
         <div className="bg-white rounded-2xl border border-stone-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-stone-800">Preview Pesan</h2>
-            {guests.length > 0 && (
+            {previewList.length > 0 && (
               <select
-                value={previewGuestId}
+                value={previewGuest?.id ?? ""}
                 onChange={(e) => setPreviewGuestId(e.target.value)}
                 className="text-xs border border-stone-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-stone-300 max-w-[160px] truncate"
               >
-                {guests.map((g) => (
+                {previewList.map((g) => (
                   <option key={g.id} value={g.id}>{g.name}</option>
                 ))}
               </select>
@@ -387,6 +412,13 @@ export function WhatsAppBlast({
                 </p>
               </div>
               <div className="flex items-center gap-3">
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${
+                    CATEGORY_COLOR[guest.invitationCategory] ?? "bg-stone-100 text-stone-600"
+                  }`}
+                >
+                  {CATEGORY_LABEL[guest.invitationCategory] ?? guest.invitationCategory}
+                </span>
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full ${
                     guest.rsvpStatus === "HADIR"
