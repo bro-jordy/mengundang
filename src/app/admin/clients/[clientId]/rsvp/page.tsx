@@ -31,6 +31,7 @@ export default async function RsvpPage({ params }: Props) {
           status: g.rsvp.status as "HADIR" | "TIDAK_HADIR" | "PENDING",
           paxCount: g.rsvp.paxCount,
           message: g.rsvp.message,
+          soupChoices: g.rsvp.soupChoices,
           createdAt: g.rsvp.createdAt,
         }
       : null,

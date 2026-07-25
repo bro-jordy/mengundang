@@ -4,7 +4,7 @@ import type { RsvpInput, WishInput } from "./rsvp.schema";
 export async function submitRsvp(data: RsvpInput) {
   const guest = await prisma.guest.findUnique({
     where: { guestToken: data.token },
-    select: { id: true, clientId: true, isActive: true, maxPax: true },
+    select: { id: true, clientId: true, isActive: true, maxPax: true, invitationCategory: true },
   });
 
   if (!guest || !guest.isActive) {
@@ -15,12 +15,19 @@ export async function submitRsvp(data: RsvpInput) {
     throw new Error("PAX_EXCEEDS_MAX");
   }
 
+  const needsSoupChoice = data.status === "HADIR" && guest.invitationCategory.includes("RESEPSI");
+  if (needsSoupChoice && data.soupChoices?.length !== data.paxCount) {
+    throw new Error("SOUP_CHOICES_REQUIRED");
+  }
+  const soupChoices = needsSoupChoice ? data.soupChoices! : [];
+
   const rsvp = await prisma.rsvp.upsert({
     where: { guestId: guest.id },
     update: {
       name: data.name,
       paxCount: data.paxCount,
       status: data.status,
+      soupChoices,
     },
     create: {
       guestId: guest.id,
@@ -28,6 +35,7 @@ export async function submitRsvp(data: RsvpInput) {
       name: data.name,
       paxCount: data.paxCount,
       status: data.status,
+      soupChoices,
     },
   });
 

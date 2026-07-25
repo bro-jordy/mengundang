@@ -3,12 +3,18 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Camera, CameraOff, Users, UserCheck, QrCode, RefreshCw, Clock, Download } from "lucide-react";
 
+interface TableInfo {
+  code: string;
+  sectionLabel: string;
+}
+
 interface Guest {
   id: string;
   name: string;
   phone: string | null;
   maxPax: number;
   invitationCategory: string;
+  table?: TableInfo | null;
 }
 
 interface AttendanceRow {
@@ -17,6 +23,7 @@ interface AttendanceRow {
   barcodeType: "CHURCH" | "RECEPTION";
   arrivedAt: string;
   actualPax: number;
+  sequenceNumber: number | null;
   guest: Guest;
 }
 
@@ -93,7 +100,7 @@ async function exportToXlsx(
 
   const data = rows.map((att, i) => {
     const base = [
-      i + 1,
+      att.sequenceNumber ?? i + 1,
       att.guest.name,
       CATEGORY_LABEL[att.guest.invitationCategory] ?? att.guest.invitationCategory,
       att.guest.phone || "",
@@ -118,8 +125,8 @@ async function exportToXlsx(
 }
 
 type ScanResult =
-  | { type: "success"; guestName: string; barcodeType: string }
-  | { type: "already"; guestName: string; arrivedAt: string; barcodeType: string }
+  | { type: "success"; guestName: string; barcodeType: string; pax: number; sequenceNumber: number | null; table?: TableInfo | null }
+  | { type: "already"; guestName: string; arrivedAt: string; barcodeType: string; pax: number; sequenceNumber: number | null; table?: TableInfo | null }
   | { type: "outsideWindow"; message: string }
   | { type: "error"; message: string };
 
@@ -149,6 +156,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
   const handleScan = useCallback(async (barcode: string) => {
     if (isProcessingRef.current) return;
     isProcessingRef.current = true;
+    scannerRef.current?.pause(true);
 
     const res = await fetch(`/api/clients/${clientId}/attendance/scan`, {
       method: "POST",
@@ -168,20 +176,21 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
         guestName: data.guest?.name || "Tamu",
         arrivedAt: formatArrivalTime(data.arrivedAt),
         barcodeType: scanLabels[data.barcodeType] || data.barcodeType,
+        pax: data.actualPax ?? data.guest?.maxPax ?? 1,
+        sequenceNumber: data.sequenceNumber ?? null,
+        table: data.barcodeType === "RECEPTION" ? data.guest?.table : null,
       });
     } else if (data.success) {
       setScanResult({
         type: "success",
         guestName: data.attendance?.guest?.name || "Tamu",
         barcodeType: scanLabels[data.barcodeType] || data.barcodeType,
+        pax: data.attendance?.actualPax ?? 1,
+        sequenceNumber: data.attendance?.sequenceNumber ?? null,
+        table: data.barcodeType === "RECEPTION" ? data.attendance?.guest?.table : null,
       });
       await refreshData();
     }
-
-    stopScanner();
-    setTimeout(() => {
-      isProcessingRef.current = false;
-    }, 1000);
   }, [clientId, refreshData]);
 
   function stopScanner() {
@@ -190,6 +199,12 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
       scannerRef.current.clear().catch(() => {});
       scannerRef.current = null;
     }
+  }
+
+  function dismissResult() {
+    setScanResult(null);
+    isProcessingRef.current = false;
+    scannerRef.current?.resume();
   }
 
   useEffect(() => {
@@ -345,7 +360,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
 
         {/* Scan result notification */}
         {scanResult && (
-          <div className={`mt-4 rounded-xl p-4 flex items-start gap-3 ${
+          <div className={`mt-4 rounded-xl p-4 ${
             scanResult.type === "success"
               ? "bg-green-50 border border-green-200"
               : scanResult.type === "already"
@@ -354,46 +369,72 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
               ? "bg-orange-50 border border-orange-200"
               : "bg-red-50 border border-red-200"
           }`}>
-            {scanResult.type === "success" && (
-              <>
-                <UserCheck className="text-green-600 mt-0.5 shrink-0" size={20} />
-                <div>
-                  <p className="font-medium text-green-800">Check-in Berhasil!</p>
-                  <p className="text-sm text-green-700 mt-0.5">
-                    <strong>{scanResult.guestName}</strong> — {scanResult.barcodeType}
-                  </p>
-                </div>
-              </>
-            )}
-            {scanResult.type === "already" && (
-              <>
-                <QrCode className="text-yellow-600 mt-0.5 shrink-0" size={20} />
-                <div>
-                  <p className="font-medium text-yellow-800">Sudah Check-in {scanResult.barcodeType}</p>
-                  <p className="text-sm text-yellow-700 mt-0.5">
-                    <strong>{scanResult.guestName}</strong> sudah check-in <strong>{scanResult.barcodeType}</strong> pada {scanResult.arrivedAt}.
-                  </p>
-                </div>
-              </>
-            )}
-            {scanResult.type === "outsideWindow" && (
-              <>
-                <Clock className="text-orange-600 mt-0.5 shrink-0" size={20} />
-                <div>
-                  <p className="font-medium text-orange-800">Di Luar Jadwal Scan</p>
-                  <p className="text-sm text-orange-700 mt-0.5">{scanResult.message}</p>
-                </div>
-              </>
-            )}
-            {scanResult.type === "error" && (
-              <>
-                <QrCode className="text-red-500 mt-0.5 shrink-0" size={20} />
-                <div>
-                  <p className="font-medium text-red-800">Scan Gagal</p>
-                  <p className="text-sm text-red-700 mt-0.5">{scanResult.message}</p>
-                </div>
-              </>
-            )}
+            <div className="flex items-start gap-3">
+              {scanResult.type === "success" && (
+                <>
+                  <UserCheck className="text-green-600 mt-0.5 shrink-0" size={20} />
+                  <div>
+                    <p className="font-medium text-green-800">Check-in Berhasil!</p>
+                    <p className="text-sm text-green-700 mt-0.5">
+                      <strong>{scanResult.guestName}</strong> — {scanResult.barcodeType}
+                    </p>
+                    <p className="text-sm text-green-700 mt-0.5">
+                      Pax: <strong>{scanResult.pax}</strong>
+                      {scanResult.sequenceNumber != null && <> · No. Urut: <strong>{scanResult.sequenceNumber}</strong></>}
+                      {scanResult.table && <> · Meja: <strong>{scanResult.table.sectionLabel} — {scanResult.table.code}</strong></>}
+                    </p>
+                  </div>
+                </>
+              )}
+              {scanResult.type === "already" && (
+                <>
+                  <QrCode className="text-yellow-600 mt-0.5 shrink-0" size={20} />
+                  <div>
+                    <p className="font-medium text-yellow-800">Sudah Check-in {scanResult.barcodeType}</p>
+                    <p className="text-sm text-yellow-700 mt-0.5">
+                      <strong>{scanResult.guestName}</strong> sudah check-in <strong>{scanResult.barcodeType}</strong> pada {scanResult.arrivedAt}.
+                    </p>
+                    <p className="text-sm text-yellow-700 mt-0.5">
+                      Pax: <strong>{scanResult.pax}</strong>
+                      {scanResult.sequenceNumber != null && <> · No. Urut: <strong>{scanResult.sequenceNumber}</strong></>}
+                      {scanResult.table && <> · Meja: <strong>{scanResult.table.sectionLabel} — {scanResult.table.code}</strong></>}
+                    </p>
+                  </div>
+                </>
+              )}
+              {scanResult.type === "outsideWindow" && (
+                <>
+                  <Clock className="text-orange-600 mt-0.5 shrink-0" size={20} />
+                  <div>
+                    <p className="font-medium text-orange-800">Di Luar Jadwal Scan</p>
+                    <p className="text-sm text-orange-700 mt-0.5">{scanResult.message}</p>
+                  </div>
+                </>
+              )}
+              {scanResult.type === "error" && (
+                <>
+                  <QrCode className="text-red-500 mt-0.5 shrink-0" size={20} />
+                  <div>
+                    <p className="font-medium text-red-800">Scan Gagal</p>
+                    <p className="text-sm text-red-700 mt-0.5">{scanResult.message}</p>
+                  </div>
+                </>
+              )}
+            </div>
+            <button
+              onClick={dismissResult}
+              className={`mt-3 w-full py-2 rounded-lg text-sm font-medium transition-colors ${
+                scanResult.type === "success"
+                  ? "bg-green-600 text-white hover:bg-green-700"
+                  : scanResult.type === "already"
+                  ? "bg-yellow-600 text-white hover:bg-yellow-700"
+                  : scanResult.type === "outsideWindow"
+                  ? "bg-orange-600 text-white hover:bg-orange-700"
+                  : "bg-red-600 text-white hover:bg-red-700"
+              }`}
+            >
+              OK, Lanjut Scan
+            </button>
           </div>
         )}
       </div>
@@ -516,7 +557,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
                           <p className="font-medium text-stone-800">{att.guest.name}</p>
                           <p className="text-xs text-stone-400">{CATEGORY_LABEL[att.guest.invitationCategory]}</p>
                         </td>
-                        <td className="px-4 py-3 text-stone-400">{i + 1}</td>
+                        <td className="px-4 py-3 text-stone-400">{att.sequenceNumber ?? i + 1}</td>
                         <td className="px-4 py-3 text-stone-600 text-xs">{att.guest.phone || "—"}</td>
                         <td className="px-4 py-3 text-stone-600 text-xs font-mono whitespace-nowrap">
                           {formatArrivalTime(att.arrivedAt)}

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/database/prisma";
+import { Prisma } from "@prisma/client";
 import type { AttendanceType } from "@prisma/client";
 
 const SCAN_WINDOW_MS = 60 * 60 * 1000; // 1 jam
@@ -81,12 +82,40 @@ export async function getAttendanceStats(clientId: string) {
   };
 }
 
+async function createAttendanceWithSequence(
+  clientId: string,
+  guestId: string,
+  barcodeType: AttendanceType,
+  actualPax: number
+) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const last = await prisma.attendance.findFirst({
+      where: { clientId },
+      orderBy: { sequenceNumber: "desc" },
+      select: { sequenceNumber: true },
+    });
+    const sequenceNumber = (last?.sequenceNumber ?? 0) + 1;
+
+    try {
+      return await prisma.attendance.create({
+        data: { guestId, clientId, barcodeType, arrivedAt: new Date(), actualPax, sequenceNumber },
+        include: { guest: { include: { table: true } } },
+      });
+    } catch (err) {
+      const isSequenceClash = err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002";
+      if (!isSequenceClash || attempt === 2) throw err;
+    }
+  }
+  throw new Error("Gagal generate nomor urut kehadiran");
+}
+
 export async function scanBarcode(clientId: string, barcode: string) {
   const guest = await prisma.guest.findFirst({
     where: {
       clientId,
       OR: [{ barcodeChurch: barcode }, { barcodeReception: barcode }],
     },
+    include: { table: true },
   });
 
   if (!guest) {
@@ -131,21 +160,14 @@ export async function scanBarcode(clientId: string, barcode: string) {
       success: false,
       alreadyCheckedIn: true,
       arrivedAt: existing.arrivedAt,
+      sequenceNumber: existing.sequenceNumber,
+      actualPax: existing.actualPax,
       guest,
       barcodeType,
     } as const;
   }
 
-  const attendance = await prisma.attendance.create({
-    data: {
-      guestId: guest.id,
-      clientId,
-      barcodeType,
-      arrivedAt: new Date(),
-      actualPax: guest.maxPax,
-    },
-    include: { guest: true },
-  });
+  const attendance = await createAttendanceWithSequence(clientId, guest.id, barcodeType, guest.maxPax);
 
   return { success: true, attendance, barcodeType } as const;
 }

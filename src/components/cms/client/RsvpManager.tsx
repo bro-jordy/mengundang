@@ -9,8 +9,16 @@ interface Rsvp {
   status: RsvpStatus;
   paxCount: number;
   message: string | null;
+  soupChoices: string[];
   createdAt: Date;
 }
+
+const SOUP_LABEL: Record<string, string> = {
+  ORIGINAL_KONBU: "Original Konbu",
+  JAPANESE_BROTH: "Japanese Broth",
+  TOM_YUM: "Tom Yum",
+  COLLAGEN: "Collagen",
+};
 
 interface Guest {
   id: string;
@@ -85,7 +93,7 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
         setGuests((prev) =>
           prev.map((g) =>
             g.id === guestId
-              ? { ...g, rsvpStatus: form.status, rsvp: { status: form.status, paxCount: form.paxCount, message: form.message || null, createdAt: rsvp.createdAt } }
+              ? { ...g, rsvpStatus: form.status, rsvp: { status: form.status, paxCount: form.paxCount, message: form.message || null, soupChoices: g.rsvp?.soupChoices ?? [], createdAt: rsvp.createdAt } }
               : g
           )
         );
@@ -228,6 +236,7 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
                       {guest.rsvp && (
                         <p className="text-xs text-stone-400 hidden sm:block">
                           {guest.rsvp.paxCount} pax
+                          {guest.rsvp.soupChoices.length > 0 && ` · ${guest.rsvp.soupChoices.map((s) => SOUP_LABEL[s] ?? s).join(", ")}`}
                           {guest.rsvp.message && ` · "${guest.rsvp.message}"`}
                         </p>
                       )}
