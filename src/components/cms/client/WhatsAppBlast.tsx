@@ -109,6 +109,7 @@ export function WhatsAppBlast({
   const [templateSaved, setTemplateSaved] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
   const [sideFilter, setSideFilter] = useState<SideFilter>("ALL");
+  const [search, setSearch] = useState("");
   const [sending, setSending] = useState<string | null>(null);
   const [sendLang, setSendLang] = useState<Lang>("id");
   const [previewGuestId, setPreviewGuestId] = useState<string>(
@@ -122,6 +123,7 @@ export function WhatsAppBlast({
       return true;
     })
     .filter((g) => sideFilter === "ALL" || g.side === sideFilter)
+    .filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       const categoryDiff =
         GUEST_CATEGORY_SORT_ORDER.indexOf(a.invitationCategory as any) -
@@ -335,6 +337,15 @@ export function WhatsAppBlast({
 
       {/* Guest list */}
       <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+        <div className="px-6 pt-4 pb-3 border-b border-stone-100">
+          <input
+            type="text"
+            placeholder="Cari nama tamu..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
         <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-2 flex-wrap">
             {(["all", "unsent", "sent"] as Filter[]).map((f) => (

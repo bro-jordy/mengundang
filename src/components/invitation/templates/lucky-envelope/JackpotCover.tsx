@@ -19,6 +19,7 @@ interface Props {
   lang: "EN" | "ID";
   onLangToggle: () => void;
   onOpen: () => void;
+  onTap?: () => void;
 }
 
 const COVER_T = {
@@ -50,6 +51,7 @@ export function JackpotCover({
   lang,
   onLangToggle,
   onOpen,
+  onTap,
 }: Props) {
   const [phase, setPhase] = useState<JackpotPhase>("idle");
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -62,6 +64,7 @@ export function JackpotCover({
   function handleTap() {
     if (phase !== "idle") return;
 
+    onTap?.();
     setPhase("spinning");
     at(2600, () => setPhase("result8826"));
     at(5000, () => setPhase("transforming"));

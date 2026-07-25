@@ -1282,7 +1282,6 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
   function handleOpen() {
     setCoverGone(true);
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-    playMusicRef.current?.();
   }
 
   // Auto-scroll past hero to content — fires automatically after cover opens
@@ -1403,6 +1402,7 @@ export function LuckyEnvelopeTemplate({ guest, client, token }: Props) {
             lang={lang === "en" ? "EN" : "ID"}
             onLangToggle={() => setLang((l) => l === "en" ? "id" : "en")}
             onOpen={handleOpen}
+            onTap={() => playMusicRef.current?.()}
           />
         )}
       </AnimatePresence>
