@@ -50,24 +50,44 @@ export async function GuestInvitationView({ token }: { token: string }) {
   );
 }
 
-function getEventLabel(clientType: string): string {
+function getEventLabel(clientType: string, lang: "id" | "en"): string {
+  if (lang === "en") {
+    if (clientType === "SANGJIT") return "Sangjit";
+    if (clientType === "LAMARAN") return "Engagement";
+    return "Wedding";
+  }
   if (clientType === "SANGJIT") return "Sangjit";
   if (clientType === "LAMARAN") return "Lamaran";
   return "Pernikahan";
 }
 
-export async function getGuestInvitationMetadata(token: string) {
+export async function getGuestInvitationMetadata(token: string, lang: "id" | "en" = "id") {
   const guest = await getGuestByToken(token);
   if (!guest) return {};
 
   const profile = guest.client.weddingProfile;
-  const eventLabel = getEventLabel(guest.client.clientType);
+  const eventLabel = getEventLabel(guest.client.clientType, lang);
   const coupleNames = profile
     ? `${profile.groomName} & ${profile.brideName}`
     : guest.client.name;
 
+  const title = lang === "en"
+    ? `${eventLabel} Invitation - ${coupleNames}`
+    : `Undangan ${eventLabel} ${coupleNames}`;
+  const description = lang === "en"
+    ? `You're invited to ${coupleNames}'s ${eventLabel.toLowerCase()}`
+    : `Anda diundang ke acara ${eventLabel.toLowerCase()} ${coupleNames}`;
+
+  const galleries = (guest.client as { galleries?: { type: string; isCover: boolean; url: string }[] }).galleries;
+  const cover = galleries?.find((g) => g.type === "HERO" || g.isCover) ?? galleries?.[0];
+
   return {
-    title: `Undangan ${eventLabel} ${coupleNames}`,
-    description: `Anda diundang ke acara ${eventLabel.toLowerCase()} ${coupleNames}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: cover ? [{ url: cover.url }] : undefined,
+    },
   };
 }

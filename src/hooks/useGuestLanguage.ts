@@ -13,10 +13,19 @@ function readStored(): GuestLanguage | null {
   return v === "id" || v === "en" ? v : null;
 }
 
+function readFromUrl(): GuestLanguage | null {
+  if (typeof window === "undefined") return null;
+  const v = new URLSearchParams(window.location.search).get("lang");
+  return v === "id" || v === "en" ? v : null;
+}
+
 // Shared across template + DisposableCamera so switching language in one
 // place is reflected everywhere, even though they're sibling components.
+// The active language is also mirrored into the URL (?lang=) so a shared/copied
+// link (e.g. pasted into WhatsApp) opens in the same language it was copied in,
+// and so link-preview crawlers (which can't read localStorage) get the right metadata.
 export function useGuestLanguage(defaultLang: GuestLanguage = "id") {
-  const [lang, setLangState] = useState<GuestLanguage>(() => readStored() ?? defaultLang);
+  const [lang, setLangState] = useState<GuestLanguage>(() => readFromUrl() ?? readStored() ?? defaultLang);
 
   useEffect(() => {
     const stored = readStored();
@@ -37,6 +46,9 @@ export function useGuestLanguage(defaultLang: GuestLanguage = "id") {
       if (typeof window !== "undefined") {
         window.localStorage.setItem(STORAGE_KEY, resolved);
         window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: resolved }));
+        const url = new URL(window.location.href);
+        url.searchParams.set("lang", resolved);
+        window.history.replaceState({}, "", url);
       }
       return resolved;
     });

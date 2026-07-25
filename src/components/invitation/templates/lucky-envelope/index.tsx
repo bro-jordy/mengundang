@@ -1029,6 +1029,17 @@ function WishesSection({
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/wishes?clientId=${clientId}`);
+        if (!res.ok) return;
+        setWishes(await res.json());
+      } catch {}
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [clientId]);
+
   async function send() {
     if (!msg.trim()) return;
     setSending(true);

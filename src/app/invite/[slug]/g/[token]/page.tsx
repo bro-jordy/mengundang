@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ slug: string; token: string }>;
+  searchParams: Promise<{ lang?: string }>;
 }
 
 export default async function GuestInvitationPage({ params }: Props) {
@@ -11,7 +12,8 @@ export default async function GuestInvitationPage({ params }: Props) {
   return <GuestInvitationView token={token} />;
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params, searchParams }: Props) {
   const { token } = await params;
-  return getGuestInvitationMetadata(token);
+  const { lang } = await searchParams;
+  return getGuestInvitationMetadata(token, lang === "en" ? "en" : "id");
 }

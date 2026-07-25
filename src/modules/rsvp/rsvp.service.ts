@@ -74,6 +74,14 @@ export async function getWishes(clientId: string) {
   });
 }
 
+export async function getPublicWishes(clientId: string) {
+  return prisma.wish.findMany({
+    where: { clientId, isApproved: true },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+}
+
 export async function updateWish(id: string, data: { isApproved?: boolean; reply?: string | null }) {
   return prisma.wish.update({ where: { id }, data });
 }

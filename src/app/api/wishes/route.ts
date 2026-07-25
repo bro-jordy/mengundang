@@ -1,6 +1,14 @@
 import { wishSchema } from "@/modules/rsvp/rsvp.schema";
-import { submitWish } from "@/modules/rsvp/rsvp.service";
+import { submitWish, getPublicWishes } from "@/modules/rsvp/rsvp.service";
 import { apiError, apiSuccess } from "@/lib/utils";
+
+export async function GET(req: Request) {
+  const clientId = new URL(req.url).searchParams.get("clientId");
+  if (!clientId) return apiError("clientId wajib diisi");
+
+  const wishes = await getPublicWishes(clientId);
+  return apiSuccess(wishes);
+}
 
 export async function POST(req: Request) {
   try {
