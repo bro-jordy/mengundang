@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle, XCircle, Clock, Pencil, Trash2, X } from "lucide-react";
+import { SOUP_LABEL } from "@/lib/soup";
 
 type RsvpStatus = "HADIR" | "TIDAK_HADIR" | "PENDING";
 
@@ -12,13 +13,6 @@ interface Rsvp {
   soupChoices: string[];
   createdAt: Date;
 }
-
-const SOUP_LABEL: Record<string, string> = {
-  ORIGINAL_KONBU: "Original Konbu",
-  JAPANESE_BROTH: "Japanese Broth",
-  TOM_YUM: "Tom Yum",
-  COLLAGEN: "Collagen",
-};
 
 const CATEGORY_LABEL: Record<string, string> = {
   GEREJA_SAJA: "Gereja Saja",

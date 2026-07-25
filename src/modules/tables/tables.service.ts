@@ -51,6 +51,59 @@ export async function deleteTable(clientId: string, id: string) {
   return prisma.table.delete({ where: { id, clientId } });
 }
 
+export async function getSeatingExport(clientId: string) {
+  const [tables, unassigned] = await Promise.all([
+    prisma.table.findMany({
+      where: { clientId },
+      include: {
+        guests: {
+          select: { id: true, name: true, maxPax: true, rsvp: { select: { paxCount: true, soupChoices: true } } },
+        },
+      },
+      orderBy: [{ sortOrder: "asc" }, { code: "asc" }],
+    }),
+    prisma.guest.findMany({
+      where: { clientId, isActive: true, tableId: null, rsvpStatus: "HADIR" },
+      select: {
+        id: true,
+        name: true,
+        maxPax: true,
+        invitationCategory: true,
+        rsvp: { select: { paxCount: true, soupChoices: true } },
+      },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  function mapGuest(g: { id: string; name: string; maxPax: number; rsvp: { paxCount: number; soupChoices: string[] } | null }) {
+    return {
+      id: g.id,
+      name: g.name,
+      pax: g.rsvp?.paxCount ?? g.maxPax,
+      soupChoices: g.rsvp?.soupChoices ?? [],
+    };
+  }
+
+  const mappedTables = tables.map((t) => ({
+    id: t.id,
+    sectionLabel: t.sectionLabel,
+    code: t.code,
+    capacity: t.capacity,
+    guests: t.guests.map(mapGuest),
+  }));
+
+  const unassignedGuests = unassigned
+    .filter((g) => g.invitationCategory.includes("RESEPSI"))
+    .map(mapGuest);
+
+  const soupTotals: Record<string, number> = {};
+  for (const g of [...mappedTables.flatMap((t) => t.guests), ...unassignedGuests]) {
+    for (const s of g.soupChoices) soupTotals[s] = (soupTotals[s] ?? 0) + 1;
+  }
+
+  return { tables: mappedTables, unassignedGuests, soupTotals };
+}
+
 export async function assignGuestToTable(clientId: string, guestId: string, tableId: string | null) {
   const guest = await prisma.guest.findUnique({
     where: { id: guestId, clientId },

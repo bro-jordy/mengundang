@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Printer } from "lucide-react";
 
 interface GuestChip {
   id: string;
@@ -154,13 +154,24 @@ export function SeatingManager({ clientId, initialTables, initialUnassignedGuest
           <span><strong className="text-stone-800">{totalFilled}/{totalCapacity}</strong> pax terisi</span>
           <span><strong className="text-stone-800">{unassigned.length}</strong> belum ditempatkan</span>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm hover:bg-blue-700 transition-colors"
-        >
-          <Plus size={16} />
-          Tambah Meja
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/print/seating/${clientId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 border border-stone-200 text-stone-600 px-4 py-2 rounded-xl text-sm hover:bg-stone-50 transition-colors"
+          >
+            <Printer size={16} />
+            Export untuk Vendor
+          </a>
+          <button
+            onClick={openCreate}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm hover:bg-blue-700 transition-colors"
+          >
+            <Plus size={16} />
+            Tambah Meja
+          </button>
+        </div>
       </div>
 
       {showForm && (
