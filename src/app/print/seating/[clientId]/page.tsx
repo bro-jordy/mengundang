@@ -41,54 +41,82 @@ export default async function SeatingPrintPage({ params }: Props) {
   const soupTotal = Object.values(exportData.soupTotals).reduce((s, n) => s + n, 0);
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem 1.5rem", color: "#1c1917" }}>
+    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "10mm 8mm", color: "#1c1917" }}>
+      <style>{`
+        @page { size: A4 landscape; margin: 10mm; }
+        .table-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 8px;
+        }
+        .table-box {
+          break-inside: avoid;
+          border: 1.5px solid #57534e;
+          border-radius: 6px;
+          padding: 6px 8px;
+          background: #f7f6f3;
+        }
+        .table-box.vip {
+          border-color: #b8892a;
+          background: #fdf6e8;
+        }
+      `}</style>
+
       <PrintButton />
 
-      <div style={{ textAlign: "center", marginBottom: "2rem", borderBottom: "2px solid #1c1917", paddingBottom: "1rem" }}>
-        <h1 style={{ fontSize: "1.4rem", fontWeight: 700, margin: 0 }}>Seating &amp; Menu Resepsi</h1>
-        <p style={{ fontSize: "1rem", margin: "0.3rem 0 0" }}>{coupleName}</p>
+      <div style={{ textAlign: "center", marginBottom: "12px", borderBottom: "2px solid #1c1917", paddingBottom: "8px" }}>
+        <h1 style={{ fontSize: "1.2rem", fontWeight: 700, margin: 0 }}>Seating &amp; Menu Resepsi</h1>
+        <p style={{ fontSize: "0.9rem", margin: "0.2rem 0 0" }}>{coupleName}</p>
         {receptionEvent && (
-          <p style={{ fontSize: "0.85rem", color: "#57534e", margin: "0.2rem 0 0" }}>
-            {receptionEvent.venueName || receptionEvent.label} · {formatDate(receptionEvent.date)}
+          <p style={{ fontSize: "0.75rem", color: "#57534e", margin: "0.15rem 0 0" }}>
+            {receptionEvent.venueName || receptionEvent.label} · {formatDate(receptionEvent.date)} · Total {totalPax} pax
           </p>
         )}
-        <p style={{ fontSize: "0.8rem", color: "#78716c", margin: "0.4rem 0 0" }}>Total {totalPax} pax</p>
       </div>
 
       {sections.map((section) => {
         const sectionTables = exportData.tables.filter((t) => t.sectionLabel === section);
         const sectionPax = sectionTables.reduce((s, t) => s + t.guests.reduce((x, g) => x + g.pax, 0), 0);
         const sectionCapacity = sectionTables.reduce((s, t) => s + t.capacity, 0);
+        const isVip = section.toUpperCase().includes("VIP");
 
         return (
-          <div key={section} style={{ marginBottom: "1.75rem", breakInside: "avoid" }}>
-            <h2 style={{ fontSize: "1rem", fontWeight: 700, borderBottom: "1px solid #d6d3d1", paddingBottom: "0.4rem", marginBottom: "0.75rem" }}>
-              {section} <span style={{ fontWeight: 400, color: "#78716c", fontSize: "0.85rem" }}>({sectionPax}/{sectionCapacity} pax)</span>
+          <div key={section} style={{ marginBottom: "14px" }}>
+            <h2 style={{ fontSize: "0.95rem", fontWeight: 700, margin: "0 0 6px", color: isVip ? "#b8892a" : "#1c1917" }}>
+              {section}{" "}
+              <span style={{ fontWeight: 400, color: "#78716c", fontSize: "0.78rem" }}>
+                ({sectionPax}/{sectionCapacity} pax)
+              </span>
             </h2>
-            {sectionTables.map((t) => {
-              const tablePax = t.guests.reduce((s, g) => s + g.pax, 0);
-              return (
-                <div key={t.id} style={{ marginBottom: "0.9rem", breakInside: "avoid", paddingLeft: "0.6rem", borderLeft: "3px solid #e7e5e4" }}>
-                  <p style={{ fontWeight: 600, fontSize: "0.9rem", margin: "0 0 0.3rem" }}>
-                    {t.code} <span style={{ fontWeight: 400, color: "#78716c" }}>({tablePax}/{t.capacity} pax)</span>
-                  </p>
-                  {t.guests.length === 0 ? (
-                    <p style={{ fontSize: "0.82rem", color: "#a8a29e", fontStyle: "italic", margin: 0 }}>Kosong</p>
-                  ) : (
-                    t.guests.map((g) => (
-                      <div key={g.id} style={{ marginBottom: "0.4rem" }}>
-                        <p style={{ fontSize: "0.85rem", fontWeight: 500, margin: "0 0 0.15rem" }}>{g.name} — {g.pax} pax</p>
-                        <ol style={{ margin: 0, paddingLeft: "1.3rem", fontSize: "0.8rem", color: "#44403c" }}>
-                          {Array.from({ length: g.pax }, (_, i) => (
-                            <li key={i}>{g.soupChoices[i] ? SOUP_LABEL[g.soupChoices[i]] ?? g.soupChoices[i] : "belum pilih soup"}</li>
-                          ))}
-                        </ol>
-                      </div>
-                    ))
-                  )}
-                </div>
-              );
-            })}
+            <div className="table-grid">
+              {sectionTables.map((t) => {
+                const tablePax = t.guests.reduce((s, g) => s + g.pax, 0);
+                return (
+                  <div key={t.id} className={`table-box${isVip ? " vip" : ""}`}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "3px" }}>
+                      <span style={{ fontWeight: 700, fontSize: "0.8rem" }}>{t.code}</span>
+                      <span style={{ fontSize: "0.65rem", color: "#78716c" }}>
+                        {tablePax}/{t.capacity}
+                      </span>
+                    </div>
+                    {t.guests.length === 0 ? (
+                      <p style={{ fontSize: "0.65rem", color: "#a8a29e", fontStyle: "italic", margin: 0 }}>Kosong</p>
+                    ) : (
+                      t.guests.map((g) => (
+                        <div key={g.id} style={{ marginBottom: "3px" }}>
+                          <p style={{ fontSize: "0.68rem", fontWeight: 600, margin: "0 0 1px" }}>{g.name}</p>
+                          <ul style={{ margin: 0, padding: 0, listStyle: "none", fontSize: "0.62rem", color: "#44403c" }}>
+                            {Array.from({ length: g.pax }, (_, i) => (
+                              <li key={i}>· {g.soupChoices[i] ? SOUP_LABEL[g.soupChoices[i]] ?? g.soupChoices[i] : "belum pilih"}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         );
       })}
@@ -96,46 +124,42 @@ export default async function SeatingPrintPage({ params }: Props) {
       {exportData.unassignedGuests.length > 0 && (
         <div
           style={{
-            marginBottom: "1.75rem",
-            breakInside: "avoid",
+            marginBottom: "14px",
             background: "#fffbeb",
             border: "1px solid #fde68a",
             borderRadius: "8px",
-            padding: "1rem",
+            padding: "8px 10px",
+            breakInside: "avoid",
           }}
         >
-          <h2 style={{ fontSize: "1rem", fontWeight: 700, margin: "0 0 0.75rem", color: "#92400e" }}>
+          <h2 style={{ fontSize: "0.9rem", fontWeight: 700, margin: "0 0 6px", color: "#92400e" }}>
             ⚠️ Belum Ditempatkan ({exportData.unassignedGuests.reduce((s, g) => s + g.pax, 0)} pax)
           </h2>
-          {exportData.unassignedGuests.map((g) => (
-            <div key={g.id} style={{ marginBottom: "0.4rem" }}>
-              <p style={{ fontSize: "0.85rem", fontWeight: 500, margin: "0 0 0.15rem" }}>{g.name} — {g.pax} pax</p>
-              <ol style={{ margin: 0, paddingLeft: "1.3rem", fontSize: "0.8rem", color: "#44403c" }}>
-                {Array.from({ length: g.pax }, (_, i) => (
-                  <li key={i}>{g.soupChoices[i] ? SOUP_LABEL[g.soupChoices[i]] ?? g.soupChoices[i] : "belum pilih soup"}</li>
-                ))}
-              </ol>
-            </div>
-          ))}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+            {exportData.unassignedGuests.map((g) => (
+              <div key={g.id} style={{ fontSize: "0.7rem" }}>
+                <strong>{g.name}</strong> ({g.pax} pax) —{" "}
+                {Array.from({ length: g.pax }, (_, i) =>
+                  g.soupChoices[i] ? SOUP_LABEL[g.soupChoices[i]] ?? g.soupChoices[i] : "belum pilih"
+                ).join(", ")}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      <div style={{ marginTop: "2rem", borderTop: "2px solid #1c1917", paddingTop: "1rem", breakInside: "avoid" }}>
-        <h2 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "0.6rem" }}>Rekap Total Soup</h2>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
-          <tbody>
-            {Object.entries(SOUP_LABEL).map(([key, label]) => (
-              <tr key={key} style={{ borderBottom: "1px solid #e7e5e4" }}>
-                <td style={{ padding: "0.4rem 0" }}>{label}</td>
-                <td style={{ padding: "0.4rem 0", textAlign: "right", fontWeight: 600 }}>{exportData.soupTotals[key] ?? 0}</td>
-              </tr>
-            ))}
-            <tr>
-              <td style={{ padding: "0.5rem 0", fontWeight: 700 }}>Total</td>
-              <td style={{ padding: "0.5rem 0", textAlign: "right", fontWeight: 700 }}>{soupTotal}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div style={{ borderTop: "2px solid #1c1917", paddingTop: "8px", breakInside: "avoid" }}>
+        <h2 style={{ fontSize: "0.9rem", fontWeight: 700, marginBottom: "4px" }}>Rekap Total Soup</h2>
+        <div style={{ display: "flex", gap: "18px", flexWrap: "wrap", fontSize: "0.78rem" }}>
+          {Object.entries(SOUP_LABEL).map(([key, label]) => (
+            <span key={key}>
+              {label}: <strong>{exportData.soupTotals[key] ?? 0}</strong>
+            </span>
+          ))}
+          <span>
+            Total: <strong>{soupTotal}</strong>
+          </span>
+        </div>
       </div>
     </div>
   );
