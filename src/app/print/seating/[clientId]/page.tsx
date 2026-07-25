@@ -41,12 +41,11 @@ export default async function SeatingPrintPage({ params }: Props) {
   const soupTotal = Object.values(exportData.soupTotals).reduce((s, n) => s + n, 0);
 
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "10mm 8mm", color: "#1c1917" }}>
+    <div style={{ width: "100%", padding: "4mm 6mm", color: "#1c1917" }}>
       <style>{`
-        @page { size: A4 landscape; margin: 10mm; }
+        @page { size: A4 landscape; margin: 8mm; }
         .table-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
           gap: 8px;
         }
         .table-box {
@@ -79,6 +78,7 @@ export default async function SeatingPrintPage({ params }: Props) {
         const sectionPax = sectionTables.reduce((s, t) => s + t.guests.reduce((x, g) => x + g.pax, 0), 0);
         const sectionCapacity = sectionTables.reduce((s, t) => s + t.capacity, 0);
         const isVip = section.toUpperCase().includes("VIP");
+        const columns = Math.min(sectionTables.length, 7) || 1;
 
         return (
           <div key={section} style={{ marginBottom: "14px" }}>
@@ -88,7 +88,7 @@ export default async function SeatingPrintPage({ params }: Props) {
                 ({sectionPax}/{sectionCapacity} pax)
               </span>
             </h2>
-            <div className="table-grid">
+            <div className="table-grid" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
               {sectionTables.map((t) => {
                 const tablePax = t.guests.reduce((s, g) => s + g.pax, 0);
                 return (
