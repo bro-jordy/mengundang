@@ -74,11 +74,13 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
   });
   const [saving, setSaving] = useState(false);
 
-  const hadir = guests.filter((g) => g.rsvpStatus === "HADIR");
+  const categoryScoped = categoryFilter ? guests.filter((g) => g.invitationCategory === categoryFilter) : guests;
+
+  const hadir = categoryScoped.filter((g) => g.rsvpStatus === "HADIR");
   const totalPax = hadir.reduce((sum, g) => sum + (g.rsvp?.paxCount ?? 0), 0);
-  const totalMaxPax = guests.reduce((sum, g) => sum + g.maxPax, 0);
-  const tidakHadir = guests.filter((g) => g.rsvpStatus === "TIDAK_HADIR").length;
-  const pending = guests.filter((g) => g.rsvpStatus === "PENDING").length;
+  const totalMaxPax = categoryScoped.reduce((sum, g) => sum + g.maxPax, 0);
+  const tidakHadir = categoryScoped.filter((g) => g.rsvpStatus === "TIDAK_HADIR").length;
+  const pending = categoryScoped.filter((g) => g.rsvpStatus === "PENDING").length;
   const nasiBoxPax = hadir
     .filter((g) => g.invitationCategory === "PEMBERKATAN_NASI_BOX")
     .reduce((sum, g) => sum + (g.rsvp?.paxCount ?? 0), 0);
@@ -182,7 +184,7 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
                   : "border border-stone-200 text-stone-600 hover:bg-stone-50"
               }`}
             >
-              {f === "all" ? `Semua (${guests.length})` : f === "HADIR" ? `Hadir (${hadir.length})` : f === "TIDAK_HADIR" ? `Tidak Hadir (${tidakHadir})` : `Belum (${pending})`}
+              {f === "all" ? `Semua (${categoryScoped.length})` : f === "HADIR" ? `Hadir (${hadir.length})` : f === "TIDAK_HADIR" ? `Tidak Hadir (${tidakHadir})` : `Belum (${pending})`}
             </button>
           ))}
         </div>

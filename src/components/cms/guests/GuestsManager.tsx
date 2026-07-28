@@ -482,25 +482,31 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
 
       {/* Stats */}
       {(() => {
-        const nasiBoxTotal = guests
+        const sideScoped = sideFilter === "ALL" ? guests : guests.filter((g) => g.side === sideFilter);
+        const nasiBoxTotal = sideScoped
           .filter((g) => g.invitationCategory === "PEMBERKATAN_NASI_BOX")
           .reduce((sum, g) => sum + g.maxPax, 0);
         return (
-          <div className="flex gap-4 text-sm text-stone-500 flex-wrap">
-            <span>{guests.length} tamu · {guests.reduce((sum, g) => sum + g.maxPax, 0)} pax</span>
-            <span>{guests.filter((g) => g.isOpened).length} sudah buka</span>
-            <span>{guests.filter((g) => g.rsvpStatus === "HADIR").length} konfirmasi hadir</span>
-            <span>{guests.filter((g) => g.side === "GROOM").length} pihak pria</span>
-            <span>{guests.filter((g) => g.side === "BRIDE").length} pihak wanita</span>
-            {invitationCategories.map((cat) => (
-              <span key={cat.value}>
-                {guests.filter((g) => g.invitationCategory === cat.value).length} {cat.label.toLowerCase()}
-              </span>
-            ))}
-            {nasiBoxTotal > 0 && (
-              <span className="text-amber-600 font-medium">· {nasiBoxTotal} box (Est. Nasi Box)</span>
-            )}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              <StatCard label="Total Tamu" value={sideScoped.length} color="text-stone-800" />
+              <StatCard label="Total Pax" value={sideScoped.reduce((sum, g) => sum + g.maxPax, 0)} color="text-stone-800" />
+              <StatCard label="Sudah Buka" value={sideScoped.filter((g) => g.isOpened).length} color="text-blue-700" />
+              <StatCard label="Konfirmasi Hadir" value={sideScoped.filter((g) => g.rsvpStatus === "HADIR").length} color="text-green-700" />
+              <StatCard label="Pihak Pria" value={sideScoped.filter((g) => g.side === "GROOM").length} color="text-sky-700" />
+              <StatCard label="Pihak Wanita" value={sideScoped.filter((g) => g.side === "BRIDE").length} color="text-rose-700" />
+            </div>
+            <div className="flex gap-3 text-xs text-stone-500 flex-wrap">
+              {invitationCategories.map((cat) => (
+                <span key={cat.value}>
+                  {sideScoped.filter((g) => g.invitationCategory === cat.value).length} {cat.label.toLowerCase()}
+                </span>
+              ))}
+              {nasiBoxTotal > 0 && (
+                <span className="text-amber-600 font-medium">· {nasiBoxTotal} box (Est. Nasi Box)</span>
+              )}
+            </div>
+          </>
         );
       })()}
 
@@ -741,6 +747,15 @@ export function GuestsManager({ clientId, initialGuests, client }: Props) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function StatCard({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className="bg-white rounded-xl border border-stone-200 p-4">
+      <p className="text-xs text-stone-500 mb-1">{label}</p>
+      <p className={`text-2xl font-bold ${color}`}>{value}</p>
     </div>
   );
 }
