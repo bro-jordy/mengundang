@@ -26,11 +26,22 @@ const CATEGORY_LABEL: Record<string, string> = {
   LAMARAN: "Lamaran",
 };
 
+const SIDE_LABEL: Record<string, string> = {
+  GROOM: "Pihak Pria",
+  BRIDE: "Pihak Wanita",
+};
+
+const SIDE_COLOR: Record<string, string> = {
+  GROOM: "bg-sky-50 text-sky-700",
+  BRIDE: "bg-rose-50 text-rose-700",
+};
+
 interface Guest {
   id: string;
   name: string;
   phone: string | null;
   maxPax: number;
+  side: string | null;
   invitationCategory: string;
   rsvpStatus: RsvpStatus;
   rsvp: Rsvp | null;
@@ -66,6 +77,7 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [sideFilter, setSideFilter] = useState<"ALL" | "GROOM" | "BRIDE">("ALL");
   const [form, setForm] = useState<{ status: RsvpStatus; paxCount: number; message: string; soupChoices: Record<number, string> }>({
     status: "HADIR",
     paxCount: 1,
@@ -74,7 +86,9 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
   });
   const [saving, setSaving] = useState(false);
 
-  const categoryScoped = categoryFilter ? guests.filter((g) => g.invitationCategory === categoryFilter) : guests;
+  const categoryScoped = guests
+    .filter((g) => !categoryFilter || g.invitationCategory === categoryFilter)
+    .filter((g) => sideFilter === "ALL" || g.side === sideFilter);
 
   const hadir = categoryScoped.filter((g) => g.rsvpStatus === "HADIR");
   const totalPax = hadir.reduce((sum, g) => sum + (g.rsvp?.paxCount ?? 0), 0);
@@ -157,9 +171,7 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
 
   const categories = [...new Set(guests.map((g) => g.invitationCategory))];
 
-  const filtered = guests
-    .filter((g) => filter === "all" || g.rsvpStatus === filter)
-    .filter((g) => !categoryFilter || g.invitationCategory === categoryFilter);
+  const filtered = categoryScoped.filter((g) => filter === "all" || g.rsvpStatus === filter);
 
   return (
     <div className="space-y-6">
@@ -218,6 +230,23 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
             ))}
           </div>
         )}
+
+        <div className="px-6 py-3 border-b border-stone-100 flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-stone-400 font-medium">Pihak:</span>
+          {(["ALL", "GROOM", "BRIDE"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSideFilter(s)}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
+                sideFilter === s
+                  ? "bg-stone-800 text-white"
+                  : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+              }`}
+            >
+              {s === "ALL" ? "Semua" : SIDE_LABEL[s]}
+            </button>
+          ))}
+        </div>
 
         {filtered.length === 0 ? (
           <div className="p-10 text-center text-stone-400 text-sm">
@@ -337,6 +366,11 @@ export function RsvpManager({ clientId, initialGuests }: Props) {
                           {guest.invitationCategory.includes("RESEPSI") && " 🍲"}
                         </p>
                       </div>
+                      {guest.side && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium hidden sm:inline-block ${SIDE_COLOR[guest.side]}`}>
+                          {SIDE_LABEL[guest.side]}
+                        </span>
+                      )}
                       {guest.rsvp && (
                         <p className="text-xs text-stone-400 hidden sm:block">
                           {guest.rsvp.paxCount} pax
