@@ -897,13 +897,14 @@ function RSVPSection({
   champagne: string; text: string; fontH: string; fontB: string; t: Translations;
   onConfirmed?: (status: "HADIR" | "TIDAK_HADIR") => void;
 }) {
-  const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">((guest.rsvp?.status as "HADIR" | "TIDAK_HADIR") || "HADIR");
-  const [pax, setPax] = useState(guest.rsvp?.paxCount ?? guest.maxPax);
+  const respondedRsvp = guest.rsvp && guest.rsvp.status !== "PENDING" ? guest.rsvp : undefined;
+  const [status, setStatus] = useState<"HADIR" | "TIDAK_HADIR">((respondedRsvp?.status as "HADIR" | "TIDAK_HADIR") || "HADIR");
+  const [pax, setPax] = useState(respondedRsvp?.paxCount ?? guest.maxPax);
   const [saving, setSaving] = useState(false);
-  const [done, setDone] = useState(!!guest.rsvp);
+  const [done, setDone] = useState(!!respondedRsvp);
   const needsSoup = status === "HADIR" && (guest.invitationCategory?.includes("RESEPSI") ?? false);
   const [soupSelections, setSoupSelections] = useState<Record<number, string>>(() => {
-    const existing = (guest.rsvp?.soupChoices as string[] | undefined) ?? [];
+    const existing = (respondedRsvp?.soupChoices as string[] | undefined) ?? [];
     return Object.fromEntries(existing.map((c, i) => [i, c]));
   });
   const soupChoices = Array.from({ length: pax }, (_, i) => soupSelections[i] ?? "");

@@ -41,6 +41,15 @@ export async function POST(req: Request, { params }: Params) {
     }
     const resolvedSoupChoices = needsSoupChoice ? soupChoices! : [];
 
+    if (status === "PENDING") {
+      await prisma.rsvp.deleteMany({ where: { guestId, clientId } });
+      await prisma.guest.update({
+        where: { id: guestId },
+        data: { rsvpStatus: "PENDING" },
+      });
+      return apiSuccess({ message: "RSVP direset ke belum konfirmasi" });
+    }
+
     const rsvp = await prisma.rsvp.upsert({
       where: { guestId },
       update: { status, paxCount, message: message || null, soupChoices: resolvedSoupChoices },
