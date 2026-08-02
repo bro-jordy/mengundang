@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Camera, CameraOff, Users, UserCheck, QrCode, RefreshCw, Clock, Download } from "lucide-react";
+import { Camera, CameraOff, Users, UserCheck, QrCode, RefreshCw, Clock, Download, Search } from "lucide-react";
 
 interface TableInfo {
   code: string;
@@ -135,6 +135,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
   const [stats, setStats] = useState<Stats>(initialStats);
   const [activeTab, setActiveTab] = useState<"CHURCH" | "RECEPTION">("CHURCH");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const scanLabels = buildScanLabels(events);
   const hasReceptionEvent = events?.some((e) => RECEPTION_TYPES.has(e.type)) ?? false;
   const [scanning, setScanning] = useState(false);
@@ -507,6 +508,10 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
             const byTab = attendances.filter((a) => a.barcodeType === currentTab);
             const tabCategories = [...new Set(byTab.map((a) => a.guest.invitationCategory))];
             const filtered = activeCategory ? byTab.filter((a) => a.guest.invitationCategory === activeCategory) : byTab;
+            const q = search.trim().toLowerCase();
+            const searched = q
+              ? filtered.filter((a) => a.guest.name.toLowerCase().includes(q) || (a.guest.phone ?? "").includes(q))
+              : filtered;
             if (byTab.length === 0) {
               return (
                 <div className="p-10 text-center">
@@ -516,6 +521,18 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
             }
             return (
               <>
+                <div className="px-4 py-3 border-b border-stone-100">
+                  <div className="relative max-w-xs">
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                    <input
+                      type="text"
+                      placeholder="Cari nama atau WhatsApp..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 text-sm border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    />
+                  </div>
+                </div>
                 {tabCategories.length > 1 && (
                   <div className="px-4 py-3 flex flex-wrap gap-2 border-b border-stone-100">
                     <button
@@ -543,6 +560,11 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
                     ))}
                   </div>
                 )}
+              {searched.length === 0 ? (
+                <div className="p-10 text-center">
+                  <p className="text-stone-400 text-sm">Tidak ada tamu yang cocok dengan pencarian.</p>
+                </div>
+              ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[700px]">
                   <thead>
@@ -556,7 +578,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-50">
-                    {filtered.map((att, i) => (
+                    {searched.map((att, i) => (
                       <tr key={att.id} className="hover:bg-stone-50 group">
                         <td className="px-4 py-3 sticky left-0 bg-white group-hover:bg-stone-50 z-10 border-r border-stone-100">
                           <p className="font-medium text-stone-800">{att.guest.name}</p>
@@ -585,6 +607,7 @@ export function AttendanceManager({ clientId, initialAttendances, initialStats, 
                   </tbody>
                 </table>
               </div>
+              )}
               </>
             );
           })()}
